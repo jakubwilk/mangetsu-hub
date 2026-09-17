@@ -1,21 +1,15 @@
 'use client'
 
-import {
-  Button,
-  Group,
-  Menu,
-  Modal,
-  SegmentedControl,
-  Stack,
-  Textarea,
-  TextInput,
-} from '@mantine/core'
+import { Button, Group, Menu, Modal, Stack, Tabs, TextInput } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { IconPlus } from '@tabler/icons-react'
+import { IconLink, IconMarkdown, IconPlus } from '@tabler/icons-react'
 import type { SourceMethod } from 'common/api'
 import { submitSource } from 'common/api'
 import { notifyError, notifyInfo } from 'common/utils'
+import dynamic from 'next/dynamic'
 import { useState } from 'react'
+
+const MarkdownEditorField = dynamic(() => import('./MarkdownEditorField'), { ssr: false })
 
 interface AddSourceModalProps {
   asMenuItem?: boolean
@@ -33,7 +27,8 @@ export default function AddSourceModal({ asMenuItem }: AddSourceModalProps) {
     setData('')
   }
 
-  const handleMethodChange = (value: string) => {
+  const handleMethodChange = (value: string | null) => {
+    if (!value) return
     setMethod(value as SourceMethod)
     setData('')
   }
@@ -74,40 +69,43 @@ export default function AddSourceModal({ asMenuItem }: AddSourceModalProps) {
         </Button>
       )}
 
-      <Modal opened={opened} onClose={handleClose} title="Dodaj źródło" centered size="md">
-        <Stack gap="md">
-          <SegmentedControl
-            fullWidth
-            value={method}
-            onChange={handleMethodChange}
-            data={[
-              { label: 'Link do forum (URL)', value: 'URL' },
-              { label: 'Treść ręczna (Markdown)', value: 'CONTENT' },
-            ]}
-          />
+      <Modal
+        opened={opened}
+        onClose={handleClose}
+        title="Dodaj źródło"
+        centered
+        size={method === 'CONTENT' ? 'xl' : 'lg'}
+      >
+        <Stack gap="lg">
+          <Tabs value={method} onChange={handleMethodChange}>
+            <Tabs.List grow>
+              <Tabs.Tab value="URL" leftSection={<IconLink size={16} />}>
+                Link do forum
+              </Tabs.Tab>
+              <Tabs.Tab value="CONTENT" leftSection={<IconMarkdown size={16} />}>
+                Treść ręczna (Markdown)
+              </Tabs.Tab>
+            </Tabs.List>
 
-          {method === 'URL' ? (
-            <TextInput
-              label="URL wątku"
-              placeholder="https://mangetsu.pl/viewtopic.php?t=..."
-              value={data}
-              onChange={(e) => setData(e.currentTarget.value)}
-              disabled={loading}
-            />
-          ) : (
-            <Textarea
-              label="Treść (Markdown)"
-              placeholder={'# Tytuł poradnika\n\nTreść...'}
-              value={data}
-              onChange={(e) => setData(e.currentTarget.value)}
-              autosize
-              minRows={6}
-              maxRows={14}
-              disabled={loading}
-            />
-          )}
+            <Tabs.Panel value="URL" pt="md">
+              <TextInput
+                label="URL wątku"
+                placeholder="https://mangetsu.pl/viewtopic.php?t=..."
+                leftSection={<IconLink size={16} />}
+                value={data}
+                onChange={(e) => setData(e.currentTarget.value)}
+                disabled={loading}
+              />
+            </Tabs.Panel>
 
-          <Group justify="flex-end" mt="xs">
+            {/* keepMounted=false: MDXEditor only reads `markdown` at mount time, so the panel
+                must unmount on tab switch/close for the reset (setData('')) to actually clear it. */}
+            <Tabs.Panel value="CONTENT" pt="md" keepMounted={false}>
+              <MarkdownEditorField value={data} onChange={setData} readOnly={loading} />
+            </Tabs.Panel>
+          </Tabs>
+
+          <Group justify="flex-end">
             <Button variant="subtle" color="gray" onClick={handleClose} disabled={loading}>
               Anuluj
             </Button>
