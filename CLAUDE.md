@@ -177,6 +177,19 @@ Aktywne pluginy w `.claude/settings.json` — używaj ich zamiast ręcznego pode
 
 ---
 
+## Dobór modelu dla subagentów
+
+Przy zlecaniu pracy subagentom (narzędzie Agent) dobieraj model do rodzaju zmiany:
+
+| rodzaj pracy                                                                                                                 | model  |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------ |
+| Banalne zmiany: kolor, tekst, drobne poprawki stylu/CSS                                                                      | Haiku  |
+| Większe zmiany w komponentach, backendzie, SDK — nowe funkcje, modyfikacje wpływające na logikę                              | Sonnet |
+| Review, testy, duże i skomplikowane zmiany obejmujące działanie oraz warstwę logiczną/biznesową (frontend, backend, serwisy) | Opus   |
+| Planowanie (wyłącznie planowanie, bez implementacji)                                                                         | Opus   |
+
+---
+
 ## Struktura commitów
 
 Format: `type(scope): opis` (po angielsku)
@@ -189,6 +202,25 @@ docs(readme): add local development instructions
 ```
 
 Typy: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `style`
+
+---
+
+## Git — commity robi człowiek
+
+**Nigdy nie commituj i nie pushuj sam.** Bez wyjątków i bez „to tylko drobiazg". Zmiany zostawiaj
+w katalogu roboczym; jeśli warto je rozbić na kilka commitów, **zaproponuj podział wraz
+z treścią komunikatów** i na tym zakończ. To samo dotyczy `git push`, tworzenia branchy,
+`commit --amend`, `git reset --hard`, `git checkout --` na zmodyfikowanym pliku i `git clean`.
+
+Commitujesz wyłącznie wtedy, gdy padnie wyraźne polecenie („zacommituj", „zrób commit") —
+i wtedy tylko to, co zostało wskazane.
+
+**`PLAN.md` nie jest takim poleceniem.** Zapisy w rodzaju „osobny commit »tylko formatowanie«"
+opisują, jak zmiana ma trafić do historii, a nie kto ma ją tam wsadzić — przygotuj zmiany
+w takim podziale i opisz go, decyzję zostaw człowiekowi.
+
+Powód jest prosty: przegląd zmian przed wejściem do historii jest ostatnim miejscem, w którym
+widać całość na raz. Commit zrobiony automatycznie ten moment przeskakuje.
 
 ---
 
@@ -222,3 +254,23 @@ Warstwa serwerowa (`src/server/`) — bez importów po stronie klienta:
 | `server/prompts` | System prompt dla LLM                        |
 
 Historyczny harmonogram implementacji: **`PLAN.md`** w root projektu (fazy 1–11 ukończone).
+
+## Frontend — kanon
+
+Pięć reguł, które najłatwiej złamać przez przypadek:
+
+1. **Moduł importuje wyłącznie z `common` albo z samego siebie.** Import między modułami
+   domenowymi (`chat`, `notices`, `search`, `admin`, `auth`) jest błędem architektonicznym;
+   jedynym miejscem, w którym moduły się spotykają, jest `src/app`.
+2. **Alias zatrzymuje się na podfolderze i nigdy nie schodzi do pliku**: `common/components`,
+   nie `common/components/Button`. Aliasu `@/*` nie ma — każdy moduł ma własny alias
+   (`common`, `chat`, `notices`, `search`, `admin`, `auth`, plus `server/*` i `data/*` —
+   zobacz `tsconfig.json` → `paths`).
+3. **Jeden plik = jeden komponent**, nazwa pliku `PascalCase.tsx` zgodna z nazwą eksportu,
+   własny folder z barrelem (`index.ts`).
+4. **System jest dark-only.** `MantineProvider` w `src/app/layout.tsx` ustawia
+   `forceColorScheme="dark"` — nie dodawaj przełącznika motywu ani logiki jasnego wariantu.
+5. **Nie używaj natywnych kontrolek formularzy** (`<select>`, `<input type="date">`,
+   `<input type="checkbox">`) — w dark mode rysuje je system operacyjny jasną płachtą. Używaj
+   gotowych komponentów Mantine (`Select`, `Checkbox`, `DatePickerInput` z `@mantine/dates`
+   itd.) zamiast natywnego HTML.
