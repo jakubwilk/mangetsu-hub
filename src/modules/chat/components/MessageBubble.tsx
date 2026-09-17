@@ -32,7 +32,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           </Text>
         ) : (
           <Box
-            className="leading-[1.65] [&_code]:rounded [&_code]:bg-[var(--mantine-color-dark-8)] [&_code]:px-[0.35em] [&_code]:py-[0.1em] [&_code]:text-[0.875em] [&_p]:mb-[0.4em] [&_p:last-child]:mb-0"
+            className="leading-[1.65] [&_code]:rounded [&_code]:bg-[var(--mantine-color-dark-8)] [&_code]:px-[0.35em] [&_code]:py-[0.1em] [&_code]:text-[0.875em] [&_p]:mb-[0.4em] [&_p:last-child]:mb-0 [&_ul]:my-[0.35em] [&_ul]:pl-[1.1em] [&_ul]:list-disc [&_ol]:my-[0.35em] [&_ol]:pl-[1.1em] [&_ol]:list-decimal [&_li]:mb-[0.15em] [&_li]:marker:text-[var(--mantine-color-mangetsu-5)] [&_h1]:text-[1.15em] [&_h2]:text-[1.08em] [&_h3]:text-[1.02em] [&_h4]:text-[0.97em] [&_h5]:text-[0.92em] [&_h6]:text-[0.88em] [&_h1,&_h2,&_h3,&_h4,&_h5,&_h6]:font-semibold [&_h1,&_h2,&_h3,&_h4,&_h5,&_h6]:leading-tight [&_h1,&_h2,&_h3,&_h4,&_h5,&_h6]:mt-[0.5em] [&_h1,&_h2,&_h3,&_h4,&_h5,&_h6]:mb-[0.25em] [&_h1,&_h2,&_h3,&_h4,&_h5,&_h6]:first:mt-0 [&_strong]:font-semibold [&_strong]:text-[var(--mantine-color-mangetsu-4)] [&_em]:italic"
             style={{
               fontSize: 'var(--mantine-font-size-sm)',
               color: 'var(--mantine-color-gray-2)',

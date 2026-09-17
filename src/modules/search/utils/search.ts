@@ -13,6 +13,8 @@ const SYNONYM_RULES: { pattern: RegExp; stem: string }[] = [
   { pattern: /\b(tura?|tury|turze|turę|turą|turami|turach)\b/i, stem: 'kolejk' },
   // "runda/rundy" → "kolejk" (runda = round, same concept)
   { pattern: /\b(runda?|rundy|rundzie|rundę|rundą|rundami|rundach)\b/i, stem: 'kolejk' },
+  // "rodzaj/typ" → "poziom" (rules describe tiers as "poziomy", e.g. "Poziomy Klątw")
+  { pattern: /\b(rodzaj(e|ów|u|ami|ach)?|typ(y|ów|u|ami|ach)?)\b/i, stem: 'poziom' },
 ]
 
 function expandWithSynonyms(query: string): string {
@@ -132,11 +134,18 @@ const mergeHybrid = (
     .map(({ result }) => result)
 }
 
-// After the hybrid merge, pull in every remaining chunk of any document that has at least
-// one chunk in the results. A single hit is often just one section of a multi-section
-// document (e.g. one stat out of five in "Statystyki") — without the rest, the LLM only
-// sees a partial picture and produces incomplete answers to broad questions. The corpus is
-// small (~20 docs, ~6 chunks/doc on average), so pulling a whole document is cheap.
+// Caps how many characters of extra "whole document" content expandToFullDocuments will pull
+// in. Without this, a broad query whose top-5 hits span several documents (or one large one,
+// e.g. "Przekleta Energia" at ~46k chars) can balloon the prompt to 30k+ tokens, which is both
+// costly (OVH bills per token) and likely to bury the relevant fragment in noise.
+const MAX_EXPANSION_CHARS = 12000
+
+// After the hybrid merge, pull in remaining chunks of documents that have at least one chunk
+// in the results, up to MAX_EXPANSION_CHARS. A single hit is often just one section of a
+// multi-section document (e.g. one stat out of five in "Statystyki") — without the rest, the
+// LLM only sees a partial picture and produces incomplete answers to broad questions. Documents
+// are expanded in rank order; a document that doesn't fit the remaining budget is skipped so a
+// later, smaller, still-relevant document isn't crowded out by one large one.
 const expandToFullDocuments = async (results: SearchResult[]): Promise<SearchResult[]> => {
   if (results.length === 0) return results
 
@@ -144,10 +153,21 @@ const expandToFullDocuments = async (results: SearchResult[]): Promise<SearchRes
 
   const meta = await db.chunk.findMany({
     where: { id: { in: resultIds } },
-    select: { documentId: true },
+    select: { id: true, documentId: true },
   })
 
-  const documentIds = [...new Set(meta.map((m) => m.documentId))]
+  // findMany with `id: { in }` doesn't preserve the input array's order, so look up each
+  // chunk's document via a map and walk `resultIds` (already rank-ordered) to get a
+  // rank-ordered, deduplicated document list — needed for the budget below to prioritize
+  // higher-ranked documents correctly.
+  const documentIdByChunkId = new Map(meta.map((m) => [m.id, m.documentId]))
+  const documentIds = [
+    ...new Set(
+      resultIds
+        .map((id) => documentIdByChunkId.get(id))
+        .filter((id): id is string => id !== undefined),
+    ),
+  ]
   if (documentIds.length === 0) return results
 
   const remainingChunks = await db.chunk.findMany({
@@ -157,18 +177,43 @@ const expandToFullDocuments = async (results: SearchResult[]): Promise<SearchRes
     },
     select: {
       id: true,
+      documentId: true,
       content: true,
       document: { select: { title: true, category: true } },
     },
   })
 
-  const expanded: SearchResult[] = remainingChunks.map((c) => ({
-    id: c.id,
-    content: c.content,
-    documentTitle: c.document.title,
-    category: c.document.category,
-    rank: 0,
-  }))
+  const chunksByDocument = new Map<string, typeof remainingChunks>()
+  for (const chunk of remainingChunks) {
+    const list = chunksByDocument.get(chunk.documentId)
+    if (list) {
+      list.push(chunk)
+    } else {
+      chunksByDocument.set(chunk.documentId, [chunk])
+    }
+  }
+
+  const expanded: SearchResult[] = []
+  let remainingBudget = MAX_EXPANSION_CHARS
+
+  for (const documentId of documentIds) {
+    const docChunks = chunksByDocument.get(documentId)
+    if (!docChunks) continue
+
+    const docChars = docChunks.reduce((sum, c) => sum + c.content.length, 0)
+    if (docChars > remainingBudget) continue
+
+    remainingBudget -= docChars
+    for (const c of docChunks) {
+      expanded.push({
+        id: c.id,
+        content: c.content,
+        documentTitle: c.document.title,
+        category: c.document.category,
+        rank: 0,
+      })
+    }
+  }
 
   return [...results, ...expanded]
 }

@@ -3,13 +3,24 @@ export type SourceMethod = 'URL' | 'CONTENT'
 export async function submitSourceToWebhook(method: SourceMethod, data: string): Promise<string> {
   const res = await fetch(process.env.SOURCES_WEBHOOK_URL!, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Webhook-Authorization': process.env.N8N_WEBHOOK_SECRET ?? '',
+    },
     body: JSON.stringify({ method, data }),
   })
 
-  const json = (await res.json()) as { status: number; message: string }
+  const raw = await res.text()
+  let json: { status: number; message: string } | null = null
+  try {
+    json = raw ? JSON.parse(raw) : null
+  } catch {
+    // Webhook returned a non-JSON body (e.g. a plain-text auth error) — fall through and
+    // surface `raw` as the error message instead of crashing on JSON.parse.
+  }
 
-  if (!res.ok) throw new Error(json.message)
+  if (!res.ok) throw new Error(json?.message || raw || `Webhook zwrócił status ${res.status}.`)
+  if (!json) throw new Error('Webhook zwrócił nieprawidłową odpowiedź.')
 
   return json.message
 }
