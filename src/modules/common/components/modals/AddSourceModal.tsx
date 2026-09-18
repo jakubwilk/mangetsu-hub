@@ -75,6 +75,7 @@ export default function AddSourceModal({ asMenuItem }: AddSourceModalProps) {
         title="Dodaj źródło"
         centered
         size={method === 'CONTENT' ? 'xl' : 'lg'}
+        yOffset={method === 'CONTENT' ? '3dvh' : undefined}
       >
         <Stack gap="lg">
           <Tabs value={method} onChange={handleMethodChange}>
@@ -98,7 +99,7 @@ export default function AddSourceModal({ asMenuItem }: AddSourceModalProps) {
               />
             </Tabs.Panel>
 
-            {/* keepMounted=false: MDXEditor only reads `markdown` at mount time, so the panel
+            {/* keepMounted=false: Crepe only reads `defaultValue` at mount time, so the panel
                 must unmount on tab switch/close for the reset (setData('')) to actually clear it. */}
             <Tabs.Panel value="CONTENT" pt="md" keepMounted={false}>
               <MarkdownEditorField value={data} onChange={setData} readOnly={loading} />

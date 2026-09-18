@@ -43,3 +43,10 @@ html {
   }
 }
 
+.milkdown-editor > div {
+  height: inherit;
+}
+
+.milkdown-editor .milkdown {
+  min-height: 250px;
+}
