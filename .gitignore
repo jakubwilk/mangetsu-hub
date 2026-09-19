@@ -34,6 +34,7 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+.env.production
 # .env.example is intentionally NOT ignored
 
 # vercel
