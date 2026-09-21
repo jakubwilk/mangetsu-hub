@@ -3,7 +3,7 @@ import { searchChunks } from 'search'
 import { db } from 'server/db'
 import { buildSystemPrompt } from 'server/prompts'
 
-import { openai } from './ai'
+import { streamChatCompletion } from './ai'
 
 export const DAILY_LIMIT = parseInt(process.env.DAILY_REQUEST_LIMIT ?? '20', 10)
 
@@ -128,18 +128,11 @@ export function createChatStream(params: {
   return new ReadableStream({
     async start(controller) {
       try {
-        const completion = await openai.chat.completions.create({
-          model: process.env.OVH_AI_MODEL ?? 'Meta-Llama-3.1-70B-Instruct',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...history,
-            { role: 'user', content: searchQuery },
-          ],
-          temperature: 0.7,
-          max_tokens: 1024,
-          stream: true,
-          stream_options: { include_usage: true },
-        })
+        const completion = streamChatCompletion([
+          { role: 'system', content: systemPrompt },
+          ...history,
+          { role: 'user', content: searchQuery },
+        ])
 
         let fullContent = ''
         let tokensUsed = 0

@@ -112,12 +112,17 @@ describe('searchChunks', () => {
     findManyMock.mockImplementation((args: ChunkFindManyArgs) => {
       if (args.where?.id?.in) {
         return Promise.resolve([
-          { documentId: 'doc-c' },
-          { documentId: 'doc-c' },
+          { id: 'c0', documentId: 'doc-c' },
+          { id: 'c2', documentId: 'doc-c' },
         ])
       }
       return Promise.resolve([
-        { id: 'c1', content: 'Fragment 1', document: { title: 'Dok C', category: 'zasady' } },
+        {
+          id: 'c1',
+          documentId: 'doc-c',
+          content: 'Fragment 1',
+          document: { title: 'Dok C', category: 'zasady' },
+        },
       ])
     })
 
@@ -145,16 +150,18 @@ describe('searchChunks', () => {
     })
     findManyMock.mockImplementation((args: ChunkFindManyArgs) => {
       if (args.where?.id?.in) {
-        return Promise.resolve([{ documentId: 'doc-statystyki' }])
+        return Promise.resolve([{ id: 'stat-sila', documentId: 'doc-statystyki' }])
       }
       return Promise.resolve([
         {
           id: 'stat-wytrzymalosc',
+          documentId: 'doc-statystyki',
           content: 'Wytrzymałość...',
           document: { title: 'Statystyki', category: 'mechanika' },
         },
         {
           id: 'stat-szybkosc',
+          documentId: 'doc-statystyki',
           content: 'Szybkość...',
           document: { title: 'Statystyki', category: 'mechanika' },
         },
@@ -166,5 +173,50 @@ describe('searchChunks', () => {
     expect(result.map((r) => r.id)).toEqual(
       expect.arrayContaining(['stat-sila', 'stat-wytrzymalosc', 'stat-szybkosc']),
     )
+  })
+
+  it('skips expanding a document whose remaining chunks exceed the expansion budget', async () => {
+    embedTextMock.mockResolvedValue(null)
+    queryRawMock.mockImplementation((strings: TemplateStringsArray) => {
+      const sql = sqlOf(strings)
+      if (sql.includes('to_tsquery')) {
+        return Promise.resolve([
+          { id: 'huge-hit', content: 'Fragment', documentTitle: 'Dok Ogromny', category: 'zasady', rank: 0.9 },
+        ])
+      }
+      return Promise.resolve([])
+    })
+    findManyMock.mockImplementation((args: ChunkFindManyArgs) => {
+      if (args.where?.id?.in) {
+        return Promise.resolve([{ id: 'huge-hit', documentId: 'doc-huge' }])
+      }
+      return Promise.resolve([
+        {
+          id: 'huge-rest',
+          documentId: 'doc-huge',
+          // Exceeds MAX_EXPANSION_CHARS (12000) on its own.
+          content: 'x'.repeat(12001),
+          document: { title: 'Dok Ogromny', category: 'zasady' },
+        },
+      ])
+    })
+
+    const result = await searchChunks('kolejka', 5)
+
+    expect(result.map((r) => r.id)).toEqual(['huge-hit'])
+  })
+
+  it('expands "rodzaje"/"typy" queries with the "poziom" synonym for FTS', async () => {
+    embedTextMock.mockResolvedValue(null)
+    queryRawMock.mockImplementation(() => Promise.resolve([]))
+
+    await searchChunks('jakie są rodzaje klątw', 5)
+
+    const ftsCall = queryRawMock.mock.calls.find(([strings]) =>
+      sqlOf(strings as TemplateStringsArray).includes('to_tsquery'),
+    )
+    const tsQueryArg = ftsCall?.[1] as string
+
+    expect(tsQueryArg).toContain('poziom')
   })
 })

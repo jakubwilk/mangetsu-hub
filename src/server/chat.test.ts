@@ -19,7 +19,7 @@ vi.mock('server/db', () => ({
 
 vi.mock('search', () => ({ searchChunks: vi.fn().mockResolvedValue([]) }))
 vi.mock('server/prompts', () => ({ buildSystemPrompt: vi.fn().mockReturnValue('') }))
-vi.mock('./ai', () => ({ openai: {} }))
+vi.mock('./ai', () => ({ streamChatCompletion: vi.fn() }))
 
 beforeEach(() => {
   upsertMock.mockReset()

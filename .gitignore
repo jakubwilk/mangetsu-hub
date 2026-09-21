@@ -34,6 +34,7 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+.env.production
 # .env.example is intentionally NOT ignored
 
 # vercel
@@ -44,3 +45,5 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+*.local.json
