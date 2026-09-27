@@ -11,10 +11,10 @@ Prywatna aplikacja webowa do przeszukiwania poradników z forum Mangetsu przy u�
 - Logowanie przez Discord OAuth (NextAuth / Auth.js v5) — brak logowania hasłem
 - System ról: `GUEST` (konto nieaktywowane) → `USER` → `EDITOR` → `ROOT` (administrator)
 - Nowe konta trafiają na stronę `/pending` do czasu aktywacji przez administratora
-- Panel administracyjny `/admin` — zarządzanie rolami i usuwanie kont, z powiadomieniami przez webhooki n8n (aktywacja / usunięcie)
+- Panel administracyjny `/admin` — zarządzanie rolami i usuwanie kont, z powiadomieniami przez webhooki n8n (zmiana roli / usunięcie)
 - Panel „Dodaj źródło" (rola `EDITOR`/`ROOT`) — zgłaszanie nowych poradników przez webhook automatyzacji
 - Dzienny limit zapytań na użytkownika (rate limiting per-user, nie per-IP)
-- Historia konwersacji zapisywana w PostgreSQL (audit, debugowanie błędów)
+- Historia konwersacji zapisywana w PostgreSQL (audit, debugowanie błędów), z możliwością usunięcia sesji z historii
 - Pliki poradników zarządzane bezpośrednio w kodzie źródłowym (katalog `content/`)
 
 ## Stack technologiczny
@@ -25,9 +25,10 @@ Prywatna aplikacja webowa do przeszukiwania poradników z forum Mangetsu przy u�
 | UI             | Mantine v9, Tailwind CSS                                                |
 | Backend        | Next.js Route Handlers                                                  |
 | Baza danych    | PostgreSQL + `pgvector` (FTS `tsvector`/`tsquery`, trigram, embeddingi) |
-| Auth           | NextAuth (Auth.js) v5 — Discord OAuth                                   |
-| LLM/Embeddingi | OVH AI Endpoints                                                        |
-| Automatyzacja  | n8n (webhooki: aktywacja/usunięcie konta, dodawanie źródeł)             |
+| Auth           | NextAuth (Auth.js) v5 — Discord OAuth, ochrona tras przez `proxy.ts`   |
+| LLM            | primary: dowolny endpoint kompatybilny z OpenAI (`LLM_AI_*`), fallback: OVH AI Endpoints (`OVH_AI_*`) |
+| Embeddingi     | OVH AI Endpoints                                                        |
+| Automatyzacja  | n8n (webhooki: zmiana roli/usunięcie konta, dodawanie źródeł)           |
 | Hosting        | OVH VPS → Coolify + Nixpacks                                            |
 
 ## Architektura
@@ -68,7 +69,7 @@ Wyniki są dodatkowo rozszerzane o sąsiednie chunki tego samego dokumentu, gdy 
 
 ### Autoryzacja i role
 
-Logowanie wyłącznie przez Discord OAuth. Nowe konto dostaje rolę `GUEST` i trafia na `/pending` — czat jest niedostępny do czasu aktywacji przez `ROOT` w panelu `/admin`. Aktywacja i usunięcie konta wysyłają webhook do n8n (powiadomienie, np. na Discordzie). Endpointy API chronione przez `requireRole()` + `verifyOrigin()` (ochrona przed CSRF przez porównanie nagłówków `Origin`/`Host`).
+Logowanie wyłącznie przez Discord OAuth. Nowe konto dostaje rolę `GUEST` i trafia na `/pending` — czat jest niedostępny do czasu aktywacji przez `ROOT` w panelu `/admin`. Ochrona tras po stronie routingu realizowana jest przez `src/proxy.ts` (konwencja Next.js 16, poprzednio `middleware.ts`). Każda zmiana roli oraz usunięcie konta wysyłają webhook do n8n (powiadomienie, np. na Discordzie). Endpointy API chronione przez `requireRole()` + `verifyOrigin()` (ochrona przed CSRF przez porównanie nagłówków `Origin`/`Host`).
 
 ### Historia czatu
 
@@ -94,14 +95,14 @@ mangetsu-tutorials-rag/
 │   │   └── api/
 │   │       ├── auth/[...nextauth]/route.ts   # NextAuth (Discord OAuth)
 │   │       ├── chat/route.ts                 # POST /api/chat — RAG pipeline (SSE stream)
-│   │       ├── sessions/route.ts             # GET /api/sessions — walidacja sesji
+│   │       ├── sessions/route.ts             # GET walidacja sesji / DELETE usunięcie sesji
 │   │       ├── rate-limit/route.ts           # GET /api/rate-limit — licznik zapytań
 │   │       ├── sources/route.ts              # POST /api/sources — zgłoszenie nowego źródła (webhook)
 │   │       └── admin/users/[id]/route.ts     # PATCH/DELETE — role i usuwanie kont
 │   ├── modules/
 │   │   ├── common/                 # Współdzielone komponenty layoutu i utility
 │   │   │   ├── api/sources.ts      # Klient HTTP — dodawanie źródeł
-│   │   │   ├── components/         # AppLayout, Topbar, MobileNavBar, DocsPanel, Logo, AddSourceModal
+│   │   │   ├── components/         # AppLayout, Topbar, MobileNavBar, DocsPanel, Logo, AddSourceModal, MarkdownEditorField
 │   │   │   ├── data/               # loading-messages.json
 │   │   │   └── utils/notifications.ts
 │   │   ├── auth/                   # Logowanie i role
@@ -112,8 +113,8 @@ mangetsu-tutorials-rag/
 │   │   │   ├── components/         # AdminHeader, UsersTable, DeleteUserModal
 │   │   │   └── types/
 │   │   ├── chat/                   # Moduł czatu
-│   │   │   ├── api/                # Klienty HTTP: handler, sessions, rate-limit
-│   │   │   ├── components/         # ChatView, ChatInput, MessageList, MessageBubble, ChatSidebar
+│   │   │   ├── api/                # Klienty HTTP: handler, sessions (walidacja/usunięcie), rate-limit
+│   │   │   ├── components/         # ChatView, ChatInput, MessageList, MessageBubble, ChatSidebar, DeleteSessionModal
 │   │   │   ├── store/              # Stan czatu (external store)
 │   │   │   └── types/
 │   │   ├── notices/                # System ogłoszeń
@@ -121,9 +122,10 @@ mangetsu-tutorials-rag/
 │   │   │   └── store/              # Stan odrzuconych ogłoszeń (localStorage)
 │   │   └── search/                 # Hybrid search (klient/typy)
 │   │       ├── utils/chunker.ts
+│   │       ├── utils/search.ts
 │   │       └── types/searchResult.ts
 │   ├── server/                      # Kod wyłącznie serwerowy
-│   │   ├── ai/                     # Klient OVH AI Endpoints + embedText()
+│   │   ├── ai/                     # streamChatCompletion() (LLM_AI primary + OVH_AI fallback), embedText()
 │   │   ├── db/                     # Singleton Prisma Client
 │   │   ├── prompts/                # System prompt dla LLM
 │   │   ├── auth.ts                 # Konfiguracja NextAuth (Discord provider, Prisma adapter)
@@ -132,8 +134,9 @@ mangetsu-tutorials-rag/
 │   │   ├── guardrails.ts           # Walidacja/ograniczenia treści promptu
 │   │   ├── notices.ts              # Loader docs/notices.json
 │   │   ├── sources.ts              # Webhook — zgłaszanie nowych źródeł
-│   │   └── webhooks.ts             # Webhooki n8n (aktywacja/usunięcie konta)
-│   └── generated/prisma/           # Auto-generowane typy Prisma
+│   │   └── webhooks.ts             # Webhooki n8n (zmiana roli/usunięcie konta)
+│   ├── generated/prisma/           # Auto-generowane typy Prisma
+│   └── proxy.ts                    # Ochrona tras (Next.js 16 proxy convention)
 ├── .env.example
 └── CLAUDE.md
 ```
@@ -159,6 +162,8 @@ pnpm db:seed
 # 6. Uruchom dev server
 pnpm dev
 ```
+
+Testy jednostkowe (Vitest): `pnpm test` (jednorazowo) lub `pnpm test:watch`.
 
 ## Zmienne środowiskowe
 
