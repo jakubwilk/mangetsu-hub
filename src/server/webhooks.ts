@@ -11,6 +11,7 @@ const webhookHeaders = {
 
 interface RoleActivationPayload {
   id: string
+  discordId: string | null
   name: string | null
   email: string | null
   role: string
@@ -28,6 +29,7 @@ export async function notifyRoleActivation(payload: RoleActivationPayload): Prom
 
 interface UserDeletionPayload {
   id: string
+  discordId: string | null
   notify: boolean
   name: string | null
   email: string | null

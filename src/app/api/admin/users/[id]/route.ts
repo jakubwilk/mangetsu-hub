@@ -5,6 +5,10 @@ import { notifyRoleActivation, notifyUserDeletion } from 'server/webhooks'
 
 const ASSIGNABLE_ROLES = ['GUEST', 'USER', 'EDITOR'] as const
 
+const withDiscordAccount = {
+  accounts: { where: { provider: 'discord' }, select: { providerAccountId: true } },
+} as const
+
 export async function PATCH(request: NextRequest, ctx: RouteContext<'/api/admin/users/[id]'>) {
   const originError = verifyOrigin(request)
   if (originError) return originError
@@ -29,7 +33,7 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<'/api/admin/
     return NextResponse.json({ error: 'Nieprawidłowa rola.' }, { status: 400 })
   }
 
-  const target = await db.user.findUnique({ where: { id } })
+  const target = await db.user.findUnique({ where: { id }, include: withDiscordAccount })
   if (!target) {
     return NextResponse.json({ error: 'Nie znaleziono użytkownika.' }, { status: 404 })
   }
@@ -43,9 +47,15 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<'/api/admin/
   })
 
   let webhookOk = true
-  if (target.role === 'GUEST' && role !== 'GUEST') {
+  if (role !== target.role) {
     try {
-      await notifyRoleActivation({ id, name: target.name, email: target.email, role })
+      await notifyRoleActivation({
+        id,
+        discordId: target.accounts[0]?.providerAccountId ?? null,
+        name: target.name,
+        email: target.email,
+        role,
+      })
     } catch {
       webhookOk = false
     }
@@ -72,7 +82,7 @@ export async function DELETE(request: NextRequest, ctx: RouteContext<'/api/admin
 
   const notify = body.notify === true
 
-  const target = await db.user.findUnique({ where: { id } })
+  const target = await db.user.findUnique({ where: { id }, include: withDiscordAccount })
   if (!target) {
     return NextResponse.json({ error: 'Nie znaleziono użytkownika.' }, { status: 404 })
   }
@@ -84,7 +94,13 @@ export async function DELETE(request: NextRequest, ctx: RouteContext<'/api/admin
 
   let webhookOk = true
   try {
-    await notifyUserDeletion({ id, notify, name: target.name, email: target.email })
+    await notifyUserDeletion({
+      id,
+      discordId: target.accounts[0]?.providerAccountId ?? null,
+      notify,
+      name: target.name,
+      email: target.email,
+    })
   } catch {
     webhookOk = false
   }
