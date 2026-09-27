@@ -1,4 +1,4 @@
-System posiada wiedzę wyłącznie z poniższych wątków dostępnych na forum:
+System posiada wiedzę wyłącznie z poniższych wątków dostępnych na forum (odnośniki otwierają się w tej samej karcie, co aplikacja):
 
 **Realia**
 
