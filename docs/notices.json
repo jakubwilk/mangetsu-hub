@@ -2,11 +2,11 @@
   {
     "id": "1d33ccfc-cda7-47a1-a17e-0d4c1fe679c6",
     "type": "warning",
-    "message": "Aplikacja jest w trybie testowym, niektóre funkcje mogą być mocno ograniczone lub niedostępne."
+    "message": "Aplikacja jest w fazie rozwoju i może zawierać błędy. Jeżeli napotkasz problem, prosimy o zgłoszenie go poprzez serwer Discord."
   },
   {
     "id": "6e8a7b3c-ee82-46c6-9b80-df56d37652e1",
     "type": "info",
-    "message": "Gromadzone i przetrzymywane są dane dotyczace użytkowników w postaci adresu IP w celu ochrony przed nadużyciami. Informacje te nie są nigdy udostępniane podmiotom trzecim ani wykorzystwane do celów marketingowych. Jeżeli nie akceptujesz tej polityki, prośba o niekorzystanie z tej aplikacji."
+    "message": "Wykorzystywany jest mechanizm autoryzacji przy użyciu Discord. Zapisywane są jedynie informacje udostepniane przez Discord w celu poprawnego działania aplikacji. Nie są zbierane ani wykorzystywane żadne dodatkowe dane."
   }
 ]

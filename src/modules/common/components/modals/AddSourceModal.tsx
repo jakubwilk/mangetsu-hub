@@ -53,7 +53,7 @@ export default function AddSourceModal({ asMenuItem }: AddSourceModalProps) {
   return (
     <>
       {asMenuItem ? (
-        <Menu.Item leftSection={<IconPlus size={16} />} onClick={open} hiddenFrom="md">
+        <Menu.Item leftSection={<IconPlus size={16} />} onClick={open} hiddenFrom="md" disabled>
           Dodaj źródło
         </Menu.Item>
       ) : (
@@ -64,6 +64,7 @@ export default function AddSourceModal({ asMenuItem }: AddSourceModalProps) {
           leftSection={<IconPlus size={16} />}
           onClick={open}
           visibleFrom="md"
+          disabled
         >
           Dodaj źródło
         </Button>
