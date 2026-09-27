@@ -47,7 +47,7 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<'/api/admin/
   })
 
   let webhookOk = true
-  if (target.role === 'GUEST' && role !== 'GUEST') {
+  if (role !== target.role) {
     try {
       await notifyRoleActivation({
         id,
