@@ -115,11 +115,18 @@ Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjow
 
 ### AI / LLM
 
-- **OVH AI Endpoints** — API kompatybilne z OpenAI; używaj pakietu `openai` npm z własnym `baseURL`
-- Każdy model OVH ma **osobny URL endpointu** — trzymaj go w `OVH_AI_ENDPOINT` w env
+- **Dual-provider LLM** — primary: dowolny endpoint kompatybilny z OpenAI (`LLM_AI_ENDPOINT` /
+  `LLM_AI_API_KEY` / `LLM_AI_MODEL`, obecnie Mistral); automatyczny fallback na **OVH AI
+  Endpoints** (`OVH_AI_ENDPOINT` / `OVH_AI_API_KEY` / `OVH_AI_MODEL`), gdy primary zawiedzie —
+  logika w `src/server/ai/fallback.ts` i `src/server/ai/endpoint.ts`
+- API obu providerów kompatybilne z OpenAI; używaj pakietu `openai` npm z własnym `baseURL`
+- Każdy endpoint ma **osobny URL** — trzymaj go w odpowiedniej zmiennej env, nie hardkoduj
+- Embeddingi nadal wyłącznie przez OVH AI Endpoints (`OVH_AI_EMBEDDING_ENDPOINT`)
 - Token OVH ma TTL — używaj service credentials dla produkcji, nie osobistego tokenu
 - Klient: `new OpenAI({ apiKey, baseURL })` z pakietu `openai`
-- Prompt engineering: system prompt w osobnym pliku `src/lib/prompts.ts`
+- Prompt engineering: system prompt w `src/server/prompts/index.ts`
+- Rate limiting w tabeli `rate_limits` liczony jest per zalogowany użytkownik (`userId`),
+  nie per IP — IP z `X-Forwarded-For` służy wyłącznie do audytu w tabeli `conversations`
 - Chunking: własna implementacja, ~500–800 tokenów, overlap ~100 tokenów
 - Loguj liczbę tokenów (input/output) do tabeli `rate_limits` — OVH liczy per token
 
@@ -128,6 +135,56 @@ Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjow
 - **Coolify + Nixpacks** — deployment na OVH VPS z GitHub repo, bez Dockerfile
 - Baza danych dev i prod: PostgreSQL w Coolify (osobne serwisy)
 - Zmienne środowiskowe: `.env.local` (dev), Coolify panel (prod)
+
+---
+
+## n8n — praca z automatyzacją
+
+n8n u nas to zewnętrzna automatyzacja wywoływana przez webhooki (aktywacja/zmiana roli,
+usuwanie konta, zgłaszanie nowych źródeł — patrz `src/server/webhooks.ts`,
+`src/server/sources.ts`), nie główny przedmiot pracy. Mimo to bywa, że trzeba coś
+zbudować/zmienić bezpośrednio na instancji — wtedy obowiązują poniższe zasady.
+
+- Przy pytaniach o n8n (węzły, wyrażenia, konfiguracja, API) korzystaj z oficjalnej
+  dokumentacji: https://docs.n8n.io/
+- Workflowy buduj i zarządzaj nimi przez serwer MCP `n8n-mcp` (narzędzia `mcp__n8n-mcp__*`,
+  skonfigurowany w `.mcp.json`). Trzymaj się kolejności: SDK reference → best practices →
+  `search_nodes` → `get_node_types` → `explore_node_resources` (dla resource locatorów) →
+  napisanie kodu → walidacja
+- Jeśli czegoś nie da się zrobić przez MCP: `N8N_URL`/`N8N_API_KEY` są już wstrzyknięte w
+  `.claude/settings.local.json`, więc `n8n-cli` jest dostępny bez logowania — ale przed użyciem
+  zweryfikuj składnię w oficjalnej dokumentacji lub `--help`, nie zgaduj flag
+
+### Testowanie workflowów
+
+Każdy tworzony lub edytowany workflow musi zostać przetestowany, a plan zmiany opisuje jak.
+
+Domyślnie: izolowane runy (bez dotykania produkcji):
+1. `validate_workflow` — walidacja kodu SDK przed zapisem
+2. `prepare_workflow_pin_data` — schematy dla triggerów, węzłów z credentialami i węzłów HTTP;
+   na ich podstawie przygotuj fikcyjne przykładowe dane
+3. `test_workflow` z **pełnym** pin data — wszystkie wymagane węzły spięte
+4. Przejrzyj wynik (`get_workflow_execution`) — sprawdź też ścieżki błędów i przypadki brzegowe,
+   nie tylko happy path
+
+Węzły bez credentiali wykonujące I/O (Execute Command, odczyt/zapis plików) nie są pinowane
+i wykonają się naprawdę — jeśli workflow je zawiera, zapytaj o zgodę przed testem.
+
+Test na realnych danych (każdy run bez pełnego pin data: `execute_workflow`, `test_workflow`
+z niepełnym pin data, uruchomienie przez `n8n-cli`) — wyłącznie po wyraźnej zgodzie użytkownika
+na ten konkretny run, także przy włączonym auto-mode. Przed pytaniem opisz, jakie systemy
+i dane zostaną dotknięte.
+
+### Sekrety
+
+`.mcp.json` (nagłówek `Authorization`) i `.claude/settings.local.json` (`N8N_API_KEY`)
+zawierają aktywne dane uwierzytelniające zapisane otwartym tekstem — nie wyświetlaj ich,
+nie kopiuj do innych plików i nie umieszczaj w JSON-ie workflowów ani w odpowiedziach.
+
+### Ostrożność
+
+Instancja jest żywa i współdzielona. Przed aktywacją, dezaktywacją, usunięciem lub
+archiwizacją workflowu albo zmianą credentiali potwierdź to z użytkownikiem.
 
 ---
 
@@ -153,7 +210,9 @@ Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjow
 
 - Nie dodawaj nowych zależności bez uzgodnienia z użytkownikiem
 - Nie instaluj bibliotek które rozwiązują jeden mały problem (preferuj własną implementację dla prostych rzeczy)
-- Nie używaj Server Actions do mutacji danych — używaj Route Handlers (API Routes) dla jasności
+- Nie używaj Server Actions do mutacji danych — używaj Route Handlers (API Routes) dla jasności.
+  Wyjątek: logowanie/wylogowanie przez NextAuth (`signIn()`/`signOut()`) musi iść przez Server
+  Action, bo tego wymaga biblioteka — patrz `src/modules/auth/api/signInWithDiscord.ts`
 
 ### Deployment
 
@@ -215,7 +274,11 @@ widać całość na raz. Commit zrobiony automatycznie ten moment przeskakuje.
 - Forum: Mangetsu (forum RP)
 - Pliki poradników: katalog `content/` w repozytorium (`.md` lub `.txt`)
 - Pliki NIE są w `public/` — są czytane serwerowo przez API Routes
-- Brak autentykacji — aplikacja dostępna publicznie przez URL
+- Logowanie wyłącznie przez Discord OAuth (NextAuth v5) — brak logowania hasłem. Role:
+  `GUEST → USER → EDITOR → ROOT`. Nowe konto dostaje rolę `GUEST` i trafia na `/pending`
+  do czasu aktywacji przez `ROOT`. Panel `/admin` służy do zarządzania rolami i usuwania
+  kont, ze zmianami zgłaszanymi przez webhooki n8n. Trasy chronione przez `src/proxy.ts`
+  (`export { auth as proxy } from 'server/auth'`)
 - Skala: max ~15 użytkowników, ruch minimalny
 - Język interfejsu: polski
 - Język kodu / komentarzy: angielski
@@ -230,14 +293,18 @@ Kod aplikacji podzielony na moduły według domeny w `src/modules/`:
 | `chat`    | ChatView, ChatInput, MessageList, MessageBubble, store (stan sesji), api (handler, sessions, rate-limit)      |
 | `notices` | NoticesPopover, loader `docs/notices.json`, store (dismissed w localStorage)                                  |
 | `search`  | chunker.ts, search.ts (FTS + hybrid RRF)                                                                      |
+| `auth`    | Logowanie i role — DiscordSignInButton, SignOutButton, UserMenu, AuthErrorNotice, typy `UserRole`/`ROLE_LABELS` |
+| `admin`   | Panel administracyjny — AdminHeader, UsersTable, DeleteUserModal, api zmiany roli / usuwania konta            |
 
 Warstwa serwerowa (`src/server/`) — bez importów po stronie klienta:
 
-| Katalog          | Zawartość                                    |
-| ---------------- | -------------------------------------------- |
-| `server/db`      | Singleton Prisma Client                      |
-| `server/ai`      | Klient OVH AI Endpoints, funkcja embedText() |
-| `server/prompts` | System prompt dla LLM                        |
+| Katalog               | Zawartość                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------------- |
+| `server/db`            | Singleton Prisma Client                                                           |
+| `server/ai`            | Klient LLM (primary + automatyczny fallback OVH), funkcja embedText()             |
+| `server/prompts`       | System prompt dla LLM                                                             |
+| `server/auth.ts`       | Konfiguracja NextAuth (Discord provider, Prisma adapter)                          |
+| `server/authorize.ts`  | `requireRole()`, `verifyOrigin()` (ochrona CSRF przez porównanie `Origin`/`Host`)  |
 
 Historyczny harmonogram implementacji: **`PLAN.md`** w root projektu (fazy 1–11 ukończone).
 
