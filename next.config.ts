@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  // The login page moved to `/` when the app became a hub — keep old bookmarks working.
+  async redirects() {
+    return [{ source: '/login', destination: '/', permanent: true }]
+  },
 }
 
 export default nextConfig

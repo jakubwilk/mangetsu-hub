@@ -1,221 +1,150 @@
-# Mangetsu Tutorials RAG
+# Mangetsu Hub
 
 ![Mangetsu RAG](https://jakubwilk.pl/images/mangetsu-rag.png)
 
-Prywatna aplikacja webowa do przeszukiwania poradników z forum Mangetsu przy użyciu LLM. Użytkownik zadaje pytania w języku naturalnym, aplikacja wyszukuje odpowiednie fragmenty poradników (hybrid search: full-text + embeddingi) i zwraca odpowiedź wygenerowaną przez model językowy.
+Prywatny hub aplikacji („mini-apek”) dla forum RPG Mangetsu, dostępny pod
+`mangetsu.thalverntable.app`. Jedno logowanie przez Discord daje dostęp do wszystkich mini-apek,
+do których użytkownik ma rolę. Każda mini-apka działa pod własnym URL-em. Pierwszą jest
+**Poradniki** (`/tutorials`): czat RAG odpowiadający na pytania o zasady forum na podstawie
+poradników (hybrid search: full-text + trigram + embeddingi).
 
 ## Funkcjonalności
 
-- Interfejs czatu do zadawania pytań dotyczących poradników
-- Pseudo-RAG: fragmentacja plików tekstowych → hybrid search (FTS + trigram + embeddingi, RRF) → kontekst do LLM
-- Logowanie przez Discord OAuth (NextAuth / Auth.js v5) — brak logowania hasłem
-- System ról: `GUEST` (konto nieaktywowane) → `USER` → `EDITOR` → `ROOT` (administrator)
-- Nowe konta trafiają na stronę `/pending` do czasu aktywacji przez administratora
-- Panel administracyjny `/admin` — zarządzanie rolami i usuwanie kont, z powiadomieniami przez webhooki n8n (zmiana roli / usunięcie)
-- Panel „Dodaj źródło" (rola `EDITOR`/`ROOT`) — zgłaszanie nowych poradników przez webhook automatyzacji
-- Dzienny limit zapytań na użytkownika (rate limiting per-user, nie per-IP)
-- Historia konwersacji zapisywana w PostgreSQL (audit, debugowanie błędów), z możliwością usunięcia sesji z historii
-- Pliki poradników zarządzane bezpośrednio w kodzie źródłowym (katalog `content/`)
+- **Hub:** `/` pokazuje logowanie przez Discord, a po zalogowaniu kafelki mini-apek dostępnych dla użytkownika.
+- **Role per mini-apka:** każda mini-apka definiuje własny zestaw ról (`USER` jest zawsze). `ROOT` jest globalny: ma dostęp do wszystkiego i jako jedyny administruje.
+- **Nowe konta:** konto bez żadnej roli trafia na `/pending` do czasu aktywacji.
+- **Panel `/admin` (tylko ROOT):**
+  - nadawanie i odbieranie ról w każdej mini-apce;
+  - usuwanie kont;
+  - powiadomienia przez webhooki n8n.
+- **Poradniki (`/tutorials`):**
+  - czat RAG ze streamingiem SSE;
+  - historia rozmów (prywatna dla użytkownika);
+  - dzienny limit zapytań;
+  - panel „Dodaj źródło” (rola `EDITOR`, obecnie wyłączony).
+- **Ogłoszenia** (`docs/notices.json`) wspólne dla całego huba.
 
 ## Stack technologiczny
 
-| Warstwa        | Technologia                                                             |
-| -------------- | ----------------------------------------------------------------------- |
-| Frontend       | Next.js 16 (App Router), TypeScript                                     |
-| UI             | Mantine v9, Tailwind CSS                                                |
-| Backend        | Next.js Route Handlers                                                  |
-| Baza danych    | PostgreSQL + `pgvector` (FTS `tsvector`/`tsquery`, trigram, embeddingi) |
-| Auth           | NextAuth (Auth.js) v5 — Discord OAuth, ochrona tras przez `proxy.ts`   |
-| LLM            | primary: dowolny endpoint kompatybilny z OpenAI (`LLM_AI_*`), fallback: OVH AI Endpoints (`OVH_AI_*`) |
-| Embeddingi     | OVH AI Endpoints                                                        |
-| Automatyzacja  | n8n (webhooki: zmiana roli/usunięcie konta, dodawanie źródeł)           |
-| Hosting        | OVH VPS → Coolify + Nixpacks                                            |
+| Warstwa       | Technologia                                                                                           |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
+| Frontend      | Next.js 16 (App Router), TypeScript                                                                   |
+| UI            | shadcn/ui (Radix, styl `radix-nova`), Tailwind CSS v4, lucide-react, sonner                           |
+| Backend       | Next.js Route Handlers                                                                                |
+| Baza danych   | PostgreSQL + `pgvector` + `pg_trgm` (Prisma ORM)                                                      |
+| Auth          | NextAuth (Auth.js) v5 — Discord OAuth, sesje w bazie, ochrona tras przez `src/proxy.ts`               |
+| LLM           | primary: dowolny endpoint kompatybilny z OpenAI (`LLM_AI_*`), fallback: OVH AI Endpoints (`OVH_AI_*`) |
+| Embeddingi    | OVH AI Endpoints                                                                                      |
+| Automatyzacja | n8n (webhooki: zmiana roli, usunięcie konta, dodawanie źródeł)                                        |
+| Hosting       | OVH VPS → Coolify + Nixpacks                                                                          |
 
 ## Architektura
 
+### Mini-apki
+
+Rejestr mini-apek to `src/modules/common/apps/registry.ts`: id, ścieżka, nazwa, opis kafelka,
+ikona i lista ról. Z rejestru korzystają:
+
+- proxy (dostęp do ścieżek);
+- strona startowa (kafelki);
+- panel admina (kolumna ról dla każdej mini-apki);
+- walidacja ról po stronie serwera.
+
+Dodanie mini-apki:
+
+1. Nowy moduł w `src/modules/<id>` oraz trasy `src/app/<id>` i `src/app/api/<id>`.
+2. Wpis w rejestrze `APPS`.
+3. Opcjonalnie hook zmiany roli w `src/server/apps/hooks.ts` (np. webhook n8n).
+4. Dla RAG-a: treść w `content/<id>/<kategoria>/*.md` i `pnpm db:seed`. Wyszukiwanie
+   (`server/rag`), limit zapytań (`server/rateLimit.ts`) i historia rozmów
+   (`server/conversations.ts`) przyjmują id mini-apki jako parametr.
+
+### Autoryzacja i izolacja subdomen
+
+- **Logowanie** wyłącznie przez Discord OAuth.
+- **Role:** `users.isRoot` (globalny ROOT, ustawiany tylko w bazie) oraz `app_roles` (`userId`, `app`, `role`). Rola walidowana jest w kodzie względem rejestru.
+- **Ochrona tras:** `src/proxy.ts` przekierowuje użytkownika bez dostępu. Route Handlery sprawdzają rolę przez `requireAppRole()` lub `requireRoot()`, a mutacje dodatkowo przez `verifyOrigin()`.
+- **Izolacja subdomen:** hub współdzieli domenę `thalverntable.app` z niezależnymi aplikacjami (inne subdomeny, domena główna). Dlatego:
+  - cookies Auth.js są host-only (bez atrybutu `Domain`), więc nie trafiają do innych subdomen;
+  - przy HTTPS mają prefiks `__Host-`, więc przeglądarka odrzuci cookie o tej nazwie ustawione przez sąsiednią subdomenę lub domenę główną;
+  - `verifyOrigin()` porównuje `Origin` z `Host` co do hosta, bo `SameSite=Lax` nie chroni przed żądaniami z sąsiedniej subdomeny (to ta sama „site”).
+
+### Poradniki — RAG
+
 ```
-content/
-  <kategoria>/
-    poradnik-1.md
-    poradnik-2.md
-    ...
+Seeding (pnpm db:seed):
+  content/tutorials/<kategoria>/*.md → chunking → embedding (OVH) → PostgreSQL (tsvector + vector)
 
-Przy seedingu (pnpm db:seed):
-  Odczyt plików → chunking → embedding (OVH) → zapis chunków do PostgreSQL (tsvector + vector)
-
-Na zapytanie użytkownika:
-  Pytanie → hybrid search (FTS AND/OR + trigram + embeddingi, merge przez RRF)
-          → rozszerzenie o sąsiednie chunki tego samego dokumentu
-          → top N chunków jako kontekst → prompt do LLM → odpowiedź (stream SSE)
+Zapytanie:
+  rezerwacja limitu → [guardrail ∥ hybrid search (FTS AND/OR + trigram + embeddingi, RRF)]
+  → rozszerzenie o resztę trafionych dokumentów → prompt do LLM → odpowiedź (stream SSE)
 ```
 
-### Katalog `content/`
-
-Pliki poradników (`.md`), pogrupowane w podkatalogi wg kategorii, trzymane bezpośrednio w repozytorium. **Nie trafiają do `public/`** — są dostępne wyłącznie po stronie serwera przez skrypt seedujący. Dodanie nowego poradnika = dodanie pliku + `pnpm db:seed` (lub zgłoszenie przez panel „Dodaj źródło", który idzie webhookiem do automatyzacji).
-
-### Chunking
-
-Pliki dzielone na fragmenty (~500–800 tokenów z overlapem ~100 tokenów). Każdy chunk trafia do tabeli `chunks` z kolumną `search_vector tsvector` (indeks GIN) oraz `embedding vector(4096)` (`pgvector`).
-
-### Hybrid search
-
-Trzy metody wyszukiwania uruchamiane równolegle i łączone przez **Reciprocal Rank Fusion**:
-
-- **FTS** — `to_tsquery('simple', ...)`, najpierw tryb AND, fallback do OR gdy zbyt mało wyników
-- **Trigram** (`pg_trgm`, `word_similarity`) — łagodzi literówki i odmianę słów
-- **Embeddingi** (`pgvector`, cosine distance) — dominują wagę w RRF (2×), bo dopasowanie słów kluczowych w polskich tekstach RPG jest zawodne; mają timeout 8s z fallbackiem do samego FTS
-
-Wyniki są dodatkowo rozszerzane o sąsiednie chunki tego samego dokumentu, gdy dokument pojawia się w wynikach więcej niż raz (sygnał, że cały dokument jest istotny).
-
-### Autoryzacja i role
-
-Logowanie wyłącznie przez Discord OAuth. Nowe konto dostaje rolę `GUEST` i trafia na `/pending` — czat jest niedostępny do czasu aktywacji przez `ROOT` w panelu `/admin`. Ochrona tras po stronie routingu realizowana jest przez `src/proxy.ts` (konwencja Next.js 16, poprzednio `middleware.ts`). Każda zmiana roli oraz usunięcie konta wysyłają webhook do n8n (powiadomienie, np. na Discordzie). Endpointy API chronione przez `requireRole()` + `verifyOrigin()` (ochrona przed CSRF przez porównanie nagłówków `Origin`/`Host`).
+- **Chunking:** ~650 tokenów z overlapem ~100.
+- **Hybrid search:**
+  - FTS (`simple`, najpierw AND, potem OR);
+  - trigram (`word_similarity`);
+  - embeddingi (cosine, waga 2× w RRF, timeout 8 s z fallbackiem do samego FTS).
+- **Synonimy** specyficzne dla poradników (`server/tutorials/synonyms.ts`) rozszerzają tylko zapytanie FTS.
+- **Limit przed kosztami:** limit dzienny jest rezerwowany przed wywołaniami płatnych usług (guardrail, embeddingi) i zwalniany przy odrzuceniu lub błędzie.
 
 ### Historia czatu
 
-Każda wiadomość zapisywana do PostgreSQL. Tabela `conversations` przechowuje `sessionId` (UUID generowany w `localStorage` przy pierwszej wizycie) oraz IP użytkownika (z nagłówka `X-Forwarded-For`) — wyłącznie do audytu i debugowania błędów. Tabela `messages` przechowuje pojedyncze wiadomości z rolą (`user`/`assistant`) i liczbą tokenów. Dzienny limit zapytań (`rate_limits`) liczony jest per zalogowany użytkownik (`userId`), nie per IP/sesja.
-
-`localStorage` nadal używany do szybkiego wyświetlania historii w UI.
+Każda wymiana zapisywana jest w `conversations` (`userId`, `app`, `sessionId`, IP do audytu)
+oraz `messages`. Rozmowa należy do użytkownika: historia, lista i usuwanie sesji zawsze
+filtrowane są po `userId` i `app`. `localStorage` (`mangetsu:tutorials:*`) służy do szybkiego
+wyświetlania historii, a przy starcie jest synchronizowany z listą sesji z serwera.
 
 ## Struktura projektu
 
 ```
-mangetsu-tutorials-rag/
-├── content/                        # Pliki poradników (markdown, wg kategorii)
-├── docs/                           # Pliki statyczne: notices.json, documents-info.md
-├── prisma/                         # Schema i migracje Prisma ORM
-├── scripts/                        # Skrypty pomocnicze (seed, debug-search)
-├── src/
-│   ├── app/
-│   │   ├── page.tsx                # Główna strona czatu (Server Component)
-│   │   ├── layout.tsx              # Root layout z MantineProvider
-│   │   ├── login/page.tsx          # Logowanie przez Discord
-│   │   ├── pending/page.tsx        # Ekran oczekiwania na aktywację (rola GUEST)
-│   │   ├── admin/page.tsx          # Panel administracyjny (zarządzanie użytkownikami)
-│   │   └── api/
-│   │       ├── auth/[...nextauth]/route.ts   # NextAuth (Discord OAuth)
-│   │       ├── chat/route.ts                 # POST /api/chat — RAG pipeline (SSE stream)
-│   │       ├── sessions/route.ts             # GET walidacja sesji / DELETE usunięcie sesji
-│   │       ├── rate-limit/route.ts           # GET /api/rate-limit — licznik zapytań
-│   │       ├── sources/route.ts              # POST /api/sources — zgłoszenie nowego źródła (webhook)
-│   │       └── admin/users/[id]/route.ts     # PATCH/DELETE — role i usuwanie kont
-│   ├── modules/
-│   │   ├── common/                 # Współdzielone komponenty layoutu i utility
-│   │   │   ├── api/sources.ts      # Klient HTTP — dodawanie źródeł
-│   │   │   ├── components/         # AppLayout, Topbar, MobileNavBar, DocsPanel, Logo, AddSourceModal, MarkdownEditorField
-│   │   │   ├── data/               # loading-messages.json
-│   │   │   └── utils/notifications.ts
-│   │   ├── auth/                   # Logowanie i role
-│   │   │   ├── components/         # DiscordSignInButton, SignOutButton, UserMenu, AuthErrorNotice
-│   │   │   └── types/role.ts       # UserRole, ROLE_LABELS
-│   │   ├── admin/                  # Panel administracyjny
-│   │   │   ├── api/                # updateUserRole, deleteUser
-│   │   │   ├── components/         # AdminHeader, UsersTable, DeleteUserModal
-│   │   │   └── types/
-│   │   ├── chat/                   # Moduł czatu
-│   │   │   ├── api/                # Klienty HTTP: handler, sessions (walidacja/usunięcie), rate-limit
-│   │   │   ├── components/         # ChatView, ChatInput, MessageList, MessageBubble, ChatSidebar, DeleteSessionModal
-│   │   │   ├── store/              # Stan czatu (external store)
-│   │   │   └── types/
-│   │   ├── notices/                # System ogłoszeń
-│   │   │   ├── components/         # NoticesPopover
-│   │   │   └── store/              # Stan odrzuconych ogłoszeń (localStorage)
-│   │   └── search/                 # Hybrid search (klient/typy)
-│   │       ├── utils/chunker.ts
-│   │       ├── utils/search.ts
-│   │       └── types/searchResult.ts
-│   ├── server/                      # Kod wyłącznie serwerowy
-│   │   ├── ai/                     # streamChatCompletion() (LLM_AI primary + OVH_AI fallback), embedText()
-│   │   ├── db/                     # Singleton Prisma Client
-│   │   ├── prompts/                # System prompt dla LLM
-│   │   ├── auth.ts                 # Konfiguracja NextAuth (Discord provider, Prisma adapter)
-│   │   ├── authorize.ts            # requireRole(), verifyOrigin()
-│   │   ├── chat.ts                 # Rate limiting, kontekst promptu, SSE stream
-│   │   ├── guardrails.ts           # Walidacja/ograniczenia treści promptu
-│   │   ├── notices.ts              # Loader docs/notices.json
-│   │   ├── sources.ts              # Webhook — zgłaszanie nowych źródeł
-│   │   └── webhooks.ts             # Webhooki n8n (zmiana roli/usunięcie konta)
-│   ├── generated/prisma/           # Auto-generowane typy Prisma
-│   └── proxy.ts                    # Ochrona tras (Next.js 16 proxy convention)
-├── .env.example
-└── CLAUDE.md
+├── content/tutorials/              # Poradniki (markdown, wg kategorii)
+├── docs/                           # notices.json (globalne), tutorials/documents-info.md
+├── prisma/                         # Schema i migracje
+├── scripts/                        # seed.ts (+ parser ścieżek treści)
+└── src/
+    ├── app/
+    │   ├── page.tsx                # Logowanie albo kafelki mini-apek
+    │   ├── pending/  admin/  tutorials/
+    │   ├── _components/HubHeader/  # Nagłówek huba (kompozycja modułów)
+    │   └── api/
+    │       ├── admin/users/[id]/                # DELETE konta
+    │       ├── admin/users/[id]/apps/[app]/     # PUT roli w mini-apce
+    │       └── tutorials/{chat,sessions,rate-limit,sources}/
+    ├── modules/                    # common, hub, auth, admin, notices, tutorials
+    ├── server/
+    │   ├── ai/  db/  rag/  apps/  tutorials/
+    │   ├── auth.ts  authorize.ts  rateLimit.ts  conversations.ts  users.ts
+    │   └── webhooks.ts  guardrails.ts  notices.ts
+    └── proxy.ts
 ```
 
 ## Uruchomienie lokalne
 
 ```bash
-# 1. Skopiuj zmienne środowiskowe
-cp .env.example .env.local
-
-# 2. Uruchom PostgreSQL (z pgvector)
-docker compose up -d postgres
-
-# 3. Zainstaluj zależności
-pnpm install
-
-# 4. Zastosuj migracje Prisma
-pnpm db:migrate
-
-# 5. Zaindeksuj poradniki (chunking + embeddingi)
-pnpm db:seed
-
-# 6. Uruchom dev server
-pnpm dev
+cp .env.example .env.local         # 1. Zmienne środowiskowe
+docker compose up -d postgres      # 2. PostgreSQL z pgvector
+pnpm install                       # 3. Zależności
+pnpm db:migrate                    # 4. Migracje Prisma
+pnpm db:seed                       # 5. Indeksowanie treści (chunking + embeddingi)
+pnpm dev                           # 6. Dev server
 ```
 
-Testy jednostkowe (Vitest): `pnpm test` (jednorazowo) lub `pnpm test:watch`.
+Testy (Vitest): `pnpm test` lub `pnpm test:watch`.
 
 ## Zmienne środowiskowe
 
-Pełna, aktualna lista placeholderów znajduje się w `.env.example`. Skrót:
-
-```env
-# PostgreSQL
-DATABASE_URL=postgresql://user:password@localhost:5432/mangetsu_rag
-
-# LLM AI Endpoints — komunikacja z użytkownikiem (primary)
-LLM_AI_ENDPOINT=https://...
-LLM_AI_API_KEY=...
-LLM_AI_MODEL=...
-
-# OVH AI Endpoints — LLM (fallback)
-OVH_AI_ENDPOINT=https://...
-OVH_AI_API_KEY=...
-OVH_AI_MODEL=...
-
-# OVH AI Endpoints — embeddingi (osobny endpoint)
-OVH_AI_EMBEDDING_ENDPOINT=https://...
-OVH_AI_EMBEDDING_MODEL=...
-
-# Rate limiting
-DAILY_REQUEST_LIMIT=20
-
-# Auth (Discord OAuth) — AUTH_SECRET wygeneruj: npx auth secret
-AUTH_SECRET=
-AUTH_DISCORD_ID=
-AUTH_DISCORD_SECRET=
-AUTH_TRUST_HOST=true
-
-# n8n — panel administracyjny (aktywacja/usunięcie konta)
-N8N_WEBHOOK_BASE_URL=
-N8N_WEBHOOK_SECRET=
-N8N_ROLE_ACTIVATION_WEBHOOK_PATH=
-N8N_USER_DELETION_WEBHOOK_PATH=
-
-# Webhook automatyzacji — panel "Dodaj źródło"
-SOURCES_WEBHOOK_URL=
-
-# Link do forum (widoczny w UI)
-NEXT_PUBLIC_FORUM_URL=
-```
+Pełna lista placeholderów jest w `.env.example`. Ważne dla izolacji sesji: na produkcji
+`AUTH_URL` musi być pełnym adresem `https://mangetsu.thalverntable.app`, bo od niego zależą
+prefiksy `__Host-` cookies.
 
 ## Deployment (Coolify)
 
-1. Połącz repozytorium z Coolify
-2. Ustaw zmienne środowiskowe w panelu Coolify
-3. Coolify buduje projekt przez **Nixpacks** (bez Dockerfile) i uruchamia `pnpm build` / `pnpm start`
-4. Postgres z `pgvector` jako oddzielna usługa w Coolify
+1. Połącz repozytorium z Coolify i ustaw zmienne środowiskowe w panelu.
+2. Coolify buduje projekt przez **Nixpacks** (bez Dockerfile): `pnpm build` / `pnpm start`.
+3. Postgres z `pgvector` działa jako oddzielna usługa w Coolify; migracje: `pnpm db:migrate:deploy`.
 
 ## Skalowalność
 
-Aplikacja projektowana na **maksymalnie kilkanaście użytkowników**. Nie wymaga cache'owania, kolejkowania ani złożonej infrastruktury.
+Aplikacja projektowana na **maksymalnie kilkanaście użytkowników**. Nie wymaga cache'owania,
+kolejkowania ani złożonej infrastruktury.
