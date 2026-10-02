@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireRole, verifyOrigin } from 'server/authorize'
-import { type SourceMethod, submitSourceToWebhook } from 'server/sources'
+import { readJsonBody, verifyOrigin } from 'server/authorize'
+import { requireTutorialsEditor, submitSourceToWebhook } from 'server/tutorials'
 
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
   const originError = verifyOrigin(request)
   if (originError) return originError
 
-  const authResult = await requireRole(['EDITOR', 'ROOT'])
+  const authResult = await requireTutorialsEditor()
   if (authResult instanceof NextResponse) return authResult
 
-  let body: Record<string, unknown>
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ error: 'Nieprawidłowy format żądania.' }, { status: 400 })
-  }
+  const body = await readJsonBody(request)
+  if (body instanceof NextResponse) return body
 
   const { method, data } = body
 
@@ -26,7 +22,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const message = await submitSourceToWebhook(method as SourceMethod, data.trim())
+    const message = await submitSourceToWebhook(method, data.trim())
     return NextResponse.json({ message })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Nie udało się dodać źródła.'
