@@ -1,10 +1,11 @@
-import type { UserRole } from 'auth'
+import type { AppRoles } from 'common/apps'
 
 export interface AdminUser {
   id: string
   name: string | null
   email: string | null
   image: string | null
-  role: UserRole
+  isRoot: boolean
+  apps: AppRoles
   createdAt: string
 }
