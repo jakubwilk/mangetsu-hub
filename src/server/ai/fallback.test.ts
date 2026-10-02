@@ -13,7 +13,11 @@ const asyncIterable = (chunks: ChatCompletionChunk[]) => ({
 })
 
 const provider = (name: string, create: ReturnType<typeof vi.fn>): ChatProvider =>
-  ({ client: { chat: { completions: { create } } }, model: 'test-model', name }) as unknown as ChatProvider
+  ({
+    client: { chat: { completions: { create } } },
+    model: 'test-model',
+    name,
+  }) as unknown as ChatProvider
 
 const drain = async (gen: AsyncGenerator<ChatCompletionChunk>) => {
   const out: ChatCompletionChunk[] = []
@@ -27,7 +31,11 @@ describe('streamWithFallback', () => {
     const secondaryCreate = vi.fn()
 
     const result = await drain(
-      streamWithFallback(provider('LLM_AI', primaryCreate), provider('OVH_AI', secondaryCreate), []),
+      streamWithFallback(
+        provider('LLM_AI', primaryCreate),
+        provider('OVH_AI', secondaryCreate),
+        [],
+      ),
     )
 
     expect(result).toHaveLength(1)
@@ -40,7 +48,11 @@ describe('streamWithFallback', () => {
     const secondaryCreate = vi.fn().mockResolvedValue(asyncIterable([chunk('fallback')]))
 
     const result = await drain(
-      streamWithFallback(provider('LLM_AI', primaryCreate), provider('OVH_AI', secondaryCreate), []),
+      streamWithFallback(
+        provider('LLM_AI', primaryCreate),
+        provider('OVH_AI', secondaryCreate),
+        [],
+      ),
     )
 
     expect(result).toHaveLength(1)
@@ -57,7 +69,13 @@ describe('streamWithFallback', () => {
     const primaryCreate = vi.fn().mockRejectedValue(connectionError)
     const secondaryCreate = vi.fn().mockResolvedValue(asyncIterable([chunk('fallback')]))
 
-    await drain(streamWithFallback(provider('LLM_AI', primaryCreate), provider('OVH_AI', secondaryCreate), []))
+    await drain(
+      streamWithFallback(
+        provider('LLM_AI', primaryCreate),
+        provider('OVH_AI', secondaryCreate),
+        [],
+      ),
+    )
 
     const logged = errorSpy.mock.calls[0]?.[0] as string
     expect(logged).toContain('Connection error.')
@@ -77,7 +95,13 @@ describe('streamWithFallback', () => {
     const secondaryCreate = vi.fn()
 
     await expect(
-      drain(streamWithFallback(provider('LLM_AI', primaryCreate), provider('OVH_AI', secondaryCreate), [])),
+      drain(
+        streamWithFallback(
+          provider('LLM_AI', primaryCreate),
+          provider('OVH_AI', secondaryCreate),
+          [],
+        ),
+      ),
     ).rejects.toThrow('dropped')
 
     expect(secondaryCreate).not.toHaveBeenCalled()
@@ -89,7 +113,9 @@ describe('streamWithFallback', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const secondaryCreate = vi.fn().mockResolvedValue(asyncIterable([chunk('only')]))
 
-    const result = await drain(streamWithFallback(undefined, provider('OVH_AI', secondaryCreate), []))
+    const result = await drain(
+      streamWithFallback(undefined, provider('OVH_AI', secondaryCreate), []),
+    )
 
     expect(result).toHaveLength(1)
     expect(secondaryCreate).toHaveBeenCalledOnce()
