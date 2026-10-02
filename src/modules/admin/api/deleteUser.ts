@@ -1,15 +1,8 @@
-export async function deleteUser(userId: string, notify: boolean): Promise<{ webhookOk: boolean }> {
-  const res = await fetch(`/api/admin/users/${userId}`, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ notify }),
-  })
+import { requestJson } from 'common/api'
 
-  const json = (await res.json().catch(() => ({}))) as { error?: string; webhookOk?: boolean }
-
-  if (!res.ok) {
-    throw new Error(json.error ?? 'Nie udało się usunąć użytkownika.')
-  }
-
-  return { webhookOk: json.webhookOk ?? true }
-}
+export const deleteUser = (userId: string, notify: boolean) =>
+  requestJson<{ webhookOk: boolean }>(
+    `/api/admin/users/${userId}`,
+    { method: 'DELETE', body: { notify } },
+    'Nie udało się usunąć użytkownika.',
+  )

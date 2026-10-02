@@ -4,7 +4,7 @@ let snapshot: string[] = []
 const listeners = new Set<() => void>()
 const emptySnapshot: string[] = []
 
-function notify() {
+const notify = () => {
   listeners.forEach((l) => l())
 }
 

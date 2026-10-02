@@ -355,6 +355,27 @@ model Chunk {
 
 ---
 
+## Znane ograniczenia platformy
+
+**Discord OAuth nie otwiera natywnej appki przy logowaniu (desktop i mobile).** Discord
+celowo blokuje deep-linking do natywnej aplikacji dla standardowego logowania
+(`identify`/`email` scope, używanego przez `next-auth/providers/discord`) — mechanizm ten
+działa wyłącznie dla flow bez callbacku do zewnętrznej strony, np. zaproszenia bota na
+serwer (`bot`/`applications.commands` scope), które kończy się całkowicie wewnątrz Discorda.
+Standardowe logowanie wymaga, żeby Discord odesłał użytkownika z powrotem do konkretnej
+karty przeglądarki trzymającej stan sesji (cookies, CSRF token) — deep-linking uniemożliwiłby
+to odesłanie i zerwałby flow. Potwierdzone przez staff Discorda:
+[discord-api-docs#7259](https://github.com/discord/discord-api-docs/discussions/7259),
+[discord-api-docs#1296](https://github.com/discord/discord-api-docs/issues/1296).
+
+Nie ma możliwej zmiany kodu, konfiguracji NextAuth ani ustawień w Discord Developer Portal,
+która by to naprawiła. Workaround w `DiscordSignInButton.tsx` (`<form>` + Server Action
+zamiast klienckiego `signIn()`, zachowujący synchroniczny user-gesture) zostaje — ma sens
+jako próba dla mobilnych Universal Links/App Links, ale nie gwarantuje deep-linkingu i nie
+dotyczy tego ograniczenia.
+
+---
+
 ## Kolejność implementacji (rekomendowana)
 
 ```

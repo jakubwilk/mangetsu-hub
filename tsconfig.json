@@ -23,16 +23,15 @@
       "admin/*": ["./src/modules/admin/*"],
       "auth": ["./src/modules/auth/index"],
       "auth/*": ["./src/modules/auth/*"],
-      "chat": ["./src/modules/chat/index"],
-      "chat/*": ["./src/modules/chat/*"],
-      "notices": ["./src/modules/notices/index"],
-      "notices/*": ["./src/modules/notices/*"],
-      "search": ["./src/modules/search/index"],
-      "search/*": ["./src/modules/search/*"],
       "common": ["./src/modules/common/index"],
       "common/*": ["./src/modules/common/*"],
-      "server/*": ["./src/server/*"],
-      "data/*": ["./src/modules/common/data/*"]
+      "hub": ["./src/modules/hub/index"],
+      "hub/*": ["./src/modules/hub/*"],
+      "notices": ["./src/modules/notices/index"],
+      "notices/*": ["./src/modules/notices/*"],
+      "tutorials": ["./src/modules/tutorials/index"],
+      "tutorials/*": ["./src/modules/tutorials/*"],
+      "server/*": ["./src/server/*"]
     }
   },
   "include": [

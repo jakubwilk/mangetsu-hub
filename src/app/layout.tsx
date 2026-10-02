@@ -1,10 +1,6 @@
 import './globals.css'
-import '@mantine/core/styles.css'
-import '@mantine/notifications/styles.css'
 
-import type { MantineColorsTuple } from '@mantine/core'
-import { ColorSchemeScript, createTheme, mantineHtmlProps, MantineProvider } from '@mantine/core'
-import { Notifications } from '@mantine/notifications'
+import { Toaster, TooltipProvider } from 'common/components/ui'
 import type { Metadata } from 'next'
 import { Geist_Mono, Inter, Plus_Jakarta_Sans } from 'next/font/google'
 
@@ -28,80 +24,23 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Mangetsu — Asystent poradnikowy',
-  description: 'Asystent AI dla forum Mangetsu oparty na bazie poradników RP',
+  title: 'Mangetsu Hub',
+  description: 'Aplikacje dla forum RPG Mangetsu',
   robots: { index: false, follow: false },
 }
 
-const mangetsu: MantineColorsTuple = [
-  '#e3f7fb',
-  '#b9eaf5',
-  '#87d8ec',
-  '#51c4e1',
-  '#28afd4',
-  '#1a9ab9',
-  '#10718f',
-  '#0d5a72',
-  '#094457',
-  '#062e3c',
-]
+// Dark-only: the `dark` class is fixed, there is no theme switcher.
+const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => (
+  <html
+    lang="pl"
+    data-scroll-behavior="smooth"
+    className={`${plusJakartaSans.variable} ${inter.variable} ${geistMono.variable} dark h-full antialiased`}
+  >
+    <body className="h-full overflow-hidden">
+      <TooltipProvider>{children}</TooltipProvider>
+      <Toaster position="top-center" visibleToasts={3} duration={10000} closeButton />
+    </body>
+  </html>
+)
 
-const discord: MantineColorsTuple = [
-  '#e7e9fd',
-  '#cbcffb',
-  '#aab0f8',
-  '#8690f6',
-  '#717cf4',
-  '#5865f2',
-  '#3d4cf0',
-  '#1729ed',
-  '#0f1fc7',
-  '#0b168e',
-]
-
-const theme = createTheme({
-  fontFamily: 'var(--font-body), system-ui, sans-serif',
-  fontFamilyMonospace: 'var(--font-geist-mono), monospace',
-  colors: { mangetsu, discord },
-  primaryColor: 'mangetsu',
-  primaryShade: { light: 6, dark: 5 },
-  defaultRadius: 'md',
-  headings: {
-    fontFamily: 'var(--font-heading), system-ui, sans-serif',
-    fontWeight: '800',
-    sizes: {
-      h1: { fontSize: '3.5rem', lineHeight: '1.1' },
-      h2: { fontSize: '2.25rem', lineHeight: '1.2' },
-      h3: { fontSize: '1.5rem', lineHeight: '1.3' },
-      h4: { fontSize: '1.125rem', lineHeight: '1.4' },
-    },
-  },
-})
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
-  return (
-    <html
-      lang="pl"
-      data-scroll-behavior="smooth"
-      {...mantineHtmlProps}
-      className={`${plusJakartaSans.variable} ${inter.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <ColorSchemeScript defaultColorScheme="dark" />
-      </head>
-
-      <body className="h-full overflow-hidden">
-        <MantineProvider theme={theme} forceColorScheme="dark">
-          <Notifications position="top-center" limit={3} autoClose={10000} />
-          {children}
-        </MantineProvider>
-      </body>
-    </html>
-  )
-}
+export default RootLayout

@@ -1,4 +1,4 @@
-export { default as AuthErrorNotice } from './AuthErrorNotice'
-export { default as DiscordSignInButton } from './DiscordSignInButton'
-export { default as SignOutButton } from './SignOutButton'
-export { default as UserMenu } from './UserMenu'
+export { AuthErrorNotice } from './AuthErrorNotice'
+export { DiscordSignInButton } from './DiscordSignInButton'
+export { SignOutButton } from './SignOutButton'
+export { UserMenu } from './UserMenu'

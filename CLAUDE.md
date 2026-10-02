@@ -4,7 +4,7 @@
 
 Pracujesz jako **Senior Full-Stack Developer** z pełnym zakresem odpowiedzialności:
 
-- **Senior Front-End Developer** — Next.js 16 (App Router), TypeScript, Mantine v9, Tailwind CSS
+- **Senior Front-End Developer** — Next.js 16 (App Router), TypeScript, shadcn/ui (Radix), Tailwind CSS v4
 - **Senior Back-End Developer** — API Routes, PostgreSQL, pełna warstwa serwerowa
 - **Senior DevOps** — Docker, Coolify, zmienne środowiskowe, deployment na OVH VPS
 - **Senior AI Automation** — integracja z OVH AI Endpoints, RAG pipeline, chunking, full-text search
@@ -64,13 +64,17 @@ Po zakończeniu implementacji:
 - **Next.js 16** z App Router — używaj Server Components gdzie możliwe
   - Dokumentacja dla LLM: https://nextjs.org/docs/llms.txt
 - **TypeScript** — strict mode, zero `any`
-- **Mantine v9** — główna biblioteka komponentów UI
-  - Dokumentacja dla LLM: https://mantine.dev/llms.txt
-  - Używaj gotowych komponentów Mantine zanim sięgniesz po własne
-  - Import z konkretnych pakietów: `@mantine/core`, `@mantine/hooks`, `@mantine/notifications`
-- **Tailwind CSS** — wyłącznie do klas CSS (spacing, layout, custom utilities)
-  - Nie duplikuj styli które Mantine już obsługuje (kolory, cienie, radiusy)
-  - Tailwind służy jako uzupełnienie, nie zamiennik Mantine
+- **shadcn/ui** — biblioteka komponentów (styl `radix-nova`, prymitywy Radix, `components.json` w root)
+  - Dokumentacja: https://ui.shadcn.com/docs
+  - Komponenty dodawaj przez CLI: `pnpm dlx shadcn@latest add <nazwa>` — trafiają do
+    `src/modules/common/components/ui/` (aliasy w `components.json` wskazują na `common/...`);
+    po dodaniu dopisz eksport do barrela `common/components/ui/index.ts` i odpal `prettier`
+  - Pliki w `ui/` są generowane — nie przerabiaj ich na siłę pod konwencje projektu (patrz kanon)
+  - Klasy łączymy przez `cn` z pakietu `cn` (wymagany przez styl shadcn)
+  - Ikony: `lucide-react`; toasty: `sonner` przez `notifyError/notifyInfo/notifyWarning` z `common/utils`
+- **Tailwind CSS v4** — jedyny sposób stylowania; motyw (zmienne shadcn, paleta `mangetsu-0…9`,
+  `discord`, `panel`) zdefiniowany w `src/app/globals.css`; treść markdown przez `prose prose-invert`
+  (`@tailwindcss/typography`)
 
 ### Struktura komponentów React
 
@@ -102,13 +106,15 @@ Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjow
 - **PostgreSQL** — przez **Prisma ORM**
   - Schema: `prisma/schema.prisma`
   - Migracje: `prisma migrate dev` (dev), `prisma migrate deploy` (prod)
-  - Klient: singleton w `src/lib/db.ts` (ważne w Next.js — jeden instancja globalnie)
+  - Klient: singleton w `src/server/db` (ważne w Next.js — jedna instancja globalnie)
   - Kolumna `search_vector` (tsvector) jako `Unsupported("tsvector")` — zapytania FTS przez `prisma.$queryRaw`
 - `postinstall` script w `package.json`: `prisma generate` — wymagane dla Coolify/Nixpacks
 
 ### Historia konwersacji
 
-- Każda wiadomość zapisywana do bazy: tabela `conversations` (session_id, ip) + tabela `messages` (role, content, tokens_used)
+- Każda wiadomość zapisywana do bazy: tabela `conversations` (userId, app, sessionId, ip) + tabela `messages` (role, content, tokensUsed)
+- Rozmowa należy do użytkownika — każde zapytanie (historia, lista, usuwanie) filtruj po `userId` + `app`
+  (`src/server/conversations.ts`); sam `sessionId` z klienta nigdy nie daje dostępu
 - `session_id` — UUID generowany po stronie klienta, przechowywany w `localStorage`, wysyłany z każdym requestem
 - IP z nagłówka `X-Forwarded-For` (ustawianego przez Coolify/Nginx): `headers().get('x-forwarded-for')?.split(',')[0]`
 - `localStorage` nadal używany do wyświetlania historii w UI (szybki odczyt bez zapytania do DB)
@@ -124,9 +130,10 @@ Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjow
 - Embeddingi nadal wyłącznie przez OVH AI Endpoints (`OVH_AI_EMBEDDING_ENDPOINT`)
 - Token OVH ma TTL — używaj service credentials dla produkcji, nie osobistego tokenu
 - Klient: `new OpenAI({ apiKey, baseURL })` z pakietu `openai`
-- Prompt engineering: system prompt w `src/server/prompts/index.ts`
-- Rate limiting w tabeli `rate_limits` liczony jest per zalogowany użytkownik (`userId`),
-  nie per IP — IP z `X-Forwarded-For` służy wyłącznie do audytu w tabeli `conversations`
+- Prompt engineering: system prompt Poradników w `src/server/tutorials/prompts.ts`
+- Rate limiting w tabeli `rate_limits` liczony jest per zalogowany użytkownik i mini-apka
+  (`userId` + `app`, `src/server/rateLimit.ts`), nie per IP — IP z `X-Forwarded-For` służy wyłącznie
+  do audytu w tabeli `conversations`. Rezerwuj limit **przed** płatnymi wywołaniami (LLM, embeddingi)
 - Chunking: własna implementacja, ~500–800 tokenów, overlap ~100 tokenów
 - Loguj liczbę tokenów (input/output) do tabeli `rate_limits` — OVH liczy per token
 
@@ -160,6 +167,7 @@ zbudować/zmienić bezpośrednio na instancji — wtedy obowiązują poniższe z
 Każdy tworzony lub edytowany workflow musi zostać przetestowany, a plan zmiany opisuje jak.
 
 Domyślnie: izolowane runy (bez dotykania produkcji):
+
 1. `validate_workflow` — walidacja kodu SDK przed zapisem
 2. `prepare_workflow_pin_data` — schematy dla triggerów, węzłów z credentialami i węzłów HTTP;
    na ich podstawie przygotuj fikcyjne przykładowe dane
@@ -202,9 +210,9 @@ archiwizacją workflowu albo zmianą credentiali potwierdź to z użytkownikiem.
 
 ### UI
 
-- Nie implementuj własnych komponentów gdy Mantine ma gotowy odpowiednik
-- Nie mieszaj stylów: albo Mantine props, albo Tailwind — nie inline styles
-- Nie twórz oddzielnych plików CSS/SCSS — Tailwind + Mantine wystarczą
+- Nie implementuj własnych komponentów gdy shadcn/ui ma gotowy odpowiednik — dodaj go przez CLI
+- Nie używaj inline styles (`style={{}}`) — wyłącznie klasy Tailwind
+- Nie twórz oddzielnych plików CSS/SCSS — Tailwind + `globals.css` wystarczą
 
 ### Architektura
 
@@ -272,13 +280,22 @@ widać całość na raz. Commit zrobiony automatycznie ten moment przeskakuje.
 ## Kontekst projektu
 
 - Forum: Mangetsu (forum RP)
-- Pliki poradników: katalog `content/` w repozytorium (`.md` lub `.txt`)
+- Treść RAG: `content/<app>/<kategoria>/*.md`, dokumenty pomocnicze: `docs/<app>/`
 - Pliki NIE są w `public/` — są czytane serwerowo przez API Routes
-- Logowanie wyłącznie przez Discord OAuth (NextAuth v5) — brak logowania hasłem. Role:
-  `GUEST → USER → EDITOR → ROOT`. Nowe konto dostaje rolę `GUEST` i trafia na `/pending`
-  do czasu aktywacji przez `ROOT`. Panel `/admin` służy do zarządzania rolami i usuwania
-  kont, ze zmianami zgłaszanymi przez webhooki n8n. Trasy chronione przez `src/proxy.ts`
-  (`export { auth as proxy } from 'server/auth'`)
+- **Hub mini-apek** pod `mangetsu.thalverntable.app`: `/` = logowanie albo kafelki, każda
+  mini-apka pod własną ścieżką (`/tutorials`, …). Rejestr: `src/modules/common/apps/registry.ts`
+  (id, ścieżka, kafelek, role) — z niego korzystają proxy, kafelki, admin i walidacja ról
+- Logowanie wyłącznie przez Discord OAuth (NextAuth v5, sesje w bazie) — brak logowania hasłem
+- **Role per mini-apka**: tabela `app_roles` (userId, app, role); każda mini-apka ma własny zestaw
+  ról z `USER` zawsze w zestawie. **ROOT jest globalny** (`users.isRoot`, nadawany tylko w bazie):
+  dostęp do wszystkiego, jedyny w `/admin`. Konto bez ról trafia na `/pending`
+- W Route Handlerach: `requireAppRole(app, roles)` / `requireRoot()` + `verifyOrigin()` na każdej
+  mutacji (`src/server/authorize.ts`). Trasy stron chronione przez `src/proxy.ts`
+- **Izolacja subdomen**: inne subdomeny i domena główna `thalverntable.app` to obce aplikacje.
+  Cookies Auth.js są host-only, a przy HTTPS mają prefiks `__Host-` (`src/server/auth.ts`) — nie
+  ustawiaj `Domain` w cookies i nie luzuj `verifyOrigin` (porównuje host co do znaku)
+- Hooki mini-apek (np. webhook n8n przy zmianie roli): `src/server/apps/hooks.ts`; webhook usunięcia
+  konta jest globalny dla huba
 - Skala: max ~15 użytkowników, ruch minimalny
 - Język interfejsu: polski
 - Język kodu / komentarzy: angielski
@@ -287,24 +304,31 @@ widać całość na raz. Commit zrobiony automatycznie ten moment przeskakuje.
 
 Kod aplikacji podzielony na moduły według domeny w `src/modules/`:
 
-| Moduł     | Zawartość                                                                                                     |
-| --------- | ------------------------------------------------------------------------------------------------------------- |
-| `common`  | Komponenty layoutu (AppLayout, Topbar, ChatSidebar, DocsPanel), utility (notifications), api (webhook źródeł) |
-| `chat`    | ChatView, ChatInput, MessageList, MessageBubble, store (stan sesji), api (handler, sessions, rate-limit)      |
-| `notices` | NoticesPopover, loader `docs/notices.json`, store (dismissed w localStorage)                                  |
-| `search`  | chunker.ts, search.ts (FTS + hybrid RRF)                                                                      |
-| `auth`    | Logowanie i role — DiscordSignInButton, SignOutButton, UserMenu, AuthErrorNotice, typy `UserRole`/`ROLE_LABELS` |
-| `admin`   | Panel administracyjny — AdminHeader, UsersTable, DeleteUserModal, api zmiany roli / usuwania konta            |
+| Moduł       | Zawartość                                                                                                            |
+| ----------- | -------------------------------------------------------------------------------------------------------------------- |
+| `common`    | Powłoka huba (AppHeader, Logo), `ui/` (shadcn), `apps/` (rejestr mini-apek), `api/` (`requestJson`), utils (notify*) |
+| `hub`       | Kafelki mini-apek (AppTiles)                                                                                         |
+| `auth`      | DiscordSignInButton, SignOutButton, UserMenu, AuthErrorNotice, Server Action logowania                               |
+| `admin`     | UsersTable (role per mini-apka), UserCard, UserIdentity, AppRoleSelect, DeleteUserModal, api                         |
+| `notices`   | NoticesPopover, store (odrzucone ogłoszenia w localStorage) — ogłoszenia globalne dla huba                           |
+| `tutorials` | Mini-apka Poradniki: ChatView, ChatSidebar, MessageList…, TutorialsShell, DocsPanel, AddSourceModal, store, api      |
 
 Warstwa serwerowa (`src/server/`) — bez importów po stronie klienta:
 
-| Katalog               | Zawartość                                                                          |
-| ---------------------- | ----------------------------------------------------------------------------------- |
-| `server/db`            | Singleton Prisma Client                                                           |
-| `server/ai`            | Klient LLM (primary + automatyczny fallback OVH), funkcja embedText()             |
-| `server/prompts`       | System prompt dla LLM                                                             |
-| `server/auth.ts`       | Konfiguracja NextAuth (Discord provider, Prisma adapter)                          |
-| `server/authorize.ts`  | `requireRole()`, `verifyOrigin()` (ochrona CSRF przez porównanie `Origin`/`Host`)  |
+| Plik / katalog            | Zawartość                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------------ |
+| `server/db`               | Singleton Prisma Client                                                              |
+| `server/ai`               | Klient LLM (primary + automatyczny fallback OVH), funkcja embedText()                |
+| `server/rag`              | Chunker + hybrid search (FTS + trigram + embeddingi, RRF) z parametrem `app`         |
+| `server/tutorials`        | Poradniki: orkiestracja czatu, prompt, synonimy, webhook źródeł, `requireTutorials*` |
+| `server/apps/hooks.ts`    | Serwerowe hooki mini-apek (zmiana roli)                                              |
+| `server/auth.ts`          | NextAuth (Discord, Prisma adapter, cookies `__Host-`, reguły proxy), `getSession()`  |
+| `server/authorize.ts`     | `requireRoot()`, `requireAppRole()`, `readJsonBody()`, `verifyOrigin()`              |
+| `server/rateLimit.ts`     | Dzienny limit per użytkownik + mini-apka                                             |
+| `server/conversations.ts` | Historia rozmów z kontrolą właściciela                                               |
+
+Miejsce spotkania modułów to `src/app` — w tym `src/app/_components/HubHeader` (nagłówek
+składający `auth`, `notices` i akcje mini-apki).
 
 Historyczny harmonogram implementacji: **`PLAN.md`** w root projektu (fazy 1–11 ukończone).
 
@@ -313,17 +337,19 @@ Historyczny harmonogram implementacji: **`PLAN.md`** w root projektu (fazy 1–1
 Pięć reguł, które najłatwiej złamać przez przypadek:
 
 1. **Moduł importuje wyłącznie z `common` albo z samego siebie.** Import między modułami
-   domenowymi (`chat`, `notices`, `search`, `admin`, `auth`) jest błędem architektonicznym;
+   domenowymi (`hub`, `auth`, `admin`, `notices`, `tutorials`, …) jest błędem architektonicznym;
    jedynym miejscem, w którym moduły się spotykają, jest `src/app`.
 2. **Alias zatrzymuje się na podfolderze i nigdy nie schodzi do pliku**: `common/components`,
    nie `common/components/Button`. Aliasu `@/*` nie ma — każdy moduł ma własny alias
-   (`common`, `chat`, `notices`, `search`, `admin`, `auth`, plus `server/*` i `data/*` —
-   zobacz `tsconfig.json` → `paths`).
+   (`common`, `hub`, `auth`, `admin`, `notices`, `tutorials`, plus `server/*` — zobacz
+   `tsconfig.json` → `paths`). Komponenty shadcn importuj z `common/components/ui`.
 3. **Jeden plik = jeden komponent**, nazwa pliku `PascalCase.tsx` zgodna z nazwą eksportu,
-   własny folder z barrelem (`index.ts`).
-4. **System jest dark-only.** `MantineProvider` w `src/app/layout.tsx` ustawia
-   `forceColorScheme="dark"` — nie dodawaj przełącznika motywu ani logiki jasnego wariantu.
+   własny folder z barrelem (`index.ts`). **Wyjątek: `common/components/ui/`** — pliki generowane
+   przez shadcn (kebab-case, kilka eksportów, `function`) zostawiamy w formie z CLI.
+4. **System jest dark-only.** `<html>` w `src/app/layout.tsx` ma na stałe klasę `dark`, a paleta
+   w `globals.css` definiuje tylko ciemny wariant — nie dodawaj przełącznika motywu ani
+   `next-themes`.
 5. **Nie używaj natywnych kontrolek formularzy** (`<select>`, `<input type="date">`,
    `<input type="checkbox">`) — w dark mode rysuje je system operacyjny jasną płachtą. Używaj
-   gotowych komponentów Mantine (`Select`, `Checkbox`, `DatePickerInput` z `@mantine/dates`
-   itd.) zamiast natywnego HTML.
+   komponentów shadcn (`Select`, `Checkbox`, `Switch`, `Calendar` + `Popover` itd.; brakujące
+   dodaj przez CLI) zamiast natywnego HTML.

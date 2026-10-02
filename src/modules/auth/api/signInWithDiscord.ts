@@ -2,6 +2,6 @@
 
 import { signIn } from 'server/auth'
 
-export async function signInWithDiscord(): Promise<void> {
+export const signInWithDiscord = async (): Promise<void> => {
   await signIn('discord', { redirectTo: '/' })
 }

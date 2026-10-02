@@ -1,2 +1,2 @@
-export { AdminHeader, UsersTable } from './components'
+export { UsersTable } from './components'
 export type { AdminUser } from './types'

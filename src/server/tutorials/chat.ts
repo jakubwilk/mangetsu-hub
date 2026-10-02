@@ -1,0 +1,129 @@
+import { NextResponse } from 'next/server'
+import { streamChatCompletion } from 'server/ai'
+import { type ChatMessage, getRecentHistory, saveExchange } from 'server/conversations'
+import { searchChunks } from 'server/rag'
+import { releaseRateLimit } from 'server/rateLimit'
+
+import { TUTORIALS_APP } from './access'
+import { buildSystemPrompt } from './prompts'
+import { expandWithSynonyms } from './synonyms'
+
+const STAT_ADVANCEMENT_PATTERN =
+  /zwi[eę]kszy[ćc]|ulepsz|awanso|wykupi[ćc]|rozwin|podbij|podnie[sś][ćc]|rang[aąię]|poziom|statystyk[aąię]/i
+
+const MAX_MESSAGE_LENGTH = 1000
+
+const enc = new TextEncoder()
+const sseEvent = (data: object) => enc.encode(`data: ${JSON.stringify(data)}\n\n`)
+
+const search = (query: string, limit?: number) =>
+  searchChunks(query, { app: TUTORIALS_APP, limit, expandQuery: expandWithSynonyms })
+
+export const parseChatRequest = (
+  body: Record<string, unknown>,
+): { message: string; sessionId: string } | NextResponse => {
+  const { message, sessionId } = body
+
+  if (typeof message !== 'string' || !message.trim()) {
+    return NextResponse.json({ error: "Pole 'message' jest wymagane." }, { status: 400 })
+  }
+  if (typeof sessionId !== 'string' || !sessionId.trim()) {
+    return NextResponse.json({ error: "Pole 'sessionId' jest wymagane." }, { status: 400 })
+  }
+
+  return { message: message.trim().slice(0, MAX_MESSAGE_LENGTH), sessionId }
+}
+
+export const buildPromptContext = async (
+  userId: string,
+  searchQuery: string,
+  sessionId: string,
+) => {
+  const needsCostContext = STAT_ADVANCEMENT_PATTERN.test(searchQuery)
+
+  const [chunks, costChunks, { conversationId, history }] = await Promise.all([
+    search(searchQuery),
+    needsCostContext ? search('koszt PD sklep wykupienie statystyki', 2) : Promise.resolve([]),
+    getRecentHistory(userId, TUTORIALS_APP, sessionId),
+  ])
+
+  const seen = new Set(chunks.map((c) => c.id))
+  const merged = [...chunks, ...costChunks.filter((c) => !seen.has(c.id))]
+
+  return {
+    systemPrompt: buildSystemPrompt(merged, needsCostContext),
+    history,
+    conversationId,
+  }
+}
+
+// Canned reply in the same SSE shape as a model answer, so the client renders it as a normal bubble.
+export const createFixedReplyStream = (content: string, requestsUsed: number): ReadableStream =>
+  new ReadableStream({
+    start(controller) {
+      controller.enqueue(sseEvent({ type: 'token', content }))
+      controller.enqueue(sseEvent({ type: 'done', requestsUsed }))
+      controller.close()
+    },
+  })
+
+export const createChatStream = (params: {
+  searchQuery: string
+  systemPrompt: string
+  history: ChatMessage[]
+  conversationId: string | undefined
+  sessionId: string
+  userId: string
+  ip: string
+  requestDate: Date
+  requestsUsed: number
+}): ReadableStream => {
+  const { searchQuery, systemPrompt, history, userId, requestDate, requestsUsed } = params
+
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        const completion = streamChatCompletion([
+          { role: 'system', content: systemPrompt },
+          ...history,
+          { role: 'user', content: searchQuery },
+        ])
+
+        let fullContent = ''
+        let tokensUsed = 0
+
+        for await (const chunk of completion) {
+          const content = chunk.choices[0]?.delta?.content ?? ''
+          if (content) {
+            fullContent += content
+            controller.enqueue(sseEvent({ type: 'token', content }))
+          }
+          if (chunk.usage) {
+            tokensUsed = chunk.usage.total_tokens
+          }
+        }
+
+        await saveExchange({
+          conversationId: params.conversationId,
+          userId,
+          app: TUTORIALS_APP,
+          sessionId: params.sessionId,
+          ip: params.ip,
+          question: searchQuery,
+          answer: fullContent,
+          tokensUsed,
+        })
+
+        controller.enqueue(sseEvent({ type: 'done', requestsUsed }))
+      } catch (err) {
+        await releaseRateLimit(userId, TUTORIALS_APP, requestDate)
+        const detail = err instanceof Error ? err.message : 'Nieznany błąd'
+        controller.enqueue(
+          sseEvent({ type: 'error', message: `Błąd połączenia z modelem AI: ${detail}` }),
+        )
+      } finally {
+        controller.close()
+      }
+    },
+  })
+}

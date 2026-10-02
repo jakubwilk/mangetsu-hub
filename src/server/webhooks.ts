@@ -1,12 +1,26 @@
-const WEBHOOK_BASE_URL = process.env.N8N_WEBHOOK_BASE_URL
-const WEBHOOK_SECRET = process.env.N8N_WEBHOOK_SECRET
+const webhookUrl = (path: string | undefined): string | undefined => {
+  const base = process.env.N8N_WEBHOOK_BASE_URL
+  return base && path ? `${base}/${path}` : undefined
+}
 
-const ROLE_ACTIVATION_WEBHOOK_PATH = process.env.N8N_ROLE_ACTIVATION_WEBHOOK_PATH
-const USER_DELETION_WEBHOOK_PATH = process.env.N8N_USER_DELETION_WEBHOOK_PATH
+const callWebhook = async (
+  label: string,
+  url: string | undefined,
+  method: 'POST' | 'DELETE',
+  payload: object,
+): Promise<void> => {
+  if (!url) throw new Error(`${label}: brak konfiguracji adresu webhooka.`)
 
-const webhookHeaders = {
-  'Content-Type': 'application/json',
-  'X-Webhook-Authorization': WEBHOOK_SECRET ?? '',
+  const res = await fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Webhook-Authorization': process.env.N8N_WEBHOOK_SECRET ?? '',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!res.ok) throw new Error(`${label} zwrócił status ${res.status}.`)
 }
 
 interface RoleActivationPayload {
@@ -14,18 +28,17 @@ interface RoleActivationPayload {
   discordId: string | null
   name: string | null
   email: string | null
+  app: string
   role: string
 }
 
-export async function notifyRoleActivation(payload: RoleActivationPayload): Promise<void> {
-  const res = await fetch(`${WEBHOOK_BASE_URL}/${ROLE_ACTIVATION_WEBHOOK_PATH}`, {
-    method: 'POST',
-    headers: webhookHeaders,
-    body: JSON.stringify(payload),
-  })
-
-  if (!res.ok) throw new Error(`Webhook aktywacji konta zwrócił status ${res.status}.`)
-}
+export const notifyRoleActivation = (payload: RoleActivationPayload) =>
+  callWebhook(
+    'Webhook aktywacji konta',
+    webhookUrl(process.env.N8N_ROLE_ACTIVATION_WEBHOOK_PATH),
+    'POST',
+    payload,
+  )
 
 interface UserDeletionPayload {
   id: string
@@ -35,12 +48,10 @@ interface UserDeletionPayload {
   email: string | null
 }
 
-export async function notifyUserDeletion(payload: UserDeletionPayload): Promise<void> {
-  const res = await fetch(`${WEBHOOK_BASE_URL}/${USER_DELETION_WEBHOOK_PATH}`, {
-    method: 'DELETE',
-    headers: webhookHeaders,
-    body: JSON.stringify(payload),
-  })
-
-  if (!res.ok) throw new Error(`Webhook usunięcia konta zwrócił status ${res.status}.`)
-}
+export const notifyUserDeletion = (payload: UserDeletionPayload) =>
+  callWebhook(
+    'Webhook usunięcia konta',
+    webhookUrl(process.env.N8N_USER_DELETION_WEBHOOK_PATH),
+    'DELETE',
+    payload,
+  )

@@ -1,5 +1,8 @@
 import type OpenAI from 'openai'
-import type { ChatCompletionChunk, ChatCompletionMessageParam } from 'openai/resources/chat/completions'
+import type {
+  ChatCompletionChunk,
+  ChatCompletionMessageParam,
+} from 'openai/resources/chat/completions'
 
 export type ChatProvider = { client: OpenAI; model: string; name: string }
 

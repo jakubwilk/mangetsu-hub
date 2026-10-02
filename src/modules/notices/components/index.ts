@@ -1,1 +1,1 @@
-export { default as NoticesPopover } from './NoticesPopover'
+export { NoticesPopover } from './NoticesPopover'
