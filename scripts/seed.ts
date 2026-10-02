@@ -1,81 +1,67 @@
 import 'dotenv/config'
 
-import { PrismaPg } from '@prisma/adapter-pg'
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { PrismaClient } from '../src/generated/prisma/client'
-import { chunkText } from '../src/modules/search/utils/chunker'
 import { embedText } from '../src/server/ai/embeddings'
-
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
-const db = new PrismaClient({ adapter })
+import { db } from '../src/server/db'
+import { chunkText } from '../src/server/rag/chunker'
+import { type ContentFile, parseContentPath } from './contentPath'
 
 const CONTENT_DIR = path.join(process.cwd(), 'content')
 
-const getTitle = (filePath: string): string => {
-  const name = path.basename(filePath, '.md')
-  return name
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ')
-}
-
-const seedDocument = async (filePath: string, category: string) => {
-  const relativePath = path.relative(process.cwd(), filePath).replace(/\\/g, '/')
-  const title = getTitle(filePath)
-  const content = fs.readFileSync(filePath, 'utf-8')
-  const chunks = chunkText(content)
-
-  await db.document.upsert({
-    where: { filePath: relativePath },
-    update: { title, category },
-    create: { title, category, filePath: relativePath },
+const listMarkdownFiles = (dir: string): string[] =>
+  fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const fullPath = path.join(dir, entry.name)
+    if (entry.isDirectory()) return listMarkdownFiles(fullPath)
+    return entry.name.endsWith('.md') ? [fullPath] : []
   })
 
-  const doc = await db.document.findUniqueOrThrow({ where: { filePath: relativePath } })
+const seedDocument = async (filePath: string, { app, category, title }: ContentFile) => {
+  const chunks = chunkText(fs.readFileSync(filePath, 'utf-8'))
 
-  await db.chunk.deleteMany({ where: { documentId: doc.id } })
-
-  const createdIds: string[] = []
+  // Embeddings are fetched before the transaction: a slow or failing embedding call must not
+  // leave the document half-written (old chunks deleted, new ones without vectors).
+  const vectors: string[] = []
   for (const chunk of chunks) {
-    const created = await db.chunk.create({
-      data: {
-        documentId: doc.id,
-        content: chunk.content,
-        chunkIndex: chunk.chunkIndex,
-      },
-      select: { id: true },
-    })
-    createdIds.push(created.id)
+    vectors.push(`[${(await embedText(chunk.content)).join(',')}]`)
   }
 
-  for (let i = 0; i < chunks.length; i++) {
-    const embedding = await embedText(chunks[i]!.content)
-    const vector = `[${embedding.join(',')}]`
-    await db.$executeRaw`UPDATE chunks SET embedding = ${vector}::vector WHERE id = ${createdIds[i]}`
-  }
+  await db.$transaction(
+    async (tx) => {
+      const doc = await tx.document.upsert({
+        where: { filePath },
+        update: { app, title, category },
+        create: { app, title, category, filePath },
+      })
 
-  console.log(`  [${category}] ${title} — ${chunks.length} chunks`)
+      await tx.chunk.deleteMany({ where: { documentId: doc.id } })
+
+      for (const [i, chunk] of chunks.entries()) {
+        const created = await tx.chunk.create({
+          data: { documentId: doc.id, content: chunk.content, chunkIndex: chunk.chunkIndex },
+          select: { id: true },
+        })
+        await tx.$executeRaw`UPDATE chunks SET embedding = ${vectors[i]}::vector WHERE id = ${created.id}`
+      }
+    },
+    { timeout: 60_000 },
+  )
+
+  console.log(`  [${app}/${category}] ${title} — ${chunks.length} chunks`)
 }
 
 const main = async () => {
   console.log('Seeding content...\n')
 
-  const categories = fs
-    .readdirSync(CONTENT_DIR)
-    .filter((entry) => fs.statSync(path.join(CONTENT_DIR, entry)).isDirectory())
-
-  for (const category of categories) {
-    const categoryDir = path.join(CONTENT_DIR, category)
-    const files = fs
-      .readdirSync(categoryDir)
-      .filter((f) => f.endsWith('.md'))
-      .map((f) => path.join(categoryDir, f))
-
-    for (const file of files) {
-      await seedDocument(file, category)
+  for (const fullPath of listMarkdownFiles(CONTENT_DIR)) {
+    const relativePath = path.relative(process.cwd(), fullPath).replace(/\\/g, '/')
+    const parsed = parseContentPath(relativePath)
+    if (!parsed) {
+      console.warn(`  Pominięto ${relativePath} — oczekiwano content/<app>/<kategoria>/<plik>.md`)
+      continue
     }
+    await seedDocument(relativePath, parsed)
   }
 
   const docCount = await db.document.count()
