@@ -15,10 +15,12 @@ interface AuthErrorNoticeProps {
   error: string
 }
 
-export default function AuthErrorNotice({ error }: AuthErrorNoticeProps) {
+const AuthErrorNotice = ({ error }: AuthErrorNoticeProps) => {
   useEffect(() => {
     notifyError(ERROR_MESSAGES[error] ?? ERROR_MESSAGES.Default)
   }, [error])
 
   return null
 }
+
+export default AuthErrorNotice
