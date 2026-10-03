@@ -194,11 +194,13 @@ interface SearchOptions {
   limit?: number
   // App-specific query rewriting for FTS only (e.g. synonyms); embedding and trigram see the raw query.
   expandQuery?: (query: string) => string
+  // Off for supplementary searches: pulling in whole documents there buries the main question.
+  expand?: boolean
 }
 
 export const searchChunks = async (
   query: string,
-  { app, limit = 5, expandQuery = (q) => q }: SearchOptions,
+  { app, limit = 5, expandQuery = (q) => q, expand = true }: SearchOptions,
 ): Promise<SearchResult[]> => {
   const tokens = tokenize(expandQuery(query))
   if (tokens.length === 0) return []
@@ -236,13 +238,15 @@ export const searchChunks = async (
     ftsResults = mergeFts(orResults, trigramResults, fetchLimit)
   }
 
+  const finalize = (results: SearchResult[]) => (expand ? expandToFullDocuments(results) : results)
+
   // If embedding timed out or failed, fall back to FTS + context expansion
-  if (!queryEmbedding) return expandToFullDocuments(ftsResults.slice(0, limit))
+  if (!queryEmbedding) return finalize(ftsResults.slice(0, limit))
 
   const embeddingResults = await runEmbedding(app, queryEmbedding, fetchLimit).catch(
     () => [] as SearchResult[],
   )
 
   const merged = mergeHybrid(ftsResults, embeddingResults, limit)
-  return expandToFullDocuments(merged)
+  return finalize(merged)
 }

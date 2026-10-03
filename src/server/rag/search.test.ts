@@ -214,6 +214,22 @@ describe('searchChunks', () => {
     )
   })
 
+  it('returns only the ranked hits without document expansion when expand is false', async () => {
+    embedTextMock.mockResolvedValue(null)
+    queryRawMock.mockImplementation((strings: TemplateStringsArray) =>
+      Promise.resolve(
+        sqlOf(strings).includes('to_tsquery')
+          ? [{ id: 'c1', content: 'Treść', documentTitle: 'Dok', category: 'zasady', rank: 0.5 }]
+          : [],
+      ),
+    )
+
+    const result = await searchChunks('klany', { app: 'tutorials', expand: false })
+
+    expect(result.map((r) => r.id)).toEqual(['c1'])
+    expect(findManyMock).not.toHaveBeenCalled()
+  })
+
   it('skips expanding a document whose remaining chunks exceed the expansion budget', async () => {
     embedTextMock.mockResolvedValue(null)
     queryRawMock.mockImplementation((strings: TemplateStringsArray) => {
