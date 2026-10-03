@@ -40,6 +40,59 @@ describe('chunkText', () => {
     chunks.forEach((chunk, i) => expect(chunk.chunkIndex).toBe(i))
   })
 
+  it('prefixes a chunk that starts mid-section with its nested section path', () => {
+    const text = ['# Sklep', '## Bronie', '### Pasywki', 'A'.repeat(2000), 'B'.repeat(2000)].join(
+      '\n\n',
+    )
+
+    const chunks = chunkText(text)
+
+    expect(chunks[0]!.content.startsWith('# Sklep')).toBe(true)
+    expect(chunks[1]!.content.startsWith('Sekcja: Bronie › Pasywki\n\n')).toBe(true)
+  })
+
+  it('replaces a section of the same level instead of nesting it', () => {
+    const text = [
+      '## Statystyki',
+      '### Siła',
+      '## Techniki',
+      'T'.repeat(2500),
+      'U'.repeat(2500),
+    ].join('\n\n')
+
+    expect(chunkText(text).at(-1)!.content.startsWith('Sekcja: Techniki\n\n')).toBe(true)
+  })
+
+  it('labels a split chunk with the section its overlap comes from, not the next heading', () => {
+    const text = ['## Pierwsza', 'A'.repeat(2580), '## Druga', 'B'.repeat(100)].join('\n\n')
+
+    const chunks = chunkText(text)
+
+    expect(chunks).toHaveLength(2)
+    expect(chunks[1]!.content.startsWith('Sekcja: Pierwsza\n\nAAA')).toBe(true)
+    expect(chunks[1]!.content).toContain('## Druga')
+  })
+
+  it('labels a chunk whose overlap crosses a heading with the section the overlap starts in', () => {
+    const text = [
+      '## Pierwsza',
+      'A'.repeat(2000),
+      '## Druga',
+      'B'.repeat(300),
+      'C'.repeat(1000),
+    ].join('\n\n')
+
+    const chunks = chunkText(text)
+
+    expect(chunks[1]!.content.startsWith('Sekcja: Pierwsza\n\nAAA')).toBe(true)
+  })
+
+  it('leaves chunks of a document without section headings unchanged', () => {
+    const chunks = chunkText(['# Tytuł', 'X'.repeat(2000), 'Y'.repeat(2000)].join('\n\n'))
+
+    expect(chunks.some((c) => c.content.startsWith('Sekcja:'))).toBe(false)
+  })
+
   it('normalizes CRLF line endings before chunking', () => {
     const chunks = chunkText('Linia pierwsza.\r\n\r\nLinia druga.')
     expect(chunks).toEqual([{ content: 'Linia pierwsza.\n\nLinia druga.', chunkIndex: 0 }])

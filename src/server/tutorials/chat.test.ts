@@ -54,13 +54,13 @@ describe('buildPromptContext', () => {
 
     await buildPromptContext('user-1', 'a skąd je wziąć?', 'session-1')
 
-    expect(searchChunks).toHaveBeenCalledWith(
-      'a skąd je wziąć?',
-      expect.objectContaining({ app: 'tutorials', limit: undefined }),
-    )
+    expect(searchChunks).toHaveBeenCalledWith('a skąd je wziąć?', {
+      app: 'tutorials',
+      expandQuery: expect.any(Function),
+    })
     expect(searchChunks).toHaveBeenCalledWith(
       'Czym są zdolności wrodzone?',
-      expect.objectContaining({ app: 'tutorials', limit: 2 }),
+      expect.objectContaining({ app: 'tutorials', limit: 2, expand: false }),
     )
   })
 

@@ -27,8 +27,11 @@ const trimAnswer = (m: ChatMessage): ChatMessage =>
 const enc = new TextEncoder()
 const sseEvent = (data: object) => enc.encode(`data: ${JSON.stringify(data)}\n\n`)
 
-const search = (query: string, limit?: number) =>
-  searchChunks(query, { app: TUTORIALS_APP, limit, expandQuery: expandWithSynonyms })
+const search = (query: string, options: { limit?: number; expand?: boolean } = {}) =>
+  searchChunks(query, { app: TUTORIALS_APP, expandQuery: expandWithSynonyms, ...options })
+
+// Supplementary context: only the matching fragments, never whole documents.
+const SUPPLEMENTARY = { limit: 2, expand: false }
 
 export const parseChatRequest = (
   body: Record<string, unknown>,
@@ -65,8 +68,10 @@ export const buildPromptContext = async (
 
   const [chunks, previousChunks, costChunks] = await Promise.all([
     search(searchQuery),
-    previousQuestion ? search(previousQuestion, 2) : Promise.resolve([]),
-    needsCostContext ? search('koszt PD sklep wykupienie statystyki', 2) : Promise.resolve([]),
+    previousQuestion ? search(previousQuestion, SUPPLEMENTARY) : Promise.resolve([]),
+    needsCostContext
+      ? search('koszt PD sklep wykupienie statystyki', SUPPLEMENTARY)
+      : Promise.resolve([]),
   ])
 
   const merged = [
