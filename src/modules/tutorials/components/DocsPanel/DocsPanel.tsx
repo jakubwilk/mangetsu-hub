@@ -1,5 +1,6 @@
 import { cn } from 'cn'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface DocsPanelProps {
   content: string
@@ -19,8 +20,8 @@ const DocsPanel = ({ content, fluid = false }: DocsPanelProps) => (
       </div>
     )}
 
-    <div className="prose prose-sm prose-invert prose-a:text-mangetsu-4 min-h-0 flex-1 overflow-y-auto p-4">
-      <ReactMarkdown>{content}</ReactMarkdown>
+    <div className="prose prose-sm prose-invert prose-a:text-mangetsu-4 prose-table:block prose-table:overflow-x-auto min-h-0 flex-1 overflow-y-auto p-4">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
     </div>
   </aside>
 )

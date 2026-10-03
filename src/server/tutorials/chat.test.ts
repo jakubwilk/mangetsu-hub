@@ -60,6 +60,24 @@ describe('buildPromptContext', () => {
     )
   })
 
+  it('trims long assistant answers in history and keeps user messages intact', async () => {
+    const longQuestion = 'p'.repeat(600)
+    vi.mocked(getRecentHistory).mockResolvedValue({
+      conversationId: 'conv-1',
+      history: [
+        { role: 'user', content: longQuestion },
+        { role: 'assistant', content: 'a'.repeat(1000) },
+      ],
+    })
+
+    const { history } = await buildPromptContext('user-1', 'Dalej?', 'session-1')
+
+    expect(history).toEqual([
+      { role: 'user', content: longQuestion },
+      { role: 'assistant', content: `${'a'.repeat(400)}…` },
+    ])
+  })
+
   it('searches with the current message alone when there is no history', async () => {
     vi.mocked(getRecentHistory).mockResolvedValue({ conversationId: undefined, history: [] })
 

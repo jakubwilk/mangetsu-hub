@@ -1,7 +1,7 @@
 import { POLISH_ONLY_MESSAGE } from 'server/guardrails'
 import { describe, expect, it, vi } from 'vitest'
 
-import { buildSystemPrompt, OFF_TOPIC_MESSAGE } from './prompts'
+import { buildSystemPrompt, GROUNDING_REMINDER, OFF_TOPIC_MESSAGE } from './prompts'
 
 vi.mock('server/ai', () => ({ openai: {} }))
 
@@ -26,6 +26,13 @@ describe('buildSystemPrompt', () => {
 
     expect(prompt).toContain('### Profesje (mechaniki)')
     expect(prompt).toContain(chunk.content)
+  })
+
+  it('repeats the grounding reminder after the retrieved context', () => {
+    const prompt = buildSystemPrompt([chunk])
+
+    expect(prompt.endsWith(GROUNDING_REMINDER)).toBe(true)
+    expect(prompt.indexOf(chunk.content)).toBeLessThan(prompt.indexOf(GROUNDING_REMINDER))
   })
 
   it('falls back to the no-context instruction when nothing was retrieved', () => {
