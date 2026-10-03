@@ -1,6 +1,6 @@
 # Mangetsu Hub
 
-![Mangetsu RAG](https://jakubwilk.pl/images/mangetsu-rag.png)
+![Mangetsu RAG](https://jakubwilk.pl/images/mangetsu-hub.png)
 
 Prywatny hub aplikacji („mini-apek”) dla forum RPG Mangetsu, dostępny pod
 `mangetsu.thalverntable.app`. Jedno logowanie przez Discord daje dostęp do wszystkich mini-apek,
@@ -19,10 +19,12 @@ poradników (hybrid search: full-text + trigram + embeddingi).
   - powiadomienia przez webhooki n8n.
 - **Poradniki (`/tutorials`):**
   - czat RAG ze streamingiem SSE;
+  - guardrail przed modelem: blokuje próby prompt injection i odpowiada stałym komunikatem na wiadomości w języku innym niż polski;
+  - asystent trzyma się tematu forum: pytania spoza zakresu dostają stały komunikat, a na pytania o niego samego (np. „kim jesteś?”) odpowiada krótkim przedstawieniem się;
   - historia rozmów (prywatna dla użytkownika);
-  - dzienny limit zapytań;
-  - panel „Dodaj źródło” (rola `EDITOR`, obecnie wyłączony).
-- **Ogłoszenia** (`docs/notices.json`) wspólne dla całego huba.
+  - dzienny limit zapytań (`DAILY_REQUEST_LIMIT`, domyślnie 20);
+  - panel „Dodaj źródło” (rola `EDITOR`, obecnie wyłączony flagą `ENABLED` w `AddSourceModal`).
+- **Ogłoszenia** (`docs/notices.json`) wspólne dla całego huba, pod ikoną dzwonka w nagłówku. Nagłówek popovera pokazuje też wersję aplikacji z `package.json`.
 
 ## Stack technologiczny
 
@@ -37,6 +39,7 @@ poradników (hybrid search: full-text + trigram + embeddingi).
 | Embeddingi    | OVH AI Endpoints                                                                                      |
 | Automatyzacja | n8n (webhooki: zmiana roli, usunięcie konta, dodawanie źródeł)                                        |
 | Hosting       | OVH VPS → Coolify + Nixpacks                                                                          |
+| Testy         | Vitest + Testing Library                                                                              |
 
 ## Architektura
 
@@ -71,6 +74,8 @@ Dodanie mini-apki:
 
 ### Poradniki — RAG
 
+![Mangetsu RAG](https://jakubwilk.pl/images/mangetsu-rag.png)
+
 ```
 Seeding (pnpm db:seed):
   content/tutorials/<kategoria>/*.md → chunking → embedding (OVH) → PostgreSQL (tsvector + vector)
@@ -86,6 +91,14 @@ Zapytanie:
   - trigram (`word_similarity`);
   - embeddingi (cosine, waga 2× w RRF, timeout 8 s z fallbackiem do samego FTS).
 - **Synonimy** specyficzne dla poradników (`server/tutorials/synonyms.ts`) rozszerzają tylko zapytanie FTS.
+- **Rozszerzenie kontekstu:** do trafionych chunków dociągane są pozostałe fragmenty tych samych dokumentów (w kolejności rankingu, budżet 12 000 znaków).
+- **Guardrail** (`server/guardrails.ts`): klasyfikator na modelu OVH działa równolegle z wyszukiwaniem i zwraca jeden z werdyktów:
+  - `INJECTION` → odpowiedź 400;
+  - `JEZYK` → stała odpowiedź „tylko po polsku”, bez wywołania głównego modelu i bez zapisu do historii;
+  - `OK` → zwykła ścieżka;
+  - błąd lub timeout (5 s) → wiadomość jest przepuszczana (fail-open).
+- **Prompt** (`server/tutorials/prompts.ts`): odpowiedzi wyłącznie na podstawie fragmentów poradników. Pytania spoza forum dostają stałe zdanie `OFF_TOPIC_MESSAGE`. Promptowi przekazywane jest 6 ostatnich wiadomości z rozmowy.
+- **LLM z fallbackiem** (`server/ai`): najpierw primary (`LLM_AI_*`), a gdy zawiedzie przed wysłaniem pierwszego tokenu, automatycznie OVH (`OVH_AI_*`).
 - **Limit przed kosztami:** limit dzienny jest rezerwowany przed wywołaniami płatnych usług (guardrail, embeddingi) i zwalniany przy odrzuceniu lub błędzie.
 
 ### Historia czatu
@@ -98,19 +111,24 @@ wyświetlania historii, a przy starcie jest synchronizowany z listą sesji z ser
 ## Struktura projektu
 
 ```
-├── content/tutorials/              # Poradniki (markdown, wg kategorii)
+├── content/tutorials/              # Poradniki (markdown: kompendium, mechanika, realia)
 ├── docs/                           # notices.json (globalne), tutorials/documents-info.md
 ├── prisma/                         # Schema i migracje
+├── public/                         # Grafiki (m.in. tła kafelków)
 ├── scripts/                        # seed.ts (+ parser ścieżek treści)
+├── docker-compose.yml              # Tylko lokalny Postgres z pgvector (nie do deploymentu)
 └── src/
     ├── app/
     │   ├── page.tsx                # Logowanie albo kafelki mini-apek
     │   ├── pending/  admin/  tutorials/
+    │   ├── robots.ts               # Blokada indeksowania
     │   ├── _components/HubHeader/  # Nagłówek huba (kompozycja modułów)
     │   └── api/
+    │       ├── auth/[...nextauth]/              # Auth.js
     │       ├── admin/users/[id]/                # DELETE konta
     │       ├── admin/users/[id]/apps/[app]/     # PUT roli w mini-apce
     │       └── tutorials/{chat,sessions,rate-limit,sources}/
+    ├── generated/prisma/           # Prisma Client (generowany przez postinstall)
     ├── modules/                    # common, hub, auth, admin, notices, tutorials
     ├── server/
     │   ├── ai/  db/  rag/  apps/  tutorials/
@@ -130,19 +148,37 @@ pnpm db:seed                       # 5. Indeksowanie treści (chunking + embeddi
 pnpm dev                           # 6. Dev server
 ```
 
-Testy (Vitest): `pnpm test` lub `pnpm test:watch`.
+Pozostałe skrypty:
+
+- testy (Vitest): `pnpm test`, `pnpm test:watch`;
+- lint: `pnpm lint`, `pnpm lint:fix`;
+- formatowanie (Prettier): `pnpm format`, `pnpm format:check`.
 
 ## Zmienne środowiskowe
 
-Pełna lista placeholderów jest w `.env.example`. Ważne dla izolacji sesji: na produkcji
-`AUTH_URL` musi być pełnym adresem `https://mangetsu.thalverntable.app`, bo od niego zależą
-prefiksy `__Host-` cookies.
+Placeholdery są w `.env.example` (dev: `.env.local`, prod: panel Coolify).
+
+| Grupa                  | Zmienne                                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Baza                   | `DATABASE_URL`                                                                                                     |
+| Auth                   | `AUTH_SECRET`, `AUTH_URL`, `AUTH_TRUST_HOST`, `AUTH_DISCORD_ID`, `AUTH_DISCORD_SECRET`                             |
+| LLM primary            | `LLM_AI_ENDPOINT`, `LLM_AI_API_KEY`, `LLM_AI_MODEL` (bez `LLM_AI_ENDPOINT` czat idzie od razu do OVH)              |
+| OVH (fallback, guard.) | `OVH_AI_ENDPOINT`, `OVH_AI_API_KEY`, `OVH_AI_MODEL`                                                                |
+| Embeddingi (OVH)       | `OVH_AI_EMBEDDING_ENDPOINT`, `OVH_AI_EMBEDDING_MODEL`                                                              |
+| Webhooki n8n           | `N8N_WEBHOOK_BASE_URL`, `N8N_WEBHOOK_SECRET`, `N8N_ROLE_ACTIVATION_WEBHOOK_PATH`, `N8N_USER_DELETION_WEBHOOK_PATH` |
+| Źródła                 | `SOURCES_WEBHOOK_URL`                                                                                              |
+| Pozostałe              | `DAILY_REQUEST_LIMIT`, `NEXT_PUBLIC_FORUM_URL`                                                                     |
+
+Ważne dla izolacji sesji: na produkcji `AUTH_URL` musi być pełnym adresem
+`https://mangetsu.thalverntable.app`, bo od niego zależą prefiksy `__Host-` cookies.
 
 ## Deployment (Coolify)
 
 1. Połącz repozytorium z Coolify i ustaw zmienne środowiskowe w panelu.
 2. Coolify buduje projekt przez **Nixpacks** (bez Dockerfile): `pnpm build` / `pnpm start`.
-3. Postgres z `pgvector` działa jako oddzielna usługa w Coolify; migracje: `pnpm db:migrate:deploy`.
+3. `postinstall` uruchamia `prisma generate`, więc klient Prismy powstaje przy każdej instalacji zależności.
+4. Postgres z `pgvector` działa jako oddzielna usługa w Coolify; migracje: `pnpm db:migrate:deploy`.
+5. Wersja aplikacji to pole `version` w `package.json`. Podbijaj ją przy wydaniu, bo jest widoczna dla użytkowników w popoverze ogłoszeń.
 
 ## Skalowalność
 
