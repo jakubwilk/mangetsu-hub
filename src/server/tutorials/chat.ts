@@ -5,7 +5,7 @@ import { searchChunks } from 'server/rag'
 import { releaseRateLimit } from 'server/rateLimit'
 
 import { TUTORIALS_APP } from './access'
-import { buildSystemPrompt } from './prompts'
+import { buildSystemPrompt, buildUserMessage } from './prompts'
 import { expandWithSynonyms } from './synonyms'
 
 const STAT_ADVANCEMENT_PATTERN =
@@ -59,20 +59,23 @@ export const buildPromptContext = async (
   )
   const history = fullHistory.map(trimAnswer)
 
-  // Follow-ups ("a skąd je wziąć?") carry no topic of their own — search with the previous question too.
+  // Follow-ups ("a skąd je wziąć?") carry no topic of their own, so the previous question gets a
+  // separate, smaller search — appended after the current results so it can't take over the context.
   const previousQuestion = history.findLast((m) => m.role === 'user')?.content
-  const retrievalQuery = previousQuestion ? `${previousQuestion} ${searchQuery}` : searchQuery
 
-  const [chunks, costChunks] = await Promise.all([
-    search(retrievalQuery),
+  const [chunks, previousChunks, costChunks] = await Promise.all([
+    search(searchQuery),
+    previousQuestion ? search(previousQuestion, 2) : Promise.resolve([]),
     needsCostContext ? search('koszt PD sklep wykupienie statystyki', 2) : Promise.resolve([]),
   ])
 
-  const seen = new Set(chunks.map((c) => c.id))
-  const merged = [...chunks, ...costChunks.filter((c) => !seen.has(c.id))]
+  const merged = [
+    ...new Map([...chunks, ...previousChunks, ...costChunks].map((c) => [c.id, c])).values(),
+  ]
 
   return {
-    systemPrompt: buildSystemPrompt(merged, needsCostContext),
+    systemPrompt: buildSystemPrompt(needsCostContext),
+    userMessage: buildUserMessage(merged, searchQuery),
     history,
     conversationId,
   }
@@ -91,6 +94,7 @@ export const createFixedReplyStream = (content: string, requestsUsed: number): R
 export const createChatStream = (params: {
   searchQuery: string
   systemPrompt: string
+  userMessage: string
   history: ChatMessage[]
   conversationId: string | undefined
   sessionId: string
@@ -99,7 +103,8 @@ export const createChatStream = (params: {
   requestDate: Date
   requestsUsed: number
 }): ReadableStream => {
-  const { searchQuery, systemPrompt, history, userId, requestDate, requestsUsed } = params
+  const { searchQuery, systemPrompt, userMessage, history, userId, requestDate, requestsUsed } =
+    params
 
   return new ReadableStream({
     async start(controller) {
@@ -107,7 +112,7 @@ export const createChatStream = (params: {
         const completion = streamChatCompletion([
           { role: 'system', content: systemPrompt },
           ...history,
-          { role: 'user', content: searchQuery },
+          { role: 'user', content: userMessage },
         ])
 
         let fullContent = ''

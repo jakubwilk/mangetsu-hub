@@ -49,6 +49,7 @@ beforeEach(() => {
   mocks.classifyMessage.mockResolvedValue('ok')
   mocks.buildPromptContext.mockResolvedValue({
     systemPrompt: '',
+    userMessage: '',
     history: [],
     conversationId: undefined,
   })
