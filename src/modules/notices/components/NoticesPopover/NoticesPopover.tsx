@@ -15,9 +15,10 @@ const NOTICE_STYLE: Record<Notice['type'], string> = {
 
 interface NoticesPopoverProps {
   notices: Notice[]
+  version: string
 }
 
-const NoticesPopover = ({ notices }: NoticesPopoverProps) => {
+const NoticesPopover = ({ notices, version }: NoticesPopoverProps) => {
   const dismissed = useSyncExternalStore(
     dismissedNoticesStore.subscribe,
     dismissedNoticesStore.getSnapshot,
@@ -44,7 +45,10 @@ const NoticesPopover = ({ notices }: NoticesPopoverProps) => {
       </PopoverTrigger>
 
       <PopoverContent align="end" className="w-[min(360px,calc(100vw-2rem))] gap-0 p-0">
-        <div className="border-b px-4 py-2.5 text-sm font-semibold">Ogłoszenia</div>
+        <div className="flex items-center justify-between border-b px-4 py-2.5">
+          <span className="text-sm font-semibold">Ogłoszenia</span>
+          <span className="text-muted-foreground text-xs">v{version}</span>
+        </div>
 
         {notices.length === 0 ? (
           <p className="text-muted-foreground p-4 text-sm">Brak ogłoszeń.</p>
