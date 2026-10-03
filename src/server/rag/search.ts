@@ -57,60 +57,53 @@ const runEmbedding = (app: string, embedding: number[], limit: number) => {
   `
 }
 
-// Combines two ranked result lists using Reciprocal Rank Fusion.
-// RRF avoids score normalization issues when merging FTS and embedding ranks.
-const mergeFts = (
-  primary: SearchResult[],
-  secondary: SearchResult[],
-  limit: number,
-): SearchResult[] => {
-  const byId = new Map<string, SearchResult & { rank: number }>()
-
-  for (const r of primary) {
-    byId.set(r.id, { ...r, rank: Number(r.rank) })
-  }
-  for (const r of secondary) {
-    const rank = Number(r.rank)
-    const existing = byId.get(r.id)
-    if (existing) {
-      existing.rank += rank * 0.5
-    } else {
-      byId.set(r.id, { ...r, rank })
-    }
-  }
-
-  return [...byId.values()].sort((a, b) => b.rank - a.rank).slice(0, limit)
-}
-
-const mergeHybrid = (
-  fts: SearchResult[],
-  embedding: SearchResult[],
+// Reciprocal Rank Fusion: scores by position in each list, not by raw score, so lists on
+// different scales (ts_rank ~0.03 vs word_similarity ~0.2 vs cosine) can be merged fairly.
+const fuseRanks = (
+  lists: { results: SearchResult[]; weight: number }[],
   limit: number,
 ): SearchResult[] => {
   const k = 60
   const scores = new Map<string, { result: SearchResult; score: number }>()
 
-  fts.forEach((r, i) => {
-    scores.set(r.id, { result: r, score: 1 / (k + i + 1) })
-  })
-
-  // Embeddings get 2× weight: for Polish RPG content, semantic similarity is more reliable
-  // than keyword matching — user query words rarely appear verbatim in document text.
-  embedding.forEach((r, i) => {
-    const rrfScore = 2 / (k + i + 1)
-    const entry = scores.get(r.id)
-    if (entry) {
-      entry.score += rrfScore
-    } else {
-      scores.set(r.id, { result: r, score: rrfScore })
-    }
-  })
+  for (const { results, weight } of lists) {
+    results.forEach((r, i) => {
+      const rrfScore = weight / (k + i + 1)
+      const entry = scores.get(r.id)
+      if (entry) {
+        entry.score += rrfScore
+      } else {
+        scores.set(r.id, { result: r, score: rrfScore })
+      }
+    })
+  }
 
   return [...scores.values()]
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map(({ result }) => result)
 }
+
+// Trigram is a fuzzy helper (typos, inflections) — half the weight of exact FTS matches.
+const mergeFts = (fts: SearchResult[], trigram: SearchResult[], limit: number) =>
+  fuseRanks(
+    [
+      { results: fts, weight: 1 },
+      { results: trigram, weight: 0.5 },
+    ],
+    limit,
+  )
+
+// Embeddings get 2× weight: for Polish RPG content, semantic similarity is more reliable
+// than keyword matching — user query words rarely appear verbatim in document text.
+const mergeHybrid = (fts: SearchResult[], embedding: SearchResult[], limit: number) =>
+  fuseRanks(
+    [
+      { results: fts, weight: 1 },
+      { results: embedding, weight: 2 },
+    ],
+    limit,
+  )
 
 // Caps how many characters of extra "whole document" content expandToFullDocuments will pull
 // in. Without this, a broad query whose top-5 hits span several documents (or one large one,
