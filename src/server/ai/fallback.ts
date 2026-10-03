@@ -26,8 +26,8 @@ const describeError = (err: unknown): string => {
 }
 
 const CHAT_COMPLETION_OPTIONS = {
-  temperature: 0.7,
-  max_tokens: 1024,
+  temperature: 0.3,
+  max_tokens: 4096,
   stream: true as const,
   stream_options: { include_usage: true },
 }
