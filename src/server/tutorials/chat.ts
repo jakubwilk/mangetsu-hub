@@ -13,6 +13,9 @@ const STAT_ADVANCEMENT_PATTERN =
 
 const MAX_MESSAGE_LENGTH = 1000
 
+// Leading blank lines close a markdown table the model may have been cut off in the middle of.
+export const TRUNCATION_NOTE = '\n\n_Odpowiedź została ucięta — dopytaj o konkretną część._'
+
 const enc = new TextEncoder()
 const sseEvent = (data: object) => enc.encode(`data: ${JSON.stringify(data)}\n\n`)
 
@@ -41,10 +44,15 @@ export const buildPromptContext = async (
 ) => {
   const needsCostContext = STAT_ADVANCEMENT_PATTERN.test(searchQuery)
 
-  const [chunks, costChunks, { conversationId, history }] = await Promise.all([
-    search(searchQuery),
+  const { conversationId, history } = await getRecentHistory(userId, TUTORIALS_APP, sessionId)
+
+  // Follow-ups ("a skąd je wziąć?") carry no topic of their own — search with the previous question too.
+  const previousQuestion = history.findLast((m) => m.role === 'user')?.content
+  const retrievalQuery = previousQuestion ? `${previousQuestion} ${searchQuery}` : searchQuery
+
+  const [chunks, costChunks] = await Promise.all([
+    search(retrievalQuery),
     needsCostContext ? search('koszt PD sklep wykupienie statystyki', 2) : Promise.resolve([]),
-    getRecentHistory(userId, TUTORIALS_APP, sessionId),
   ])
 
   const seen = new Set(chunks.map((c) => c.id))
@@ -100,6 +108,10 @@ export const createChatStream = (params: {
           }
           if (chunk.usage) {
             tokensUsed = chunk.usage.total_tokens
+          }
+          if (chunk.choices[0]?.finish_reason === 'length') {
+            fullContent += TRUNCATION_NOTE
+            controller.enqueue(sseEvent({ type: 'token', content: TRUNCATION_NOTE }))
           }
         }
 
