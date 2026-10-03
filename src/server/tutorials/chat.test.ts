@@ -43,7 +43,7 @@ describe('parseChatRequest', () => {
 })
 
 describe('buildPromptContext', () => {
-  it('searches with the previous user question prepended to a follow-up', async () => {
+  it('searches the previous user question separately with a smaller limit', async () => {
     vi.mocked(getRecentHistory).mockResolvedValue({
       conversationId: 'conv-1',
       history: [
@@ -55,9 +55,38 @@ describe('buildPromptContext', () => {
     await buildPromptContext('user-1', 'a skąd je wziąć?', 'session-1')
 
     expect(searchChunks).toHaveBeenCalledWith(
-      'Czym są zdolności wrodzone? a skąd je wziąć?',
-      expect.objectContaining({ app: 'tutorials' }),
+      'a skąd je wziąć?',
+      expect.objectContaining({ app: 'tutorials', limit: undefined }),
     )
+    expect(searchChunks).toHaveBeenCalledWith(
+      'Czym są zdolności wrodzone?',
+      expect.objectContaining({ app: 'tutorials', limit: 2 }),
+    )
+  })
+
+  it('puts current results first and drops duplicates from the previous-question search', async () => {
+    const result = (id: string) => ({
+      id,
+      content: `treść ${id}`,
+      documentTitle: `Dokument ${id}`,
+      category: 'mechaniki',
+      rank: 1,
+    })
+    vi.mocked(getRecentHistory).mockResolvedValue({
+      conversationId: 'conv-1',
+      history: [{ role: 'user', content: 'Poprzednie pytanie' }],
+    })
+    vi.mocked(searchChunks)
+      .mockResolvedValueOnce([result('a'), result('b')])
+      .mockResolvedValueOnce([result('b'), result('c')])
+
+    const { userMessage } = await buildPromptContext('user-1', 'Bieżące pytanie', 'session-1')
+
+    expect(userMessage.match(/### Dokument b/g)).toHaveLength(1)
+    expect(userMessage.indexOf('### Dokument a')).toBeLessThan(
+      userMessage.indexOf('### Dokument c'),
+    )
+    expect(userMessage.endsWith('Bieżące pytanie')).toBe(true)
   })
 
   it('trims long assistant answers in history and keeps user messages intact', async () => {
@@ -83,6 +112,7 @@ describe('buildPromptContext', () => {
 
     await buildPromptContext('user-1', 'Jak zdobyć PD?', 'session-1')
 
+    expect(searchChunks).toHaveBeenCalledTimes(1)
     expect(searchChunks).toHaveBeenCalledWith(
       'Jak zdobyć PD?',
       expect.objectContaining({ app: 'tutorials' }),
@@ -105,6 +135,7 @@ describe('createChatStream', () => {
     const stream = createChatStream({
       searchQuery: 'Pytanie',
       systemPrompt: 'system',
+      userMessage: 'fragmenty + Pytanie',
       history: [],
       conversationId: undefined,
       sessionId: 'session-1',
@@ -129,5 +160,15 @@ describe('createChatStream', () => {
     await run([chunk('Odpowiedź.', null), chunk('', 'stop')])
 
     expect(saveExchange).toHaveBeenCalledWith(expect.objectContaining({ answer: 'Odpowiedź.' }))
+  })
+
+  it('sends the fragments with the question to the model but saves only the raw question', async () => {
+    await run([chunk('Odpowiedź.', 'stop')])
+
+    expect(vi.mocked(streamChatCompletion).mock.calls[0][0].at(-1)).toEqual({
+      role: 'user',
+      content: 'fragmenty + Pytanie',
+    })
+    expect(saveExchange).toHaveBeenCalledWith(expect.objectContaining({ question: 'Pytanie' }))
   })
 })
