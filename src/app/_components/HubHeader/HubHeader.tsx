@@ -7,6 +7,8 @@ import { NoticesPopover } from 'notices'
 import { getSession } from 'server/auth'
 import { loadNotices } from 'server/notices'
 
+import packageJson from '../../../../package.json'
+
 const FORUM_URL = process.env.NEXT_PUBLIC_FORUM_URL || undefined
 
 interface HubHeaderProps {
@@ -27,7 +29,7 @@ const HubHeader = async ({ appId, title, actions, menuItems }: HubHeaderProps) =
   return (
     <AppHeader title={title ?? app?.name}>
       {actions}
-      <NoticesPopover notices={notices} />
+      <NoticesPopover notices={notices} version={packageJson.version} />
       {FORUM_URL && (
         <Button asChild variant="ghost" size="icon-lg" className="hidden md:inline-flex">
           <a
