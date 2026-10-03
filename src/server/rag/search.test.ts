@@ -65,6 +65,27 @@ describe('searchChunks', () => {
     expect(result[0]!.id).toBe('c1')
   })
 
+  it('merges FTS and trigram by position, not by their incomparable raw scores', async () => {
+    embedTextMock.mockResolvedValue(null)
+    queryRawMock.mockImplementation((strings: TemplateStringsArray) => {
+      const sql = sqlOf(strings)
+      const row = (id: string, rank: number) => ({
+        id,
+        content: id,
+        documentTitle: id,
+        category: 'zasady',
+        rank,
+      })
+      if (sql.includes('to_tsquery')) return Promise.resolve([row('fts-hit', 0.03)])
+      if (sql.includes('word_similarity')) return Promise.resolve([row('trigram-hit', 0.3)])
+      return Promise.resolve([])
+    })
+
+    const result = await searchChunks('klany wrodzone', { app: 'tutorials', limit: 5 })
+
+    expect(result.map((r) => r.id)).toEqual(['fts-hit', 'trigram-hit'])
+  })
+
   it('ranks a chunk found by both FTS and embedding search above one found by only one source', async () => {
     embedTextMock.mockResolvedValue([0.1, 0.2, 0.3])
     queryRawMock.mockImplementation((strings: TemplateStringsArray) => {

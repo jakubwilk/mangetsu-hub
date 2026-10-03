@@ -10,6 +10,13 @@ const SYNONYM_RULES: { pattern: RegExp; stem: string }[] = [
   { pattern: /\b(runda?|rundy|rundzie|rundę|rundą|rundami|rundach)\b/i, stem: 'kolejk' },
   // "rodzaj/typ" → "poziom" (rules describe tiers as "poziomy", e.g. "Poziomy Klątw")
   { pattern: /\b(rodzaj(e|ów|u|ami|ach)?|typ(y|ów|u|ami|ach)?)\b/i, stem: 'poziom' },
+  // Inflected forms the prefix FTS misses ("klany:*" ≠ "klanów", "wrodzone:*" ≠ "Wrodzona").
+  // No trailing \b: JS word boundaries break on Polish letters like "ó".
+  { pattern: /\bklan/i, stem: 'klan' },
+  { pattern: /\bwrodzon/i, stem: 'wrodzon' },
+  { pattern: /\bdziedzicz/i, stem: 'dziedzicz' },
+  // Also catches the common "tehcniki" typo.
+  { pattern: /\bte(ch|hc)nik/i, stem: 'technik' },
 ]
 
 export const expandWithSynonyms = (query: string): string => {
