@@ -16,6 +16,14 @@ const MAX_MESSAGE_LENGTH = 1000
 // Leading blank lines close a markdown table the model may have been cut off in the middle of.
 export const TRUNCATION_NOTE = '\n\n_Odpowiedź została ucięta — dopytaj o konkretną część._'
 
+// Long past answers pull the model into continuing them and re-asserting their mistakes as facts.
+const HISTORY_ANSWER_CHARS = 400
+
+const trimAnswer = (m: ChatMessage): ChatMessage =>
+  m.role === 'assistant' && m.content.length > HISTORY_ANSWER_CHARS
+    ? { ...m, content: `${m.content.slice(0, HISTORY_ANSWER_CHARS)}…` }
+    : m
+
 const enc = new TextEncoder()
 const sseEvent = (data: object) => enc.encode(`data: ${JSON.stringify(data)}\n\n`)
 
@@ -44,7 +52,12 @@ export const buildPromptContext = async (
 ) => {
   const needsCostContext = STAT_ADVANCEMENT_PATTERN.test(searchQuery)
 
-  const { conversationId, history } = await getRecentHistory(userId, TUTORIALS_APP, sessionId)
+  const { conversationId, history: fullHistory } = await getRecentHistory(
+    userId,
+    TUTORIALS_APP,
+    sessionId,
+  )
+  const history = fullHistory.map(trimAnswer)
 
   // Follow-ups ("a skąd je wziąć?") carry no topic of their own — search with the previous question too.
   const previousQuestion = history.findLast((m) => m.role === 'user')?.content
