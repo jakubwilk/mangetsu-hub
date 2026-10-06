@@ -77,21 +77,27 @@ Dodanie mini-apki:
 ![Mangetsu RAG](https://jakubwilk.pl/images/mangetsu-rag.png)
 
 ```
+Import (pnpm content:import [id wątku…]):
+  wątek forum (wersja do druku) → markdown → content/tutorials/<kategoria>/<slug>.md
+
 Seeding (pnpm db:seed):
   content/tutorials/<kategoria>/*.md → chunking → embedding (OVH) → PostgreSQL (tsvector + vector)
 
 Zapytanie:
   rezerwacja limitu → [guardrail ∥ hybrid search (FTS AND/OR + trigram + embeddingi, RRF)]
-  → rozszerzenie o resztę trafionych dokumentów → prompt do LLM → odpowiedź (stream SSE)
+  → rozszerzenie o trafione sekcje/dokumenty → prompt do LLM → odpowiedź (stream SSE)
 ```
 
-- **Chunking:** ~650 tokenów z overlapem ~100.
+- **Import treści** (`scripts/importForum.ts`): deterministyczny konwerter (bez AI) wersji do druku wątku
+  jcink — post → `##`, sekcja posta → `###`, przykłady jako cytaty. Lista wątków: `scripts/forumTopics.ts`.
+  Wynik przeglądaj w `git diff content/` przed seedem.
+- **Chunking:** ~650 tokenów z overlapem ~100; każdy chunk zna ścieżki sekcji, przez które przechodzi.
 - **Hybrid search:**
   - FTS (`simple`, najpierw AND, potem OR);
   - trigram (`word_similarity`);
   - embeddingi (cosine, waga 2× w RRF, timeout 8 s z fallbackiem do samego FTS).
 - **Synonimy** specyficzne dla poradników (`server/tutorials/synonyms.ts`) rozszerzają tylko zapytanie FTS.
-- **Rozszerzenie kontekstu:** do trafionych chunków dociągane są pozostałe fragmenty tych samych dokumentów (w kolejności rankingu, budżet 12 000 znaków).
+- **Rozszerzenie kontekstu:** każde trafienie (w kolejności rankingu) dociąga najszerszą grupę, która mieści się w budżecie 12 000 znaków — cały dokument, a gdy się nie mieści, swoją sekcję `##`, a potem podsekcję `###`.
 - **Guardrail** (`server/guardrails.ts`): klasyfikator na modelu OVH działa równolegle z wyszukiwaniem i zwraca jeden z werdyktów:
   - `INJECTION` → odpowiedź 400;
   - `JEZYK` → stała odpowiedź „tylko po polsku”, bez wywołania głównego modelu i bez zapisu do historii;
@@ -115,7 +121,7 @@ wyświetlania historii, a przy starcie jest synchronizowany z listą sesji z ser
 ├── docs/                           # notices.json (globalne), tutorials/documents-info.md
 ├── prisma/                         # Schema i migracje
 ├── public/                         # Grafiki (m.in. tła kafelków)
-├── scripts/                        # seed.ts (+ parser ścieżek treści)
+├── scripts/                        # seed.ts (+ parser ścieżek treści), importForum.ts (forum → markdown)
 ├── docker-compose.yml              # Tylko lokalny Postgres z pgvector (nie do deploymentu)
 └── src/
     ├── app/
