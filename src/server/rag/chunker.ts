@@ -1,6 +1,8 @@
 export interface Chunk {
   content: string
   chunkIndex: number
+  // Section paths ("Post › Section") of the chunk's paragraphs; search expands hits by them.
+  sections: string[]
 }
 
 const TARGET_TOKENS = 650
@@ -9,6 +11,8 @@ const CHARS_PER_TOKEN = 4
 
 const TARGET_CHARS = TARGET_TOKENS * CHARS_PER_TOKEN
 const OVERLAP_CHARS = OVERLAP_TOKENS * CHARS_PER_TOKEN
+
+export const SECTION_SEPARATOR = ' › '
 
 // Level 2+ only — the `#` document title already reaches the prompt as the document title.
 const SECTION_HEADING = /^(#{2,6})\s+(.+)$/
@@ -34,18 +38,25 @@ export const chunkText = (text: string): Chunk[] => {
   const sectionAt = (offset: number) =>
     (spans.find((s) => s.end > offset) ?? spans.at(-1))?.section ?? ''
 
+  const pushChunk = () =>
+    chunks.push({
+      content: withSection(current.trim(), sectionAt(0)),
+      chunkIndex: index++,
+      sections: [...new Set(spans.map((s) => s.section).filter(Boolean))],
+    })
+
   for (const paragraph of paragraphs) {
     const heading = paragraph.split('\n', 1)[0]!.match(SECTION_HEADING)
     if (heading) {
       const depth = heading[1]!.length - 2
       headings.splice(depth, headings.length, heading[2]!.trim())
     }
-    const section = headings.join(' › ')
+    const section = headings.join(SECTION_SEPARATOR)
 
     const candidate = current ? `${current}\n\n${paragraph}` : paragraph
 
     if (candidate.length > TARGET_CHARS && current) {
-      chunks.push({ content: withSection(current.trim(), sectionAt(0)), chunkIndex: index++ })
+      pushChunk()
       const overlap = current.slice(-OVERLAP_CHARS)
       const overlapSection = sectionAt(current.length - overlap.length)
       current = `${overlap}\n\n${paragraph}`
@@ -59,9 +70,7 @@ export const chunkText = (text: string): Chunk[] => {
     }
   }
 
-  if (current.trim()) {
-    chunks.push({ content: withSection(current.trim(), sectionAt(0)), chunkIndex: index })
-  }
+  if (current.trim()) pushChunk()
 
   return chunks
 }
