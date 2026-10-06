@@ -10,7 +10,9 @@ describe('chunkText', () => {
 
   it('keeps a single short paragraph as one chunk', () => {
     const chunks = chunkText('Krótki akapit o zasadach forum.')
-    expect(chunks).toEqual([{ content: 'Krótki akapit o zasadach forum.', chunkIndex: 0 }])
+    expect(chunks).toEqual([
+      { content: 'Krótki akapit o zasadach forum.', chunkIndex: 0, sections: [] },
+    ])
   })
 
   it('merges multiple short paragraphs into one chunk', () => {
@@ -95,6 +97,25 @@ describe('chunkText', () => {
 
   it('normalizes CRLF line endings before chunking', () => {
     const chunks = chunkText('Linia pierwsza.\r\n\r\nLinia druga.')
-    expect(chunks).toEqual([{ content: 'Linia pierwsza.\n\nLinia druga.', chunkIndex: 0 }])
+    expect(chunks).toEqual([
+      { content: 'Linia pierwsza.\n\nLinia druga.', chunkIndex: 0, sections: [] },
+    ])
+  })
+
+  it('lists every section path a chunk touches, without the document preamble', () => {
+    const text = ['# Sklep', '## Bronie', '### Pasywki', 'A'.repeat(2000), 'B'.repeat(2000)].join(
+      '\n\n',
+    )
+
+    const chunks = chunkText(text)
+
+    expect(chunks[0]!.sections).toEqual(['Bronie', 'Bronie › Pasywki'])
+    expect(chunks[1]!.sections).toEqual(['Bronie › Pasywki'])
+  })
+
+  it('assigns a chunk that spans a heading to both sections', () => {
+    const text = ['## Pierwsza', 'A'.repeat(2580), '## Druga', 'B'.repeat(100)].join('\n\n')
+
+    expect(chunkText(text)[1]!.sections).toEqual(['Pierwsza', 'Druga'])
   })
 })

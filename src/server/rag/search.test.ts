@@ -151,8 +151,8 @@ describe('searchChunks', () => {
     findManyMock.mockImplementation((args: ChunkFindManyArgs) => {
       if (args.where?.id?.in) {
         return Promise.resolve([
-          { id: 'c0', documentId: 'doc-c' },
-          { id: 'c2', documentId: 'doc-c' },
+          { id: 'c0', documentId: 'doc-c', sections: [] },
+          { id: 'c2', documentId: 'doc-c', sections: [] },
         ])
       }
       return Promise.resolve([
@@ -160,6 +160,7 @@ describe('searchChunks', () => {
           id: 'c1',
           documentId: 'doc-c',
           content: 'Fragment 1',
+          sections: [],
           document: { title: 'Dok C', category: 'zasady' },
         },
       ])
@@ -189,19 +190,23 @@ describe('searchChunks', () => {
     })
     findManyMock.mockImplementation((args: ChunkFindManyArgs) => {
       if (args.where?.id?.in) {
-        return Promise.resolve([{ id: 'stat-sila', documentId: 'doc-statystyki' }])
+        return Promise.resolve([
+          { id: 'stat-sila', documentId: 'doc-statystyki', sections: ['Siła'] },
+        ])
       }
       return Promise.resolve([
         {
           id: 'stat-wytrzymalosc',
           documentId: 'doc-statystyki',
           content: 'Wytrzymałość...',
+          sections: ['Wytrzymałość'],
           document: { title: 'Statystyki', category: 'mechanika' },
         },
         {
           id: 'stat-szybkosc',
           documentId: 'doc-statystyki',
           content: 'Szybkość...',
+          sections: ['Szybkość'],
           document: { title: 'Statystyki', category: 'mechanika' },
         },
       ])
@@ -249,7 +254,7 @@ describe('searchChunks', () => {
     })
     findManyMock.mockImplementation((args: ChunkFindManyArgs) => {
       if (args.where?.id?.in) {
-        return Promise.resolve([{ id: 'huge-hit', documentId: 'doc-huge' }])
+        return Promise.resolve([{ id: 'huge-hit', documentId: 'doc-huge', sections: [] }])
       }
       return Promise.resolve([
         {
@@ -257,6 +262,7 @@ describe('searchChunks', () => {
           documentId: 'doc-huge',
           // Exceeds MAX_EXPANSION_CHARS (12000) on its own.
           content: 'x'.repeat(12001),
+          sections: [],
           document: { title: 'Dok Ogromny', category: 'zasady' },
         },
       ])
@@ -265,6 +271,62 @@ describe('searchChunks', () => {
     const result = await searchChunks('kolejka', { app: 'tutorials', limit: 5 })
 
     expect(result.map((r) => r.id)).toEqual(['huge-hit'])
+  })
+
+  describe('expanding a document larger than the budget', () => {
+    const mockHugeDocument = (hitSections: string[]) => {
+      embedTextMock.mockResolvedValue(null)
+      queryRawMock.mockImplementation((strings: TemplateStringsArray) =>
+        Promise.resolve(
+          sqlOf(strings).includes('to_tsquery')
+            ? [
+                {
+                  id: 'hit',
+                  content: 'Trójząb',
+                  documentTitle: 'PE',
+                  category: 'kompendium',
+                  rank: 1,
+                },
+              ]
+            : [],
+        ),
+      )
+      const rest = (id: string, sections: string[], length: number) => ({
+        id,
+        documentId: 'doc-pe',
+        content: id.padEnd(length, '.'),
+        sections,
+        document: { title: 'PE', category: 'kompendium' },
+      })
+      findManyMock.mockImplementation((args: ChunkFindManyArgs) =>
+        Promise.resolve(
+          args.where?.id?.in
+            ? [{ id: 'hit', documentId: 'doc-pe', sections: hitSections }]
+            : [
+                rest('bronie-intro', ['Bronie'], 1000),
+                rest('bronie-kregi', ['Bronie › Kręgi'], 2000),
+                rest('bronie-mechanika', ['Bronie › Mechanika'], 10000),
+                rest('bariery', ['Bariery'], 5000),
+              ],
+        ),
+      )
+    }
+
+    it('takes the whole top-level section of the hit when the document does not fit', async () => {
+      mockHugeDocument(['Bariery'])
+
+      const result = await searchChunks('bariery', { app: 'tutorials', limit: 5 })
+
+      expect(result.map((r) => r.id)).toEqual(['hit', 'bariery'])
+    })
+
+    it('falls back to the subsection when the top-level section does not fit either', async () => {
+      mockHugeDocument(['Bronie › Kręgi'])
+
+      const result = await searchChunks('kręgi broni', { app: 'tutorials', limit: 5 })
+
+      expect(result.map((r) => r.id)).toEqual(['hit', 'bronie-kregi'])
+    })
   })
 
   it('applies expandQuery to FTS tokens only', async () => {

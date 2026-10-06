@@ -1,4 +1,4 @@
-import 'dotenv/config'
+import './loadEnv'
 
 import * as fs from 'fs'
 import * as path from 'path'
@@ -39,7 +39,12 @@ const seedDocument = async (filePath: string, { app, category, title }: ContentF
 
       for (const [i, chunk] of chunks.entries()) {
         const created = await tx.chunk.create({
-          data: { documentId: doc.id, content: chunk.content, chunkIndex: chunk.chunkIndex },
+          data: {
+            documentId: doc.id,
+            content: chunk.content,
+            chunkIndex: chunk.chunkIndex,
+            sections: chunk.sections,
+          },
           select: { id: true },
         })
         await tx.$executeRaw`UPDATE chunks SET embedding = ${vectors[i]}::vector WHERE id = ${created.id}`

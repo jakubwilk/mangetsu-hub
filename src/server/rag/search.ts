@@ -1,6 +1,7 @@
 import { embedText } from 'server/ai/embeddings'
 import { db } from 'server/db'
 
+import { SECTION_SEPARATOR } from './chunker'
 import type { SearchResult } from './types'
 
 const tokenize = (query: string): string[] =>
@@ -105,40 +106,44 @@ const mergeHybrid = (fts: SearchResult[], embedding: SearchResult[], limit: numb
     limit,
   )
 
-// Caps how many characters of extra "whole document" content expandToFullDocuments will pull
-// in. Without this, a broad query whose top-5 hits span several documents (or one large one,
-// e.g. "Przekleta Energia" at ~46k chars) can balloon the prompt to 30k+ tokens, which is both
-// costly (OVH bills per token) and likely to bury the relevant fragment in noise.
+// Caps how many characters of extra context expandHits will pull in. Without this, a broad
+// query whose top-5 hits span several documents can balloon the prompt to 30k+ tokens, which is
+// both costly (OVH bills per token) and likely to bury the relevant fragment in noise.
 const MAX_EXPANSION_CHARS = 12000
 
-// After the hybrid merge, pull in remaining chunks of documents that have at least one chunk
-// in the results, up to MAX_EXPANSION_CHARS. A single hit is often just one section of a
-// multi-section document (e.g. one stat out of five in "Statystyki") — without the rest, the
-// LLM only sees a partial picture and produces incomplete answers to broad questions. Documents
-// are expanded in rank order; a document that doesn't fit the remaining budget is skipped so a
-// later, smaller, still-relevant document isn't crowded out by one large one.
-const expandToFullDocuments = async (results: SearchResult[]): Promise<SearchResult[]> => {
+const sectionDepth = (path: string) => (path ? path.split(SECTION_SEPARATOR).length : 0)
+
+// Groups a hit can expand to, widest first: the whole document (''), then every prefix of the
+// section paths the hit touches — "Post", "Post › Section", …
+const expansionGroups = (sections: string[]): string[] => {
+  const prefixes = sections.flatMap((path) => {
+    const parts = path.split(SECTION_SEPARATOR)
+    return parts.map((_, i) => parts.slice(0, i + 1).join(SECTION_SEPARATOR))
+  })
+  return ['', ...new Set(prefixes)].sort((a, b) => sectionDepth(a) - sectionDepth(b))
+}
+
+const inGroup = (sections: string[], group: string) =>
+  group === '' ||
+  sections.some((path) => path === group || path.startsWith(`${group}${SECTION_SEPARATOR}`))
+
+// After the hybrid merge, pull in more of the documents behind the hits. A single hit is often
+// just a fragment of one section (e.g. one stat out of five in "Statystyki") — without the rest,
+// the LLM only sees a partial picture and answers incompletely. Each hit, in rank order, takes
+// the widest group whose missing chunks still fit the budget: its whole document, else its
+// top-level section, else a subsection — so a large document still contributes the section that
+// matters instead of nothing. Chunks seeded without sections expand whole or not at all.
+const expandHits = async (results: SearchResult[]): Promise<SearchResult[]> => {
   if (results.length === 0) return results
 
   const resultIds = results.map((r) => r.id)
 
-  const meta = await db.chunk.findMany({
+  const hits = await db.chunk.findMany({
     where: { id: { in: resultIds } },
-    select: { id: true, documentId: true },
+    select: { id: true, documentId: true, sections: true },
   })
-
-  // findMany with `id: { in }` doesn't preserve the input array's order, so look up each
-  // chunk's document via a map and walk `resultIds` (already rank-ordered) to get a
-  // rank-ordered, deduplicated document list — needed for the budget below to prioritize
-  // higher-ranked documents correctly.
-  const documentIdByChunkId = new Map(meta.map((m) => [m.id, m.documentId]))
-  const documentIds = [
-    ...new Set(
-      resultIds
-        .map((id) => documentIdByChunkId.get(id))
-        .filter((id): id is string => id !== undefined),
-    ),
-  ]
+  const hitById = new Map(hits.map((h) => [h.id, h]))
+  const documentIds = [...new Set(hits.map((h) => h.documentId))]
   if (documentIds.length === 0) return results
 
   const remainingChunks = await db.chunk.findMany({
@@ -146,10 +151,12 @@ const expandToFullDocuments = async (results: SearchResult[]): Promise<SearchRes
       documentId: { in: documentIds },
       id: { notIn: resultIds },
     },
+    orderBy: { chunkIndex: 'asc' },
     select: {
       id: true,
       documentId: true,
       content: true,
+      sections: true,
       document: { select: { title: true, category: true } },
     },
   })
@@ -164,25 +171,33 @@ const expandToFullDocuments = async (results: SearchResult[]): Promise<SearchRes
     }
   }
 
+  const included = new Set<string>()
   const expanded: SearchResult[] = []
   let remainingBudget = MAX_EXPANSION_CHARS
 
-  for (const documentId of documentIds) {
-    const docChunks = chunksByDocument.get(documentId)
+  // findMany with `id: { in }` doesn't preserve order — walk `resultIds`, which is rank-ordered.
+  for (const id of resultIds) {
+    const hit = hitById.get(id)
+    const docChunks = hit && chunksByDocument.get(hit.documentId)
     if (!docChunks) continue
 
-    const docChars = docChunks.reduce((sum, c) => sum + c.content.length, 0)
-    if (docChars > remainingBudget) continue
+    for (const group of expansionGroups(hit.sections)) {
+      const missing = docChunks.filter((c) => !included.has(c.id) && inGroup(c.sections, group))
+      const chars = missing.reduce((sum, c) => sum + c.content.length, 0)
+      if (chars > remainingBudget) continue
 
-    remainingBudget -= docChars
-    for (const c of docChunks) {
-      expanded.push({
-        id: c.id,
-        content: c.content,
-        documentTitle: c.document.title,
-        category: c.document.category,
-        rank: 0,
-      })
+      remainingBudget -= chars
+      for (const c of missing) {
+        included.add(c.id)
+        expanded.push({
+          id: c.id,
+          content: c.content,
+          documentTitle: c.document.title,
+          category: c.document.category,
+          rank: 0,
+        })
+      }
+      break
     }
   }
 
@@ -238,7 +253,7 @@ export const searchChunks = async (
     ftsResults = mergeFts(orResults, trigramResults, fetchLimit)
   }
 
-  const finalize = (results: SearchResult[]) => (expand ? expandToFullDocuments(results) : results)
+  const finalize = (results: SearchResult[]) => (expand ? expandHits(results) : results)
 
   // If embedding timed out or failed, fall back to FTS + context expansion
   if (!queryEmbedding) return finalize(ftsResults.slice(0, limit))

@@ -1,132 +1,193 @@
 # Profesje
 
+## Profesje
+
 Mangetsu to organizacja powstała ze zrzeszenia najistotniejszych klanów w społeczności Jujutsu. Te radziły sobie z prześladującymi ludzkość klątwami już od wieków, a więc wynikające z doświadczenia tradycje i strategie naturalną koleją rzeczy przesiąkły również w szeregi sojuszu. Celem założycieli Mangetsu nie było bowiem stawianie starego porządku całkiem na głowie, a skoordynowanie skłóconych frakcji w walce przeciwko wspólnemu wrogowi.
+
 Jednym z elementów organizacyjnych, jaki wyrósł na kanwie dotychczasowego porządku i doświadczeń, jest koncepcja profesji. Wśród czarowników parających się jujutsu od zawsze wyróżnić można było osoby pielęgnujące zdolności, które nawet niekoniecznie musiały mieć bezpośredni potencjał bojowy. Jednostki były w stanie opanować manipulację odwróconą przeklętą energią w celu leczenia swoich towarzyszy. Inni potrafili tę umiejętność zastosować w walce, przedzierając się przez hordy klątw z niespotykaną mocą. Niektórzy nie mieli sobie równych jako zwiadowcy, potrafiąc dostrzec nawet drobne pozostałości przeklętej energii. Jeszcze inni tworzyli wyjątkowy oręż i artefakty, które były przekazywane z rąk do rąk, przynosząc chwałę ich twórcom nawet po ich śmierci.
+
 Mangetsu zgrupowało pożądane przez organizację umiejętności w pięciu kategoriach, a są to: Medyk, Wynalazca, Kowal, Tropiciel i Egzorcysta. Profesje te to niejako archetypy czarowników i służą przede wszystkim klasyfikacji członków w szeregach. Po zdanym egzaminie, na etapie wstępnego szkolenia, każdy rekrut staje przed wyborem jednej z tych potencjalnych ścieżek rozwoju. Jeszcze w Sercu zostają im wpojone co najmniej podstawowe zdolności związane z daną profesją, a odpowiednia adnotacja ląduje w aktach danej osoby. Może się zdarzyć, że to na podstawie profesji organizacja zwróci się do jakiegoś czarownika ze specjalnym zadaniem. Mangetsu może ściągnąć wszystkich okolicznych medyków na wypadek jakiejś przeklętej pandemii. Może zlecić wykonanie jakiejś broni lub przedmiotu wybranemu rzemieślnikowi. Może też tworzyć oddziały zwiadowcze z tropicieli w poszukiwaniu ofiar zaginionych bez śladu, a także szturmowe trupy z samych egzorcystów, gdy potrzebna jest przytłaczająca ofensywa. Profesja czarownika nie zwalnia go jednak z innych obowiązków związanych z walką z klątwami, a jest raczej dodatkową specjalizacją.
+
 Dalszy rozwój w danej dziedzinie zależy już od samego czarownika, bowiem żaden nie jest zobligowany by aspirować do mistrzostwa. Niektórzy z medyków na zawsze pozostaną na etapie noszenia wody i opatrunków, z egzorcystów na etapie odrobinę mocniejszego przeklętego prostego, a kowali na etapie ostrzenia kuchennych noży. Mangetsu wspiera jednak te szczególnie utalentowane i ambitne jednostki umożliwiając im dalszą naukę w praktyce, czasem nawet pod okiem bardziej doświadczonych mentorów. Jednocześnie nie ma żadnych oporów, by wykorzystać zdolności takiej osoby dla dobra organizacji.
 
 Różnice w wiedzy pomiędzy poszczególnymi przedstawicielami danej profesji określone są na forum za pomocą systemu pięciu klas o rozpiętości od nowicjusza po arcymistrza. Tytuły te są elementem mechaniki, a postaci nie mają pojęcia o awansie na przykład na poziom “specjalisty”. Fabularnie postęp danego czarownika ma prawo być znacznie bardziej płynny, a samo Mangetsu wiedzę o możliwościach członków szacuje na podstawie treści odpowiednich raportów oraz znanych, faktycznych zdolności danej osoby, a nie jakichś abstrakcyjnych tytułów. Na potrzeby systemu rozwoju istnieje jednak następujący podział:
-1. Nowicjusz - osoba, która dopiero co raczkuje w swojej specjalizacji. Ten poziom to absolutne minimum wiedzy, jaką dany czarownik zobligowany jest zdobyć w trakcie okresu przygotowawczego. Nowicjusze to amatorzy w swojej dziedzinie, którzy zatrzymali się na absolutnych podstawach i posiadają znikome, jeśli w ogóle jakiekolwiek doświadczenie w praktyce. Również ich teoretyczna wiedza książkowa ogranicza się do podstawowych, niezbędnych zagadnień. W aktach organizacji osoby te widnieją przeważnie jako rezerwiści, a więc zlecenia związane z profesją otrzymują jedynie, gdy nie ma żadnego, innego wyboru. Stąd do arcymistrza jeszcze długa droga, ale z pewnością jest to jej początek.
-2. Znawca - ten czarownik miał już szansę wypróbować nauczone zdolności w praktyce i to w poważnych sytuacjach, a nie jedynie w ramach przygotowawczego kursu pod okiem doświadczonego nauczyciela. Większość członków Mangetsu osiąga ten poziom naturalnie w trakcie swojej kariery i przeważnie zatrzymuje się na nim aż do jej końca. Osoby te mogą od czasu do czasu otrzymać jakieś zlecenie związane z ich profesją i jest ona nierzadko brana pod uwagę podczas przydzielania misji faworyzujących konkretne zdolności. Czarownik na tym poziomie jest w stanie samodzielnie poradzić sobie z większością zwyczajnych zadań w swojej dziedzinie i nie sposób odmówić mu kompetencji.
-3. Specjalista - całkowicie samodzielna jednostka, która porządnie zgłębiła swoją dziedzinę zarówno pod względem wiedzy teoretycznej, jak i praktycznego doświadczenia. Ten poziom osiągają czarownicy, którzy poświęcili rozwojowi swojej profesji wiele lat, albo posiadają bezsprzeczny talent. Te osoby po prostu wiedzą co robią i chociaż zdają sobie sprawę, że do poznania wszystkich tajników jest im jeszcze daleko, to ich zdolności są w organizacji cenione do stopnia, w którym ich profesja gwarantować może im rozgłos nawet poza murami własnej dywizji.
-4. Mistrz - najwyższy możliwy poziom, który dostępny jest dla "śmiertelnika". Czarownik tego poziomu bez problemów radzi sobie z zaawansowanymi, niestandardowymi zadaniami w swojej dziedzinie, a przez mniej doświadczonych kolegów po fachu uznawany jest nierzadko za guru. Nic dziwnego, w końcu taka osoba nierzadko poświęca całą swoją karierę na rozwój wybranej profesji. Jej wiedza i możliwości są niezastąpione, a Mangetsu nieskrępowanie i regularnie korzysta z jej zdolności zasypując ją dedykowanymi zleceniami i misjami.
-5. Arcymistrz - niewiele osób jest w stanie osiągnąć ten pułap. Przekroczenie progu mistrzowskiego jest bowiem możliwe jedynie dla tych, którzy w swoją dziedzinę zainwestowali nie tylko nieporównywalną ilość czasu i energii, ale też urodzili się z nadzwyczajnym talentem. Pojawienie się takiego ewenementu graniczy z cudem, a gdy już się taki narodzi, to nie ma sobie równych. Jego umiejętności przekraczają wszelkie wyobrażenia na nowo definiując znane granice możliwości danej profesji.
+
+**Nowicjusz -** osoba, która dopiero co raczkuje w swojej specjalizacji. Ten poziom to absolutne minimum wiedzy, jaką dany czarownik zobligowany jest zdobyć w trakcie okresu przygotowawczego. Nowicjusze to amatorzy w swojej dziedzinie, którzy zatrzymali się na absolutnych podstawach i posiadają znikome, jeśli w ogóle jakiekolwiek doświadczenie w praktyce. Również ich teoretyczna wiedza książkowa ogranicza się do podstawowych, niezbędnych zagadnień. W aktach organizacji osoby te widnieją przeważnie jako rezerwiści, a więc zlecenia związane z profesją otrzymują jedynie, gdy nie ma żadnego, innego wyboru. Stąd do arcymistrza jeszcze długa droga, ale z pewnością jest to jej początek.
+
+**Znawca -** ten czarownik miał już szansę wypróbować nauczone zdolności w praktyce i to w poważnych sytuacjach, a nie jedynie w ramach przygotowawczego kursu pod okiem doświadczonego nauczyciela. Większość członków Mangetsu osiąga ten poziom naturalnie w trakcie swojej kariery i przeważnie zatrzymuje się na nim aż do jej końca. Osoby te mogą od czasu do czasu otrzymać jakieś zlecenie związane z ich profesją i jest ona nierzadko brana pod uwagę podczas przydzielania misji faworyzujących konkretne zdolności. Czarownik na tym poziomie jest w stanie samodzielnie poradzić sobie z większością zwyczajnych zadań w swojej dziedzinie i nie sposób odmówić mu kompetencji.
+
+**Specjalista -** całkowicie samodzielna jednostka, która porządnie zgłębiła swoją dziedzinę zarówno pod względem wiedzy teoretycznej, jak i praktycznego doświadczenia. Ten poziom osiągają czarownicy, którzy poświęcili rozwojowi swojej profesji wiele lat, albo posiadają bezsprzeczny talent. Te osoby po prostu wiedzą co robią i chociaż zdają sobie sprawę, że do poznania wszystkich tajników jest im jeszcze daleko, to ich zdolności są w organizacji cenione do stopnia, w którym ich profesja gwarantować może im rozgłos nawet poza murami własnej dywizji.
+
+**Mistrz -** najwyższy możliwy poziom, który dostępny jest dla "śmiertelnika". Czarownik tego poziomu bez problemów radzi sobie z zaawansowanymi, niestandardowymi zadaniami w swojej dziedzinie, a przez mniej doświadczonych kolegów po fachu uznawany jest nierzadko za guru. Nic dziwnego, w końcu taka osoba nierzadko poświęca całą swoją karierę na rozwój wybranej profesji. Jej wiedza i możliwości są niezastąpione, a Mangetsu nieskrępowanie i regularnie korzysta z jej zdolności zasypując ją dedykowanymi zleceniami i misjami.
+
+**Arcymistrz -** niewiele osób jest w stanie osiągnąć ten pułap. Przekroczenie progu mistrzowskiego jest bowiem możliwe jedynie dla tych, którzy w swoją dziedzinę zainwestowali nie tylko nieporównywalną ilość czasu i energii, ale też urodzili się z nadzwyczajnym talentem. Pojawienie się takiego ewenementu graniczy z cudem, a gdy już się taki narodzi, to nie ma sobie równych. Jego umiejętności przekraczają wszelkie wyobrażenia na nowo definiując znane granice możliwości danej profesji.
 
 ## Medyk
 
-🚧 W BUDOWIE: Treść tego posta może być niepełna, przestarzała lub niekompatybilna z innymi opisami na forum i będzie się w najbliższym czasie zmieniać 🚧
+🚧 **W BUDOWIE: Treść tego posta może być niepełna, przestarzała lub niekompatybilna z innymi opisami na forum i będzie się w najbliższym czasie zmieniać** 🚧
 
 ### Opis Profesji
 
 W Organizacji, która każdego dnia ryzykuje życiem swoich członków, musi znajdować się oddział, którego głównym celem jest przede wszystkim dbanie o stan zdrowia. Takie właśnie zadanie dźwigają na swoich barkach Medycy. Dzięki wieloletnim treningom, są oni uczeni anatomii, a także jak największego zakresu medycyny. Ma to na celu wpojenie im wiedzy, którą następnie przełożyć mogą na efektywne ratowanie życia swoich towarzyszy. Umożliwia im to przekształcanie swojej Przeklętej Energii w Pozytywną przy użyciu Reverse Cursed Technique (反はん転てん術じゅつ式しき Hanten Jutsushiki). Dzięki tej mocy są oni w stanie opatrywać rany, a także leczyć dużo poważniejsze uszkodzenia.
 
-Mechanika Profesji Medyka:
-- Każdy Medyk ma możliwość używania Pozytywnej Przeklętej Energii, która ma właściwości leczące. Oznacza to, że gracz jest w stanie przy jej wykorzystaniu "naprawiać" negatywne skutki fizyczne na ciałach swoich towarzyszy
-- Ponadto każdy Medyk posiada dużą wiedzę medyczną i jest w stanie opiniować stan poszkodowanego na podstawie swojej wiedzy.
-- Istnieje możliwość stworzenia tylko jednej techniki leczenia na poziom, ale gorąco zachęcamy do wymyślania większej ilości spersonalizowanych umiejętności, gdyż wpłynąć może to bezpośrednio na skuteczność procesu.
-- W związku z tym, że tworzenie Pozytywnej Przeklętej Energii jest cięższym procesem niż sama jej manipulacja, wszystkie techniki tego rodzaju kosztują o 25% PE więcej.
-- Medyk ma jednak możliwość pobrania tego kosztu od leczonego i zapłacenia za swoje techniki normalnej ceny PE.
-- Osoba z poziomem Arcymistrza płaci zawsze 75% kosztu PE za swoje techniki. Ponadto ma możliwość zmniejszenia tej wartości o dodatkowe 25% przy pobraniu PE od leczonego.
+**Mechanika Profesji Medyka:**
+
+> - Każdy Medyk ma możliwość używania Pozytywnej Przeklętej Energii, która ma właściwości leczące. Oznacza to, że gracz jest w stanie przy jej wykorzystaniu "naprawiać" negatywne skutki fizyczne na ciałach swoich towarzyszy
+
+> - Ponadto każdy Medyk posiada dużą wiedzę medyczną i jest w stanie opiniować stan poszkodowanego na podstawie swojej wiedzy.
+
+> - Istnieje możliwość stworzenia tylko jednej techniki leczenia na poziom, ale gorąco zachęcamy do wymyślania większej ilości spersonalizowanych umiejętności, gdyż wpłynąć może to bezpośrednio na skuteczność procesu.
+
+> - W związku z tym, że tworzenie Pozytywnej Przeklętej Energii jest cięższym procesem niż sama jej manipulacja, wszystkie techniki tego rodzaju kosztują o 25% PE więcej.
+
+> - Medyk ma jednak możliwość pobrania tego kosztu od leczonego i zapłacenia za swoje techniki normalnej ceny PE.
+
+> - Osoba z poziomem Arcymistrza płaci zawsze 75% kosztu PE za swoje techniki. Ponadto ma możliwość zmniejszenia tej wartości o dodatkowe 25% przy pobraniu PE od leczonego.
 
 ### Poziomy Zaawansowania
 
-1. Nowicjusz - Czarownik dopiero liznął pierwsze strony grubego tomiszcza o nazwie ‘Medycyna’. Jego wiedza jest więc bardzo podstawowa, ale przynajmniej umie obchodzić się z bandażem i nie pomyli leków przeciwbólowych ze środkiem przeczyszczającym. A co za tym idzie, wszelkie otarcia, obicia ciała oraz lekkie uszkodzenie naskórka nie stanowią dla niego żadnego problemu. Jest w stanie tworzyć techniki poziomu E i D, które wykorzystywać może do leczenia ran marginalnych.
-2. Znawca - Wiedza tego Czarownika nie jest już taka uboga. Od pierwszej pomocy po poważniejsze uszkodzenia skóry czy nawet lekkie naruszenia tkanki mięśniowej. Ten człowiek zdecydowanie wie co robi. Ręce mu się już tak nie trzęsą, ale skalpel lepiej trzymać poza jego zasięgiem. Jego Pozytywna Energia jest w stanie nie tylko zasklepić głębsze rozcięcia czy uszkodzone mięśnie, ale świetnie sobie poradzi z popękanymi kośćmi a nawet słabszymi migrenami. Możliwość tworzenia technik poziomów C i B, przy pomocy których jest w stanie uleczyć obrażenia rangi lekkiej i średniej.
-3. Specjalista - Wiedza tego Czarownika jest znacznie obszerniejsza. Już nie jednego wojownika przywrócił do stanu użyteczności. Złamana kończyna, zerwane ścięgna, spore ubytki tkanki mięśniowej, a nawet ból. Jego Pozytywna Energia uwinie się z tymi obrażeniami w mgnieniu oka. Ponadto są w stanie wykorzystywać jej pokłady do przyspieszenia ogólnego procesu regeneracji. Użytkownik jest w stanie używać technik poziomu A i S, dzięki którym radzi sobie z poważnymi obrażeniami.
-4. Mistrz - Niewielu w swojej karierze dorobiło się tytułu mistrza. Jego wiedza nie kończy się tylko na tym co musi wiedzieć, a ambicje popychają go do ciągłego rozwoju. Ten człowiek żyje po to abyś Ty szybciej wrócił do pełnej sprawności. Nie ma takiego przypadku obrażeń z którymi ten czarownik by sobie nie poradził. Zmiażdżenia, połowicznie uszkodzone organy wewnętrzne, uszkodzenia nerwów. Na tym poziomie Użytkownik jest sobie w stanie poradzić nawet z beznadziejnymi przypadkami. Techniki rangi S+, które są w stanie uratować osobę mającą obrażenia krytyczne, a czasem nawet i śmiertelne.
-5. Arcymistrz - Używanie Pozytywnej Energii na tym poziomie jest tak naturalne jak oddychanie. Koszty jej używania są o połowę mniejsze. Wiedza medyczna tego człowieka nie ma sobie równych. Naprawa mocno uszkodzonych narządów wewnętrznych, liczne krwotoki, mnogie złamania. Ludzie zdobywający ten poziom nierzadko zostają obwieszczeni prawdziwymi Panami życia i śmierci. Czarownik na tym poziomie jest w stanie odratować osobę, która jedną nogą opuściła już świat ludzi.
+**Nowicjusz -** Czarownik dopiero liznął pierwsze strony grubego tomiszcza o nazwie ‘Medycyna’. Jego wiedza jest więc bardzo podstawowa, ale przynajmniej umie obchodzić się z bandażem i nie pomyli leków przeciwbólowych ze środkiem przeczyszczającym. A co za tym idzie, wszelkie otarcia, obicia ciała oraz lekkie uszkodzenie naskórka nie stanowią dla niego żadnego problemu. Jest w stanie tworzyć techniki poziomu E i D, które wykorzystywać może do leczenia ran marginalnych.
+
+**Znawca -** Wiedza tego Czarownika nie jest już taka uboga. Od pierwszej pomocy po poważniejsze uszkodzenia skóry czy nawet lekkie naruszenia tkanki mięśniowej. Ten człowiek zdecydowanie wie co robi. Ręce mu się już tak nie trzęsą, ale skalpel lepiej trzymać poza jego zasięgiem. Jego Pozytywna Energia jest w stanie nie tylko zasklepić głębsze rozcięcia czy uszkodzone mięśnie, ale świetnie sobie poradzi z popękanymi kośćmi a nawet słabszymi migrenami. Możliwość tworzenia technik poziomów C i B, przy pomocy których jest w stanie uleczyć obrażenia rangi lekkiej i średniej.
+
+**Specjalista -** Wiedza tego Czarownika jest znacznie obszerniejsza. Już nie jednego wojownika przywrócił do stanu użyteczności. Złamana kończyna, zerwane ścięgna, spore ubytki tkanki mięśniowej, a nawet ból. Jego Pozytywna Energia uwinie się z tymi obrażeniami w mgnieniu oka. Ponadto są w stanie wykorzystywać jej pokłady do przyspieszenia ogólnego procesu regeneracji. Użytkownik jest w stanie używać technik poziomu A i S, dzięki którym radzi sobie z poważnymi obrażeniami.
+
+**Mistrz -** Niewielu w swojej karierze dorobiło się tytułu mistrza. Jego wiedza nie kończy się tylko na tym co musi wiedzieć, a ambicje popychają go do ciągłego rozwoju. Ten człowiek żyje po to abyś Ty szybciej wrócił do pełnej sprawności. Nie ma takiego przypadku obrażeń z którymi ten czarownik by sobie nie poradził. Zmiażdżenia, połowicznie uszkodzone organy wewnętrzne, uszkodzenia nerwów. Na tym poziomie Użytkownik jest sobie w stanie poradzić nawet z beznadziejnymi przypadkami. Techniki rangi S+, które są w stanie uratować osobę mającą obrażenia krytyczne, a czasem nawet i śmiertelne.
+
+**Arcymistrz -** Używanie Pozytywnej Energii na tym poziomie jest tak naturalne jak oddychanie. Koszty jej używania są o połowę mniejsze. Wiedza medyczna tego człowieka nie ma sobie równych. Naprawa mocno uszkodzonych narządów wewnętrznych, liczne krwotoki, mnogie złamania. Ludzie zdobywający ten poziom nierzadko zostają obwieszczeni prawdziwymi Panami życia i śmierci. Czarownik na tym poziomie jest w stanie odratować osobę, która jedną nogą opuściła już świat ludzi.
 
 ## Wynalazca
 
-🚧 W BUDOWIE: Treść tego posta może być niepełna, przestarzała lub niekompatybilna z innymi opisami na forum i będzie się w najbliższym czasie zmieniać 🚧
+🚧 **W BUDOWIE: Treść tego posta może być niepełna, przestarzała lub niekompatybilna z innymi opisami na forum i będzie się w najbliższym czasie zmieniać** 🚧
 
 ### Opis Profesji
 
 W społeczności Jujutsu od zawsze istnieją jednostki, które dużo większą uwagę przykładały do poznawania genezy Przeklętych Przedmiotów. Odnajdując ich prawdziwą naturę z czasem zaczęli oni próbować tworzyć je wedle własnego uznania. Tym właśnie zajmują się Wynalazcy. Indywidualiści, którzy gotowi są spędzić długie godziny, dni czy nawet tygodnie na obmyślaniu, a później tworzeniu wszelkiej maści przedmiotów o niezliczonych zastosowaniach. Mówi się, że dla osoby, która jest przedstawicielem tej profesji, nie ma tworów niemożliwych - są jedynie te zajmujące bardzo dużo czasu.
 
-Mechanika Profesji Wynalazcy:
-- Przedmioty kręgu VII tworzone są bezkosztowo, a jedynym wymogiem jest odegranie krótkiej fabuły z ich tworzenia.
-- W celu stworzenia Przeklętego Przedmiotu, Wynalazca musi umieścić jego projekt w Warsztacie, a następnie otrzymać akceptację wraz z wymogami jego wytworzenia.
-- Przeklęte Przedmioty kręgów VI i niżej potrzebują być połączone z energią klątwy, a co za tym idzie gracz musi ją zdobyć. W tym celu wykonuje misje, która przygotowywana jest po zaakceptowaniu pomysłu na obiekt.
-- Wynalazca zawsze posiada 25%PD zniżki na przedmiot ze swojego poziomu profesji i 50%PD dla przedmiotów znajdujących się niżej.
-- W przypadku tworzenia przedmiotu przez innego gracza, może on się udać w celu jego stworzenia do Wynalazcy. Po odegraniu wspólnej sesji, zgłaszający uzyskuje 25% zniżki na przedmiot, a ta oszczędność przekazywana jest na konto twórcy przedmiotu.
-- Arcymistrz posiada zawsze 50% zniżki na tworzone przez siebie przedmioty.
+**Mechanika Profesji Wynalazcy:**
+
+> - Przedmioty kręgu VII tworzone są bezkosztowo, a jedynym wymogiem jest odegranie krótkiej fabuły z ich tworzenia.
+
+> - W celu stworzenia Przeklętego Przedmiotu, Wynalazca musi umieścić jego projekt w Warsztacie, a następnie otrzymać akceptację wraz z wymogami jego wytworzenia.
+
+> - Przeklęte Przedmioty kręgów VI i niżej potrzebują być połączone z energią klątwy, a co za tym idzie gracz musi ją zdobyć. W tym celu wykonuje misje, która przygotowywana jest po zaakceptowaniu pomysłu na obiekt.
+
+> - Wynalazca zawsze posiada 25%PD zniżki na przedmiot ze swojego poziomu profesji i 50%PD dla przedmiotów znajdujących się niżej.
+
+> - W przypadku tworzenia przedmiotu przez innego gracza, może on się udać w celu jego stworzenia do Wynalazcy. Po odegraniu wspólnej sesji, zgłaszający uzyskuje 25% zniżki na przedmiot, a ta oszczędność przekazywana jest na konto twórcy przedmiotu.
+
+> - Arcymistrz posiada zawsze 50% zniżki na tworzone przez siebie przedmioty.
 
 ### Poziomy Zaawansowania
 
-1. Nowicjusz – Wynalazca na tym poziomie jest w stanie w głównej mierze tworzyć podstawowe wspierające przedmioty jednorazowego użytku z VII kręgu W śród nich dominują pieczętujące talizmany czy kołki służące do rozstawiania specjalnych kurtyn. Nowicjusz to amator w swym fachu, dlatego też jego dzieła są ledwie akceptowalne dla prawdziwego wynalazcy.
-2. Znawca – Jest to osoba, która poznała podstawy w tym zawodzie. Jego twory nie należą do skomplikowanych, ani wyrafinowanych ale w przeciwieństwie do np. talizmanów niekoniecznie muszą być jednorazowego użytku. Znawca posiada już umiejętność obchodzenia się z rdzeniem klątw, co pozwala mu na wytwarzanie przedmiotów z przedziału VI i V kręgu, które są na zupełnie innym poziomie. Możliwa też jest ich naprawa. Mimo to ten poziom to ciągle nic w porównaniu do głębi, jaką ta profesja posiada.
-3. Specjalista – O kimś na tym poziomie, mówi się, że zaczął już być prawdziwym rzemieślnikiem w tej profesji. Twory z IV i III kręgu są dość zaawansowane i porządnie wykonane, a także do pewnego stopnia mogą być modyfikowane. Konserwacja dla specjalisty też jest normą, więc potrafi utrzymać przedmioty w dobrym stanie. Jest to etap, na którym wielu stanie ale i tak będzie się uważać ich, za dobrych wytwórców. Jednakże dla tych, którzy darzą do prawdziwego szczytu, to dopiero połowa drogi.
-4. Mistrz – Prawdziwy fachman, który zna się na tym co robi. Nie ma ich wielu, a ich dzieła nie nalezą do tanich. Mimo to przedmiot wykonany, przez mistrza jest warty swej ceny. Nie tylko te twory mogą sięgnąć II a nawet I kręgu, to jeszcze są wykonane ze starannością i precyzją, której próżno szukać wynalazców niższych poziomów. Dla normalnego rzemieślnika ten etap będzie szczytem do którego dążą.
-5. Arcymistrz – Tak jak profesja jest pasmem górskim, a mistrz jego szczytem, tak arcymistrz jest niebem. Jest to poziom, który wymyka się już ze standardowych określeń wynalazcy. Wykona każdy przedmiot, którego stworzenie jest możliwe ręcznie i będzie doskonalszy niż byłoby to możliwe na jakimkolwiek innym poziomie. Naturalne przedmioty z II i I Kręgu nie są już dla niego zbytnim wyzwaniem, a jeśli się postara to uda mu się je wyposażyć dodatkową czy lepszą funkcję. Ponadto w rękach arcymistrza nic się nie marnuje, dlatego zużycie materiałów (PD) jest mniejsze.
+**Nowicjusz –** Wynalazca na tym poziomie jest w stanie w głównej mierze tworzyć podstawowe wspierające przedmioty jednorazowego użytku z VII kręgu W śród nich dominują pieczętujące talizmany czy kołki służące do rozstawiania specjalnych kurtyn. Nowicjusz to amator w swym fachu, dlatego też jego dzieła są ledwie akceptowalne dla prawdziwego wynalazcy.
+
+**Znawca –** Jest to osoba, która poznała podstawy w tym zawodzie. Jego twory nie należą do skomplikowanych, ani wyrafinowanych ale w przeciwieństwie do np. talizmanów niekoniecznie muszą być jednorazowego użytku. Znawca posiada już umiejętność obchodzenia się z rdzeniem klątw, co pozwala mu na wytwarzanie przedmiotów z przedziału VI i V kręgu, które są na zupełnie innym poziomie. Możliwa też jest ich naprawa. Mimo to ten poziom to ciągle nic w porównaniu do głębi, jaką ta profesja posiada.
+
+**Specjalista –** O kimś na tym poziomie, mówi się, że zaczął już być prawdziwym rzemieślnikiem w tej profesji. Twory z IV i III kręgu są dość zaawansowane i porządnie wykonane, a także do pewnego stopnia mogą być modyfikowane. Konserwacja dla specjalisty też jest normą, więc potrafi utrzymać przedmioty w dobrym stanie. Jest to etap, na którym wielu stanie ale i tak będzie się uważać ich, za dobrych wytwórców. Jednakże dla tych, którzy darzą do prawdziwego szczytu, to dopiero połowa drogi.
+
+**Mistrz –** Prawdziwy fachman, który zna się na tym co robi. Nie ma ich wielu, a ich dzieła nie nalezą do tanich. Mimo to przedmiot wykonany, przez mistrza jest warty swej ceny. Nie tylko te twory mogą sięgnąć II a nawet I kręgu, to jeszcze są wykonane ze starannością i precyzją, której próżno szukać wynalazców niższych poziomów. Dla normalnego rzemieślnika ten etap będzie szczytem do którego dążą.
+
+**Arcymistrz –** Tak jak profesja jest pasmem górskim, a mistrz jego szczytem, tak arcymistrz jest niebem. Jest to poziom, który wymyka się już ze standardowych określeń wynalazcy. Wykona każdy przedmiot, którego stworzenie jest możliwe ręcznie i będzie doskonalszy niż byłoby to możliwe na jakimkolwiek innym poziomie. Naturalne przedmioty z II i I Kręgu nie są już dla niego zbytnim wyzwaniem, a jeśli się postara to uda mu się je wyposażyć dodatkową czy lepszą funkcję. Ponadto w rękach arcymistrza nic się nie marnuje, dlatego zużycie materiałów (PD) jest mniejsze.
 
 ## Kowal
 
 ### Opis Profesji
 
 Zdolność do tworzenia Przeklętych Broni była zawsze pożądana przez każdy, szanujący się klan. Umiejętności kowala, płatnerza, albo zbrojmistrza mogą się wydawać we współczesnych czasach przestarzałe i bezużyteczne, jednak są to tylko pozory. Oręż wykonany przez tych rzemieślników wciąż jest powszechnie wykorzystywany do walki z klątwami.
+
 Czarownicy parający się profesją kowala są w stanie tworzyć tak dogłębnie przesiąknięte przeklętą energią przedmioty, że te same zyskują paranormalne właściwości, a nawet mogą się stać bronią masowego rażenia. Ich asortyment nie ogranicza się też jedynie do kucia, ale również broni drzewcowych, kusz i łuków, broni palnej, a nawet elementów zbroi oraz tarcz. Są to też jedyne osoby w społeczności jujutsu, które potrafią naprawić zniszczoną przeklętą broń i przywrócić jej dawne możliwości.
 
-Mechanika Profesji Kowala:
-- Kowal jest w stanie tworzyć lub ulepszać przeklęte bronie, ale też inne wyposażenie, zbroje oraz tarcze, tak długo, jak dany przedmiot ma coś wspólnego z rzemiosłem zbrojeniowym. Maksymalny krąg broni, jaki wyjść może z kuźni postaci z tą profesją zależny jest od jej poziomu zaawansowania w kowalstwie.
-- Kowal jest w stanie rozpoznać przeklętą broń na rzut wprawnego oka oraz oszacować jej krąg zgodnie z aktualnym poziomem zaawansowania: te kręgi, które potrafi sam stworzyć rozpozna zazwyczaj trafnie, a wyższe jako “ohoho, ten miecz to jest zaiste potężny”.
-- Kowale posiadają wiedzę zbrojeniową oraz materiałoznawczą tym obszerniejszą, im wyższy jest poziom ich profesji. Konwencjonalna współczesna oraz historyczna broń nie ma dla nich przeważnie tajemnic.
-- Kowal może stworzyć wynikające z profesji techniki pozwalające między innymi prowizorycznie naprawić zniszczoną broń, klejąc ją za pomocą przeklętej energii, czasowo podnieść krąg danej broni, stępić broń przeciwnika, a nawet przekształcić własny oręż w zupełnie inny rodzaj. Techniki te mogą być dowolne, dopóki mają coś wspólnego z kowalstwem.
-- Ulepszenia zwykłej broni na krąg VII kowal na poziomie Znawcy i wyższym może dokonać bezkosztowo, po prostu jednorazowo, porządnie nasycając fabularnie daną broń przeklętą energią. Nasycenie PE takiej broni sięga wtedy od razu stu procent. Proces ten należy zgłosić przez bank postaci posiadającej tę broń.
-- Każda broń tworzona lub ulepszona przez kowala musi powstać fabularnie. Niekoniecznie cały wątek musi odbywać się w kuźni i opowiadać o kuciu rozgrzanego do czerwoności metalu, ale stworzenie danej broni musi chociaż zostać fabularnie wspomniane, a w przypadku tworzenia broni dla innej postaci, gracz prowadzący kowala musi się na takie zlecenie zgodzić (nie ma korzystania z usług innych postaci bez ich wiedzy) i uczestniczyć w danym wątku.
-- Za każdą broń IV i lepszego kręgu stworzoną na zamówienie innej postaci i przez tę postać opłaconą, kowal otrzymuje symboliczne wynagrodzenie w wysokości jednego Serca Klątwy VII kręgu.
-- Za każde Serce Klątwy wydane przez kowala na broń, którą prowadzący go gracz następnie dobrowolnie i niezwłocznie (w ramach tego samego wątku, na którym broń została stworzona) przekaże innej postaci, kowal otrzymuje zwrot w postaci Serca Klątwy niższego o jeden krąg. Wyjątkiem jest wydanie Serca VII kręgu, wtedy zwrot wynosi również SK VII.
+**Mechanika Profesji Kowala:**
+
+> - Kowal jest w stanie tworzyć lub ulepszać przeklęte bronie, ale też inne wyposażenie, zbroje oraz tarcze, tak długo, jak dany przedmiot ma coś wspólnego z rzemiosłem zbrojeniowym. Maksymalny krąg broni, jaki wyjść może z kuźni postaci z tą profesją zależny jest od jej poziomu zaawansowania w kowalstwie.
+
+> - Kowal jest w stanie rozpoznać przeklętą broń na rzut wprawnego oka oraz oszacować jej krąg zgodnie z aktualnym poziomem zaawansowania: te kręgi, które potrafi sam stworzyć rozpozna zazwyczaj trafnie, a wyższe jako “ohoho, ten miecz to jest zaiste potężny”.
+
+> - Kowale posiadają wiedzę zbrojeniową oraz materiałoznawczą tym obszerniejszą, im wyższy jest poziom ich profesji. Konwencjonalna współczesna oraz historyczna broń nie ma dla nich przeważnie tajemnic.
+
+> - Kowal może stworzyć wynikające z profesji techniki pozwalające między innymi prowizorycznie naprawić zniszczoną broń, klejąc ją za pomocą przeklętej energii, czasowo podnieść krąg danej broni, stępić broń przeciwnika, a nawet przekształcić własny oręż w zupełnie inny rodzaj. Techniki te mogą być dowolne, dopóki mają coś wspólnego z kowalstwem.
+
+> - Ulepszenia zwykłej broni na krąg VII kowal na poziomie Znawcy i wyższym może dokonać bezkosztowo, po prostu jednorazowo, porządnie nasycając fabularnie daną broń przeklętą energią. Nasycenie PE takiej broni sięga wtedy od razu stu procent. Proces ten należy zgłosić przez bank postaci posiadającej tę broń.
+
+> - Każda broń tworzona lub ulepszona przez kowala musi powstać fabularnie. Niekoniecznie cały wątek musi odbywać się w kuźni i opowiadać o kuciu rozgrzanego do czerwoności metalu, ale stworzenie danej broni musi chociaż zostać fabularnie wspomniane, a w przypadku tworzenia broni dla innej postaci, gracz prowadzący kowala musi się na takie zlecenie zgodzić (nie ma korzystania z usług innych postaci bez ich wiedzy) i uczestniczyć w danym wątku.
+
+> - Za każdą broń IV i lepszego kręgu stworzoną na zamówienie innej postaci i przez tę postać opłaconą, kowal otrzymuje symboliczne wynagrodzenie w wysokości jednego Serca Klątwy VII kręgu.
+
+> - Za każde Serce Klątwy wydane przez kowala na broń, którą prowadzący go gracz następnie dobrowolnie i niezwłocznie (w ramach tego samego wątku, na którym broń została stworzona) przekaże innej postaci, kowal otrzymuje zwrot w postaci Serca Klątwy niższego o jeden krąg. Wyjątkiem jest wydanie Serca VII kręgu, wtedy zwrot wynosi również SK VII.
 
 ### Poziomy Zaawansowania
 
-1. Nowicjusz – Jest w stanie wytworzyć prostą wersję każdego rodzaju zwykłej broni oraz bazujące na tych tworach przeklęte bronie VII kręgu. Potrafi je też w niewielkim stopniu modyfikować, spersonalizować, na przykład dodając jakiś grawer, czy farbując drzewiec na wybrany kolor. Na tym poziomie postać da też radę naprawić przeklęte bronie aż do V kręgu. Nowicjusz ma tylko podstawowe umiejętności i jest osobą, która dopiero zaczyna raczkować na ścieżce prawdziwego kowalstwa.
-2. Znawca – Ma już jakieś pojęcie o swoim zawodzie. Jego kreacje są nie tylko lepiej wykonane pod względem estetyki, jak i wytrzymałości, ale też jako bronie VI i V kręgu posiadają znaczący poziom przeklętej energii, a co za tym idzie mogą mieć paranormalne właściwości. Kowal tego poziomu może pozwolić sobie na bardziej zaawansowane, nie tylko estetyczne modyfikacje, dodając na przykład ćwieki na rękojeści. Może on też naprawiać bronie aż do III kręgu. Znawca jest kimś, kto liznął już co nieco, ale nie zaszedł jeszcze daleko na drodze kowalstwa.
-3. Specjalista – O kimś na tym poziomie można powiedzieć, że jest już całkiem zaawansowany w swojej dziedzinie. Twory tej osoby są ładne i dobrze wykonane, a także perfekcyjnie spersonalizowane. Zakrzywione bądź niestandardowe ostrza? Drobnostka! Miecz z ząbkowaną krawędzią? Da się zrobić! Młot naszpikowany szpikulcami? Coś się wymyśli! Z kuźni postaci na tym poziomie wychodzą bronie IV i III kręgu, które posiadać mogą własne techniki. Naprawiać on może natomiast nawet bronie II kręgu. Specjalista, to ktoś, kto już całkiem daleko zaszedł na krętej ścieżce kowalstwa oraz poznał nie tylko wspaniałość, ale również trudy tego zawodu.
-4. Mistrz – To już poziom prawdziwego eksperta, który osiągnąć może zaledwie garstka utalentowanych wybrańców losu lub niezłomnych pracusiów. Bronie wytworzone przez mistrza zawsze są piękne, perfekcyjnie zbalansowane, a ich wytrzymałość sprawdzi się nawet w najcięższych bojach. Ponadto kowal tego poziomu jest w stanie wtłoczyć w wytworzony oręż koncept jestestwa wybranej klątwy sprawiając, że w takim wypadku prawdziwie przeklęta broń II kręgu wykazywać będzie odpowiadające danej klątwie paranormalne zdolności. Mistrz może również naprawiać Boskie Bronie, aczkolwiek nie udało mu się nigdy jeszcze stworzyć takiej samemu. To ktoś, kto spojrzał w otchłań ścieżki kowalstwa, zrozumiał ją ale w pełni jej jeszcze nie przeszedł.
-5. Arcymistrz – Szczyt profesji, którą osiąga tylko kilku na dany wiek. Ich twory szczycą się perfekcją w każdym zakresie, a nawet samo ich użycie może diametralnie zmienić przebieg danego starcia. Kowal tego poziomu jest w stanie zamknąć całe jestestwo potężnej klątwy w orężu pierwszego kręgu, który przechodzi wszelkie ludzkie pojęcie, dlatego nazywany jest również boskim. Arcymistrz to prawdziwy guru w swoim fachu zdolny stworzyć dosłownie każdy rodzaj broni na świecie jednocześnie wynosząc ją na najwyższy poziom pod względem jakości, wytrzymałości i kunsztu wykonania. Jego katany przecinają na czworo włosy, jego łuki trafiają do celu nawet w rękach laika, a jego kopie nigdy nie pękają. Ci ludzie stają się prawdziwą legendą, o której społeczność jujutsu pamiętać będzie jeszcze przez długie lata.
+**Nowicjusz –** Jest w stanie wytworzyć prostą wersję każdego rodzaju zwykłej broni oraz bazujące na tych tworach przeklęte bronie VII kręgu. Potrafi je też w niewielkim stopniu modyfikować, spersonalizować, na przykład dodając jakiś grawer, czy farbując drzewiec na wybrany kolor. Na tym poziomie postać da też radę naprawić przeklęte bronie aż do V kręgu. Nowicjusz ma tylko podstawowe umiejętności i jest osobą, która dopiero zaczyna raczkować na ścieżce prawdziwego kowalstwa.
+
+**Znawca –** Ma już jakieś pojęcie o swoim zawodzie. Jego kreacje są nie tylko lepiej wykonane pod względem estetyki, jak i wytrzymałości, ale też jako bronie VI i V kręgu posiadają znaczący poziom przeklętej energii, a co za tym idzie mogą mieć paranormalne właściwości. Kowal tego poziomu może pozwolić sobie na bardziej zaawansowane, nie tylko estetyczne modyfikacje, dodając na przykład ćwieki na rękojeści. Może on też naprawiać bronie aż do III kręgu. Znawca jest kimś, kto liznął już co nieco, ale nie zaszedł jeszcze daleko na drodze kowalstwa.
+
+**Specjalista –** O kimś na tym poziomie można powiedzieć, że jest już całkiem zaawansowany w swojej dziedzinie. Twory tej osoby są ładne i dobrze wykonane, a także perfekcyjnie spersonalizowane. Zakrzywione bądź niestandardowe ostrza? Drobnostka! Miecz z ząbkowaną krawędzią? Da się zrobić! Młot naszpikowany szpikulcami? Coś się wymyśli! Z kuźni postaci na tym poziomie wychodzą bronie IV i III kręgu, które posiadać mogą własne techniki. Naprawiać on może natomiast nawet bronie II kręgu. Specjalista, to ktoś, kto już całkiem daleko zaszedł na krętej ścieżce kowalstwa oraz poznał nie tylko wspaniałość, ale również trudy tego zawodu.
+
+**Mistrz –** To już poziom prawdziwego eksperta, który osiągnąć może zaledwie garstka utalentowanych wybrańców losu lub niezłomnych pracusiów. Bronie wytworzone przez mistrza zawsze są piękne, perfekcyjnie zbalansowane, a ich wytrzymałość sprawdzi się nawet w najcięższych bojach. Ponadto kowal tego poziomu jest w stanie wtłoczyć w wytworzony oręż koncept jestestwa wybranej klątwy sprawiając, że w takim wypadku prawdziwie przeklęta broń II kręgu wykazywać będzie odpowiadające danej klątwie paranormalne zdolności. Mistrz może również naprawiać Boskie Bronie, aczkolwiek nie udało mu się nigdy jeszcze stworzyć takiej samemu. To ktoś, kto spojrzał w otchłań ścieżki kowalstwa, zrozumiał ją ale w pełni jej jeszcze nie przeszedł.
+
+**Arcymistrz –** Szczyt profesji, którą osiąga tylko kilku na dany wiek. Ich twory szczycą się perfekcją w każdym zakresie, a nawet samo ich użycie może diametralnie zmienić przebieg danego starcia. Kowal tego poziomu jest w stanie zamknąć całe jestestwo potężnej klątwy w orężu pierwszego kręgu, który przechodzi wszelkie ludzkie pojęcie, dlatego nazywany jest również boskim. Arcymistrz to prawdziwy guru w swoim fachu zdolny stworzyć dosłownie każdy rodzaj broni na świecie jednocześnie wynosząc ją na najwyższy poziom pod względem jakości, wytrzymałości i kunsztu wykonania. Jego katany przecinają na czworo włosy, jego łuki trafiają do celu nawet w rękach laika, a jego kopie nigdy nie pękają. Ci ludzie stają się prawdziwą legendą, o której społeczność jujutsu pamiętać będzie jeszcze przez długie lata.
 
 ## Tropiciel
 
-🚧 W BUDOWIE: Treść tego posta może być niepełna, przestarzała lub niekompatybilna z innymi opisami na forum i będzie się w najbliższym czasie zmieniać 🚧
+🚧 **W BUDOWIE: Treść tego posta może być niepełna, przestarzała lub niekompatybilna z innymi opisami na forum i będzie się w najbliższym czasie zmieniać** 🚧
 
 ### Opis Profesji
 
 W sytuacji kiedy trzeba wytropić jakąś klątwę, bądź zbadać teren jej żerowania i ustalić przyczyny zajścia, Mangetsu zawsze wysyła Tropiciela. Są to ludzie, których nauka w dużej mierze opiera się na poznawaniu prawdziwej natury klątw, ich sposobie bycia, a także wielu innych aspektach behawioralnych. Osoby te stają się swojego rodzaju specjalistami, zdolnymi do wykorzystania swojej niecodziennej wiedzy, aby znaleźć zlecony im cel. Są to również mistrzowie kamuflowania się i wtapiania w otoczenie, a także dostosowania się do aktualnej sytuacji.
 
-Mechanika Profesji Tropiciela:
-- Tropiciele posiadają możliwość tworzenia technik maskujących ich obecność, a także samą aurę.
-- Ponadto posiadają również możliwość tworzenia technik tropiących, które mają za zadanie pomóc im zlokalizować cel
-- Każdy tropiciel posiada wiedzę na temat klątw, ich funkcjonowania, a także potencjalnych zagrożeń. Złożoność tych informacji zależna jest od poziomu i przedstawiana jako wskazówki od MG.
-- Na poziomie Arcymistrza techniki maskujące oraz tropiące posiadają koszt zmniejszony o 25%.
+**Mechanika Profesji Tropiciela:**
+
+> - Tropiciele posiadają możliwość tworzenia technik maskujących ich obecność, a także samą aurę.
+
+> - Ponadto posiadają również możliwość tworzenia technik tropiących, które mają za zadanie pomóc im zlokalizować cel
+
+> - Każdy tropiciel posiada wiedzę na temat klątw, ich funkcjonowania, a także potencjalnych zagrożeń. Złożoność tych informacji zależna jest od poziomu i przedstawiana jako wskazówki od MG.
+
+> - Na poziomie Arcymistrza techniki maskujące oraz tropiące posiadają koszt zmniejszony o 25%.
 
 ### Poziomy Zaawansowania
 
-1. Nowicjusz - Stopień nadawany każdemu początkującemu łowcy. Na tym etapie jest on bardziej pomocnikiem aniżeli pełnoprawnym tropicielem. Nie wynika to jednak z braku talentu, ale ograniczonej w tym temacie wiedzy. Nie można jednak odmówić tej osobie przejawiania pierwszych zdolności, które definiują tą profesję. Zwracanie uwagi na rzeczy, które na pozór wydają się normalne, czy dostrzeganie śladów klątw - to wizytówka nawet najmłodszych tropicieli. Ponadto są oni w stanie tworzyć podstawowe techniki łowieckie na poziomach E i D.
-2. Znawca - Nieco bardziej doświadczony tropiciel posiadający zdecydowanie większą wiedzę na temat znajdowania klątw. Z większym doświadczeniem idzie również lepsza umiejętność śledzenia i wyłapywania wskazówek jako tropów pozostawionych przez nasz cel. Tropiciele stają się coraz to bardziej ostrożni i wyczuleni na wszelkie "anomalie" zostawione w terenie. Przekłada się to bezpośrednio na użyteczność Czarownika wobec swojego mentora. Mając większe obycie w tropieniu, użytkownik potrafi wykorzystać swoją Przeklętą Energię do nieco bardziej zaawansowanych technik poziomu C i B, aby się ukryć bądź kogoś znaleźć.
-3. Specjalista - Takiego tropiciela można już samodzielnie wysłać w teren wiedząc, że wykona on powierzone mu zadanie. Znajdowanie tropów przychodzi z większą łatwością, a każdy detal przybliżający do odnalezienia celu jest analizowany i sprawdzany przez pod kątem użyteczności. Zdolności kamuflowania się i wtapiania w otoczenie stają się tak dobre, że nawet innym Czarownikom jest trudno dostrzec tropiciela. Techniki poziomów B oraz A nie stanowią już większego problemu, a ich obecność znacznie poszerza arsenał zdolności łowcy.
-4. Mistrz - Czarownik, który zgodnie ze wszystkimi standardami osiągnął szczyt możliwości. Całe doświadczenie które zebrał do tej pory daje mu potężne umiejętności w swojej profesji, a co za tym idzie jest w stanie wytropić nawet najbardziej nieuchwytne cele. Wiedza na temat klątw, ich sposobu bytowania, a także słabości, jest powszechnie znana dla tropiciela i potrafi być wykorzystana w dosłownie każdym momencie. Ponadto zdobywa on dostęp do technik poziomu S i S+.
-5. Arcymistrz - Czasem człowiek wykracza poza standardy zwykłego mistrza i dzięki swojemu wrodzonemu talentowi staje się kimś więcej. Arcymistrz to osoba, która nie tylko posiada przeogromną wiedzę na temat klątw i ich zachowań, ale przede wszystkim jest w stanie całkowicie przyjąć jej sposób myślenia. Daje mu to olbrzymią przewagę, która przekłada się na jeszcze większą skuteczność. Naturalne umiejętności powodują, że techniki Arcymistrza kosztują go zdecydowanie mniej niż pozostałych.
+**Nowicjusz -** Stopień nadawany każdemu początkującemu łowcy. Na tym etapie jest on bardziej pomocnikiem aniżeli pełnoprawnym tropicielem. Nie wynika to jednak z braku talentu, ale ograniczonej w tym temacie wiedzy. Nie można jednak odmówić tej osobie przejawiania pierwszych zdolności, które definiują tą profesję. Zwracanie uwagi na rzeczy, które na pozór wydają się normalne, czy dostrzeganie śladów klątw - to wizytówka nawet najmłodszych tropicieli. Ponadto są oni w stanie tworzyć podstawowe techniki łowieckie na poziomach E i D.
+
+**Znawca -** Nieco bardziej doświadczony tropiciel posiadający zdecydowanie większą wiedzę na temat znajdowania klątw. Z większym doświadczeniem idzie również lepsza umiejętność śledzenia i wyłapywania wskazówek jako tropów pozostawionych przez nasz cel. Tropiciele stają się coraz to bardziej ostrożni i wyczuleni na wszelkie "anomalie" zostawione w terenie. Przekłada się to bezpośrednio na użyteczność Czarownika wobec swojego mentora. Mając większe obycie w tropieniu, użytkownik potrafi wykorzystać swoją Przeklętą Energię do nieco bardziej zaawansowanych technik poziomu C i B, aby się ukryć bądź kogoś znaleźć.
+
+**Specjalista -** Takiego tropiciela można już samodzielnie wysłać w teren wiedząc, że wykona on powierzone mu zadanie. Znajdowanie tropów przychodzi z większą łatwością, a każdy detal przybliżający do odnalezienia celu jest analizowany i sprawdzany przez pod kątem użyteczności. Zdolności kamuflowania się i wtapiania w otoczenie stają się tak dobre, że nawet innym Czarownikom jest trudno dostrzec tropiciela. Techniki poziomów B oraz A nie stanowią już większego problemu, a ich obecność znacznie poszerza arsenał zdolności łowcy.
+
+**Mistrz -** Czarownik, który zgodnie ze wszystkimi standardami osiągnął szczyt możliwości. Całe doświadczenie które zebrał do tej pory daje mu potężne umiejętności w swojej profesji, a co za tym idzie jest w stanie wytropić nawet najbardziej nieuchwytne cele. Wiedza na temat klątw, ich sposobu bytowania, a także słabości, jest powszechnie znana dla tropiciela i potrafi być wykorzystana w dosłownie każdym momencie. Ponadto zdobywa on dostęp do technik poziomu S i S+.
+
+**Arcymistrz -** Czasem człowiek wykracza poza standardy zwykłego mistrza i dzięki swojemu wrodzonemu talentowi staje się kimś więcej. Arcymistrz to osoba, która nie tylko posiada przeogromną wiedzę na temat klątw i ich zachowań, ale przede wszystkim jest w stanie całkowicie przyjąć jej sposób myślenia. Daje mu to olbrzymią przewagę, która przekłada się na jeszcze większą skuteczność. Naturalne umiejętności powodują, że techniki Arcymistrza kosztują go zdecydowanie mniej niż pozostałych.
 
 ## Egzorcysta
 
-🚧 W BUDOWIE: Treść tego posta może być niepełna, przestarzała lub niekompatybilna z innymi opisami na forum i będzie się w najbliższym czasie zmieniać 🚧
+🚧 **W BUDOWIE: Treść tego posta może być niepełna, przestarzała lub niekompatybilna z innymi opisami na forum i będzie się w najbliższym czasie zmieniać** 🚧
 
 ### Opis Profesji
 
 Chociaż dziwnie zabrzmi to w tym środowisku, które stale walczy z klątwami, istnieje pośród nich grupa absolutnych specjalistów w walce z nimi. Egzorcyści podobnie jak Medycy są w stanie zmieniać swoją Przeklętą Energię w Pozytywną za pomocą Reverse Cursed Technique (反はん転てん術じゅつ式しき Hanten Jutsushiki), która jest szczególnie niebezpieczna dla klątw - nawet niewielkie jej ilości mogą być śmiertelnym ciosem lub niepokonaną barierą dla klątwy, toteż potężny Egzorcysta staje się przeciwnikiem, którego nie można bagatelizować.
 
-Mechanika Profesji Egzorcysty:
-- Każdy Egzorcysta ma możliwość używania Pozytywnej Przeklętej Energii, która jest szczególnie niebezpieczna dla klątw. W odróżnieniu od medyków, egzorcyści mogą używać swojej mocy tylko i wyłącznie w formie ofensywnej.
-- Każdy egzorcysta posiada wiedzę na temat Pozytywnej Przeklętej Energii, natury jej działania, a także jej możliwości.
-- Ponadto Egzorcyści posiadają wiedzę na temat klątw, ich słabych punktów, a także najlepszego schematu walki z nimi przy użyciu RCE.
-- Techniki oparte na Pozytywnej Przeklętej Energii posiadają siłę o jeden poziom wyższą w przypadku używania ich przeciwko Klątwom
-- W związku z tym, że tworzenie Pozytywnej Przeklętej Energii jest cięższym procesem niż sama jej manipulacja, wszystkie techniki tego rodzaju kosztują o 25% PE więcej.
-- Osoba z poziomem Arcymistrza płaci zawsze 75% kosztu PE za swoje techniki.
+**Mechanika Profesji Egzorcysty:**
+
+> - Każdy Egzorcysta ma możliwość używania Pozytywnej Przeklętej Energii, która jest szczególnie niebezpieczna dla klątw. W odróżnieniu od medyków, egzorcyści mogą używać swojej mocy tylko i wyłącznie w formie ofensywnej.
+
+> - Każdy egzorcysta posiada wiedzę na temat Pozytywnej Przeklętej Energii, natury jej działania, a także jej możliwości.
+
+> - Ponadto Egzorcyści posiadają wiedzę na temat klątw, ich słabych punktów, a także najlepszego schematu walki z nimi przy użyciu RCE.
+
+> - Techniki oparte na Pozytywnej Przeklętej Energii posiadają siłę o jeden poziom wyższą w przypadku używania ich przeciwko Klątwom
+
+> - W związku z tym, że tworzenie Pozytywnej Przeklętej Energii jest cięższym procesem niż sama jej manipulacja, wszystkie techniki tego rodzaju kosztują o 25% PE więcej.
+
+> - Osoba z poziomem Arcymistrza płaci zawsze 75% kosztu PE za swoje techniki.
 
 ### Poziomy Zaawansowania
 
-1. Nowicjusz - Początkujący Egzorcysta nie jest w stanie wytworzyć zbyt wiele Pozytywnej Energii w tym stanie, toteż i nie ma dostępu do zaawansowanych technik. Mimo to już wyróżnia się na tle innych czarowników mogąc tworzyć podstawowe odwrócone techniki rangi E i D.
-2. Znawca - Z doświadczeniem przychodzi znacznie więcej możliwości. Obeznany ze swoją specjalizacją Egzorcysta ma znacznie większe zasoby Pozytywnej Energii. Dzięki włożonej pracy w samorozwój niskopoziomowe klątwy jak Pionki stanowią prawie zerowe zagrożenie, cierpiąc od nawet najprostszych technik. Czarownik uzyskuje też możliwość tworzenia odwróconych technik poziomu C i B.
-3. Specjalista - Zajmujący się poważnymi sprawami, Specjalista jest w stanie stawać naprzeciw znacznie groźniejszym klątwom. Zabicie Klątwy o poziomie Pionka to czysta formalność z jego zdolnościami w przemianie Przeklętej Energii. Otrzymując dostęp do technik poziomu A i S, Egzorcysta zdecydowanie znajduje się już w wyższej lidze użytkowników Jujutsu.
-4. Mistrz - Tylko nieliczni są w stanie zajść tak daleko by opanować Pozytywną Energię w tym stopniu. Techniki tych egzorcystów są śmiercionośne i często otacza ich sama aura, która zmusza klątwy do wycofania się - jeśli tego nie zrobią, czekać ich może nie tylko śmierć ale też uwięzienie czy zamknięcie w potężnej barierze. Na tym poziomie Egzorcysta jest w stanie tworzyć najpotężniejsze techniki (rangi S+), których pozazdrościć mogą inni koledzy po fachu. Zniszczenie klątwy na poziomie wieży to dla niego nic więcej jak spacer po parku.
-5. Arcymistrz - Legendy krążą o osobach posiadających ten poziom, którzy opanowali przemianę Przeklętej Energii w Pozytywną na poziomie wręcz zakrawającym o ich drugą naturę. Dzięki swojemu niezrównanemu doświadczeniu, zarówno opracowywanie jak i używanie technik kosztuje ich znacznie mniej pracy i energii.
+**Nowicjusz -** Początkujący Egzorcysta nie jest w stanie wytworzyć zbyt wiele Pozytywnej Energii w tym stanie, toteż i nie ma dostępu do zaawansowanych technik. Mimo to już wyróżnia się na tle innych czarowników mogąc tworzyć podstawowe odwrócone techniki rangi E i D.
+
+**Znawca -** Z doświadczeniem przychodzi znacznie więcej możliwości. Obeznany ze swoją specjalizacją Egzorcysta ma znacznie większe zasoby Pozytywnej Energii. Dzięki włożonej pracy w samorozwój niskopoziomowe klątwy jak Pionki stanowią prawie zerowe zagrożenie, cierpiąc od nawet najprostszych technik. Czarownik uzyskuje też możliwość tworzenia odwróconych technik poziomu C i B.
+
+**Specjalista -** Zajmujący się poważnymi sprawami, Specjalista jest w stanie stawać naprzeciw znacznie groźniejszym klątwom. Zabicie Klątwy o poziomie Pionka to czysta formalność z jego zdolnościami w przemianie Przeklętej Energii. Otrzymując dostęp do technik poziomu A i S, Egzorcysta zdecydowanie znajduje się już w wyższej lidze użytkowników Jujutsu.
+
+**Mistrz -** Tylko nieliczni są w stanie zajść tak daleko by opanować Pozytywną Energię w tym stopniu. Techniki tych egzorcystów są śmiercionośne i często otacza ich sama aura, która zmusza klątwy do wycofania się - jeśli tego nie zrobią, czekać ich może nie tylko śmierć ale też uwięzienie czy zamknięcie w potężnej barierze. Na tym poziomie Egzorcysta jest w stanie tworzyć najpotężniejsze techniki (rangi S+), których pozazdrościć mogą inni koledzy po fachu. Zniszczenie klątwy na poziomie wieży to dla niego nic więcej jak spacer po parku.
+
+**Arcymistrz -** Legendy krążą o osobach posiadających ten poziom, którzy opanowali przemianę Przeklętej Energii w Pozytywną na poziomie wręcz zakrawającym o ich drugą naturę. Dzięki swojemu niezrównanemu doświadczeniu, zarówno opracowywanie jak i używanie technik kosztuje ich znacznie mniej pracy i energii.

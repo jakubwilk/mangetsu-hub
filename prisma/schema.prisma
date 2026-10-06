@@ -24,6 +24,7 @@ model Chunk {
   documentId   String
   content      String
   chunkIndex   Int
+  sections     String[]                     @default([])
   searchVector Unsupported("tsvector")?     @map("search_vector")
   embedding    Unsupported("vector(4096)")?
   document     Document                     @relation(fields: [documentId], references: [id], onDelete: Cascade)
