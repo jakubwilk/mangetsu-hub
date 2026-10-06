@@ -1,67 +1,169 @@
 # Statystyki
 
+## Statystyki
+
 Statystyki to jeden z podstawowych elementów, który definiuje rozwój Czarownika Jujutsu i wyznacza jego pozycję w tym świecie. Składają się na nie Siła, Wytrzymałość, Szybkość, Zręczność oraz Opanowanie, a każda z nich posiada swój opis w postach poniżej. Podzielone na 7 poziomów, w których E jest najniższą rangą a S+ najwyższą, mają za zadanie przedstawić jakie możliwości dostępne są dla każdego Użytkownika Jujutsu po zdobyciu każdej z nich.
 
-Na początku rozgrywki Gracz ma możliwość wybrania 4 Statystyk na poziomie E oraz jednej na poziomie D.
+Na początku rozgrywki Gracz ma możliwość wybrania **4 Statystyk na poziomie E oraz jednej na poziomie D.**
 
-UWAGA! Różnica między najwyższą, a najniższą statystyką może wynosić maksymalnie 2 poziomy. Oznacza to, że w momencie jeśli mamy statystykę, która jest na poziomie E to najwyższą jaką możemy posiadać może być na poziomie C.
+**UWAGA!** Różnica między najwyższą, a najniższą statystyką może wynosić **maksymalnie 2 poziomy.** Oznacza to, że w momencie jeśli mamy statystykę, która jest na poziomie E to najwyższą jaką możemy posiadać może być na poziomie C.
 
 ## Siła
 
-Statystyka odpowiadająca za to z jaką mocą wyprowadzane są uderzenia postaci, a także jak duży ciężar jest w stanie unieść.
+Statystyka odpowiadająca za to z jaką mocą wyprowadzane są uderzenia postaci, a także jak duży ciężar jest w stanie unieść. :
 
-1. Ranga E - Poziom podstawowy, z którym zaczyna każdy użytkownik Jujutsu. Nieznacznie wykracza on ponad standardowe ludzkie możliwości, a co za tym idzie osoba nie ma większych problemów podnoszeniem ciężarów do 100kg. Dodatkowo siła uderzeń pozwala na niszczenie konstruktów stworzonych z płyt gipsowych czy kilkucentymetrowych, drewnianych płyt.
-2. Ranga D - Czarownik staje się jeszcze silniejszy, oznacza to że zwiększają się wszystkie jego możliwości. Na tym poziomie nie ma problemów z podnoszeniem przedmiotów, których waga wynosić może aż 150kg. Ponadto siła samych uderzeń również się zwiększa, pozwalając tym samym na niszczenie ścian stworzonych z pustaków i twardszych konstrukcji drewnianych.
-3. Ranga C - Niecodziennie można spotkać spotkać człowieka, którego siła byłaby na takim poziomie jak ten. Posiadacza tej rangi można na spokojnie uznać osobą z nadludzką siłą. Udźwig wzrasta do 225kg bez większego wysiłku. Użytkownik jest również w stanie za pomocą kilku uderzeń bez problemu przebijać się przez żelazne ściany, czy chociażby wyginać w dłoniach twarde, miedziane rury.
-4. Ranga B - Siłacz do najlepsze określenie dla osoby, która doszła do tego poziomu. Nie ma ona najmniejszych problemów z dźwiganiem przedmiotów, których waga dochodzi aż do 340kg. Ponadto wzrasta również siła uderzeń, dla których nie jest teraz straszne przebijanie się przez stalowe konstrukty. Dodatkowo nie ma również większych problemów ze ścięciem rosłego drzewa jednym solidnym uderzeniem.
-5. Ranga A - Użytkownik przekroczył wszelkie granice ludzkiego pojęcia i zdaje się bardziej przypominać w swoich atrybutach zwierzę aniżeli człowieka. Czarownik jest w stanie unieść ciężar mający wagę 500kg bez większych problemów. Dodatkowo niestraszne są mu twory stworzone z samego tytanu. Zdaje się, że jedyne co wpływa na upadek takich konstruktów to czas jaki trzeba poświęcić na ich przebicie.
-6. Ranga S - Na świecie nie istnieje wiele osób, które mogłyby pochwalić się tak dużą siłą, a co za tym idzie takiego człowieka nazwać można swoistym fenomenem. Ciężary do wagi 750kg nie robią większego wrażenia na użytkowniku posiadającym siłę na tym poziomie. Tak samo również jest w przypadku twardych, grubych konstrukcji, które padają pod naporem uderzeń - nawet jeśli stworzone byłyby ze stali połączonej z wolframem.
-7. Ranga S+ - Osoba, która znalazła się na tym poziomie osiągnęła szczyt szczytów, a jej zdolności przekroczyły wszelkie pojęcia i doszły tam gdzie można nazwać je po prostu perfekcyjnymi. Użytkownik nie ma najmniejszych problemów z dźwiganiem przedmiotów ważących aż tonę. Dodatkowo pod siłą jego uderzeń ugiąć się muszą nawet najtwardsze istniejące przedmioty. W końcu czego spodziewać się po człowieku, który jest w stanie zgnieść w swojej dłoni prawdziwy diament.
+### Ranga E
+
+Poziom podstawowy, z którym zaczyna każdy użytkownik Jujutsu. Nieznacznie wykracza on ponad standardowe ludzkie możliwości, a co za tym idzie osoba nie ma większych problemów podnoszeniem ciężarów do 100kg. Dodatkowo siła uderzeń pozwala na niszczenie konstruktów stworzonych z płyt gipsowych czy kilkucentymetrowych, drewnianych płyt.
+
+### Ranga D
+
+Czarownik staje się jeszcze silniejszy, oznacza to że zwiększają się wszystkie jego możliwości. Na tym poziomie nie ma problemów z podnoszeniem przedmiotów, których waga wynosić może aż 150kg. Ponadto siła samych uderzeń również się zwiększa, pozwalając tym samym na niszczenie ścian stworzonych z pustaków i twardszych konstrukcji drewnianych.
+
+### Ranga C
+
+Niecodziennie można spotkać spotkać człowieka, którego siła byłaby na takim poziomie jak ten. Posiadacza tej rangi można na spokojnie uznać osobą z nadludzką siłą. Udźwig wzrasta do 225kg bez większego wysiłku. Użytkownik jest również w stanie za pomocą kilku uderzeń bez problemu przebijać się przez żelazne ściany, czy chociażby wyginać w dłoniach twarde, miedziane rury.
+
+### Ranga B
+
+Siłacz do najlepsze określenie dla osoby, która doszła do tego poziomu. Nie ma ona najmniejszych problemów z dźwiganiem przedmiotów, których waga dochodzi aż do 340kg. Ponadto wzrasta również siła uderzeń, dla których nie jest teraz straszne przebijanie się przez stalowe konstrukty. Dodatkowo nie ma również większych problemów ze ścięciem rosłego drzewa jednym solidnym uderzeniem.
+
+### Ranga A
+
+Użytkownik przekroczył wszelkie granice ludzkiego pojęcia i zdaje się bardziej przypominać w swoich atrybutach zwierzę aniżeli człowieka. Czarownik jest w stanie unieść ciężar mający wagę 500kg bez większych problemów. Dodatkowo niestraszne są mu twory stworzone z samego tytanu. Zdaje się, że jedyne co wpływa na upadek takich konstruktów to czas jaki trzeba poświęcić na ich przebicie.
+
+### Ranga S
+
+Na świecie nie istnieje wiele osób, które mogłyby pochwalić się tak dużą siłą, a co za tym idzie takiego człowieka nazwać można swoistym fenomenem. Ciężary do wagi 750kg nie robią większego wrażenia na użytkowniku posiadającym siłę na tym poziomie. Tak samo również jest w przypadku twardych, grubych konstrukcji, które padają pod naporem uderzeń - nawet jeśli stworzone byłyby ze stali połączonej z wolframem.
+
+### Ranga S+
+
+Osoba, która znalazła się na tym poziomie osiągnęła szczyt szczytów, a jej zdolności przekroczyły wszelkie pojęcia i doszły tam gdzie można nazwać je po prostu perfekcyjnymi. Użytkownik nie ma najmniejszych problemów z dźwiganiem przedmiotów ważących aż tonę. Dodatkowo pod siłą jego uderzeń ugiąć się muszą nawet najtwardsze istniejące przedmioty. W końcu czego spodziewać się po człowieku, który jest w stanie zgnieść w swojej dłoni prawdziwy diament.
 
 ## Wytrzymałość
 
-Statystyka, która odpowiada za to jak dużo obrażeń może przyjąć postać, a także to w jaki sposób się na niej odbijają. Ponadto odpowiada również za maksymalne obciążenie naszej postaci, przy którym może poruszać się bez większych problemów.
+Statystyka, która odpowiada za to jak dużo obrażeń może przyjąć postać, a także to w jaki sposób się na niej odbijają. Ponadto odpowiada również za maksymalne obciążenie naszej postaci, przy którym może poruszać się bez większych problemów
 
-1. Ranga E - Podstawowy poziom każdego użytkownika Jujutsu, który delikatnie wykracza poza ramy zwykłego człowieka. Osoba na tej randze jest w stanie wytrzymać na spokojnie uderzenia, które dla normalnego śmiertelnika mogłyby okazać się poważnymi. Osoba jest zdolna do noszenia na sobie ciężary do wagi 50kg bez większych wysiłków i utraty mobilności. Twardość ciała takiego człowieka przyrównać można do grubego i dosyć twardego mahonia.
-2. Ranga D - Wytrzymałość użytkownika zwiększa się, a co za tym idzie jego ciało przyrównać teraz można do grubego i twardego dębu. Uderzenia, które zwykłemu człowiekowi łamałyby kości teraz spowodować mogą co najwyżej pęknięcie, a twarda struktura mięśni osłabić może nawet zagrażające życiu cięcie. Czarownik jest w stanie bez większych problemów nosić obciążenie o wadze 75kg.
-3. Ranga C - Od tego momentu cięcia mieczem (oczywiście wykonane przez zwykłego człowieka), które mogłyby pozbawić kończyny, kończą się na co najwyżej głębokich ranach ciętych. Osoba staje się na tyle twarda, że upadek z normalnie niebezpieczniej wysokości nie jest dla niej żadnym problemem. Ponadto wzrasta wytrzymałość organizmu, która umożliwia noszenie bez większych problemów obciążeń mających wagę 110kg. Można uznać, że ciało swoją twardością przypomina teraz żelazo aniżeli zwykłą, ludzką tkankę.
-4. Ranga B - Na tym etapie użytkownik przekracza kolejną barierę ludzkiego pojmowania. Obrażenia jeszcze bardziej się ograniczają i to do tego stopnia, że człowiek jest w stanie przeżyć bez problemu postrzał z krótkiej broni palnej. Istnieje nawet możliwość złapania pocisku w dłoń (jeśli jest się wyjątkowo sprawnym). Bezwysiłkowy udźwig zwiększa się do 160kg, a twardość ciała przyrównać można do wysokiej jakości stali.
-5. Ranga A - Upadki z dużej wysokości, atak mieczem czy nożem, w niektórych dłoniach, nie jest już straszny. Zdaje się, że osoba która dotarła do tego poziomu jest w stanie wytrzymać nawet strzał z krótkiej broni palnej i to niemalże przy zerowej odległości. Nie ma również najmniejszych problemów z poruszaniem się przy obciążeniu sięgającemu do 250kg. Użytkownik zyskuje wręcz tytanowe ciało.
-6. Ranga S - Twardość ciała zbliża się do granic swoich możliwości. Uderzenia, które kiedyś mogłyby wyrządzić jakieś szkody, teraz bardziej przypominają ukąszenie komara. Posiada nawet ogromną szansę na przeżycie ostrzału z broni maszynowej. Dodatkowa waga 375kg założona na barki w żaden sposób nie ogranicza użytkownika w jego mobilności. Ciało jest tak wytrzymałe, że wydaje się być wzbogacone o ogromne ilości wolframu.
-7. Ranga S+ - Czarownik doszedł do momentu, który na spokojnie można nazwać końcem drogi. Ciało użytkownika jest tak twarde, że nie straszne mu niemalże jakiekolwiek zwykłe ataki. Jest nawet w stanie przeżyć uderzenia z broni balistycznej. Wysiłek pod dodatkowym ciężarem 500kg nie zdaje się robić na takiej osobie wrażenia. Zdawałoby się, że cały organizm jest twardy niczym najprawdziwszy diament.
+### Ranga E
+
+Podstawowy poziom każdego użytkownika Jujutsu, który delikatnie wykracza poza ramy zwykłego człowieka. Osoba na tej randze jest w stanie wytrzymać na spokojnie uderzenia, które dla normalnego śmiertelnika mogłyby okazać się poważnymi. Osoba jest zdolna do noszenia na sobie ciężary do wagi 50kg bez większych wysiłków i utraty mobilności. Twardość ciała takiego człowieka przyrównać można do grubego i dosyć twardego mahonia.
+
+### Ranga D
+
+Wytrzymałość użytkownika zwiększa się, a co za tym idzie jego ciało przyrównać teraz można do grubego i twardego dębu. Uderzenia, które zwykłemu człowiekowi łamałyby kości teraz spowodować mogą co najwyżej pęknięcie, a twarda struktura mięśni osłabić może nawet zagrażające życiu cięcie. Czarownik jest w stanie bez większych problemów nosić obciążenie o wadze 75kg.
+
+### Ranga C
+
+Od tego momentu cięcia mieczem (oczywiście wykonane przez zwykłego człowieka), które mogłyby pozbawić kończyny, kończą się na co najwyżej głębokich ranach ciętych. Osoba staje się na tyle twarda, że upadek z normalnie niebezpieczniej wysokości nie jest dla niej żadnym problemem. Ponadto wzrasta wytrzymałość organizmu, która umożliwia noszenie bez większych problemów obciążeń mających wagę 110kg. Można uznać, że ciało swoją twardością przypomina teraz żelazo aniżeli zwykłą, ludzką tkankę.
+
+### Ranga B
+
+Na tym etapie użytkownik przekracza kolejną barierę ludzkiego pojmowania. Obrażenia jeszcze bardziej się ograniczają i to do tego stopnia, że człowiek jest w stanie przeżyć bez problemu postrzał z krótkiej broni palnej. Istnieje nawet możliwość złapania pocisku w dłoń (jeśli jest się wyjątkowo sprawnym). Bezwysiłkowy udźwig zwiększa się do 160kg, a twardość ciała przyrównać można do wysokiej jakości stali.
+
+### Ranga A
+
+Upadki z dużej wysokości, atak mieczem czy nożem, w niektórych dłoniach, nie jest już straszny. Zdaje się, że osoba która dotarła do tego poziomu jest w stanie wytrzymać nawet strzał z krótkiej broni palnej i to niemalże przy zerowej odległości. Nie ma również najmniejszych problemów z poruszaniem się przy obciążeniu sięgającemu do 250kg. Użytkownik zyskuje wręcz tytanowe ciało.
+
+### Ranga S
+
+Twardość ciała zbliża się do granic swoich możliwości. Uderzenia, które kiedyś mogłyby wyrządzić jakieś szkody, teraz bardziej przypominają ukąszenie komara. Posiada nawet ogromną szansę na przeżycie ostrzału z broni maszynowej. Dodatkowa waga 375kg założona na barki w żaden sposób nie ogranicza użytkownika w jego mobilności. Ciało jest tak wytrzymałe, że wydaje się być wzbogacone o ogromne ilości wolframu.
+
+### Ranga S+
+
+Czarownik doszedł do momentu, który na spokojnie można nazwać końcem drogi. Ciało użytkownika jest tak twarde, że nie straszne mu niemalże jakiekolwiek zwykłe ataki. Jest nawet w stanie przeżyć uderzenia z broni balistycznej. Wysiłek pod dodatkowym ciężarem 500kg nie zdaje się robić na takiej osobie wrażenia. Zdawałoby się, że cały organizm jest twardy niczym najprawdziwszy diament.
 
 ## Szybkość
 
-Odpowiada za to jak szybko postać potrafi się poruszać, a także jak szybko reaguje na bodźce zewnętrzne.
+Odpowiada za to jak szybko postać potrafi się poruszać, a także jak szybko reaguje na bodźce zewnętrzne
 
-1. Ranga E - Podstawowy poziom, który posiada każdy użytkownik Jujutsu na początku swojej drogi. Zdolności wykraczają delikatnie poza ramy zwykłego człowieka. Przeciętna prędkość, którą osoba jest w stanie utrzymać bez męczenia się wynosi 45km/h. Ponadto użytkownik jest w stanie rozwinąć prędkość do 60km/h i utrzymać ją przez krótki czas. Ruchy postaci również stają się dużo szybsze.
-2. Ranga D - Możliwości fizyczne wzrastają jeszcze bardziej i umożliwiają przekroczenie kolejnych barier. 70km/h staje się standardem szybkości dla użytkownika, a w szczytowym momencie jest on w stanie osiągnąć prędkość na poziomie 90km/h i utrzymać ją przez chwilę. Przekłada się to również na szybkość wyprowadzanych ciosów, a także dostrzeganie ruchów innych istot.
-3. Ranga C - Na tym poziomie utrzymanie stałej prędkości 100km/h nie jest dla użytkownika żadnym problemem. Ponadto w sytuacji kiedy ma on możliwość dobicia do swoich granic, na krótki czas może osiągnąć szybkość równającą się 135km/h. Oczywiście wzrasta również prędkość z jaką wyprowadzane są uderzenia, a także wykonywane akcje. Wzrastają również zdolności postrzegania tego co się dzieje wokół.
-4. Ranga B - Czarownik przekracza kolejną barierę szybkości, dzięki czemu staje się jeszcze bardziej nieuchwytny dla coraz większej grupy osób. Poruszanie się z szybkością równą 150km/h nie sprawia najmniejszych kłopotów, nie męczy również w żaden sposób. Maksymalna prędkość jaką użytkownik jest w stanie rozwinąć w sytuacjach kryzysowych to 200km/h. Należy jednak pamiętać, że jak w poprzednich poziomach można ją utrzymać jedynie przez krótki czas. Oczywiście wzrasta również szybkość wykonywanych ruchów.
-5. Ranga A - Kiedy zdaje się, że już został osiągnięty szczyt, zawsze wtedy pojawia się kolejny do zdobycia. Tak samo jest i w przypadku tego poziomu. Użytkownik jest w stanie płynnie poruszać się z prędkością 225km/h i utrzymywać ją bez jakichkolwiek problemów. W momencie kiedy okaże się to konieczne, jest w stanie rozwinąć swoją szybkość aż do 300km/h na bardzo ograniczony czas, poświęcając przy tym duże ilości swojej energii.
-6. Ranga S - Przedostatni, a co za tym idzie jeden z najwyższych poziomów jakie może osiągnąć w swoim życiu użytkownik Jujutsu. Ranga ta umożliwia poruszanie się ze stałą prędkością wynoszącą 340km/h przy niemalże zerowym wysiłku. Dodatkowo osoba jest w stanie na chwilę przekroczyć ten limit i osiągnąć wartość maksymalną o równowartości 450km/h. Jak w poprzednich poziomach, tak i tutaj wzrasta szybkość wykonywanych ruchów, które odpowiadają możliwościom użytkownika.
-7. Ranga S+ - Osoba, która dotarła do tego poziomu z czystym sumieniem może uznać się za jednego z tych wybrańców, którzy osiągnęli w tej dziedzinie mistrzostwo. Poruszanie się z prędkością 500km/h to normalność, a w sytuacjach krytycznych na moment użytkownik jest w stanie rozpędzić się aż do 675km/h. Szybkość wykonywanych ruchów i uderzeń zdaje się osiągnąć górny limit szybkości.
+### Ranga E
+
+Podstawowy poziom, który posiada każdy użytkownik Jujutsu na początku swojej drogi. Zdolności wykraczają delikatnie poza ramy zwykłego człowieka. Przeciętna prędkość, którą osoba jest w stanie utrzymać bez męczenia się wynosi 45km/h. Ponadto użytkownik jest w stanie rozwinąć prędkość do 60km/h i utrzymać ją przez krótki czas. Ruchy postaci również stają się dużo szybsze.
+
+### Ranga D
+
+Możliwości fizyczne wzrastają jeszcze bardziej i umożliwiają przekroczenie kolejnych barier. 70km/h staje się standardem szybkości dla użytkownika, a w szczytowym momencie jest on w stanie osiągnąć prędkość na poziomie 90km/h i utrzymać ją przez chwilę. Przekłada się to również na szybkość wyprowadzanych ciosów, a także dostrzeganie ruchów innych istot.
+
+### Ranga C
+
+Na tym poziomie utrzymanie stałej prędkości 100km/h nie jest dla użytkownika żadnym problemem. Ponadto w sytuacji kiedy ma on możliwość dobicia do swoich granic, na krótki czas może osiągnąć szybkość równającą się 135km/h. Oczywiście wzrasta również prędkość z jaką wyprowadzane są uderzenia, a także wykonywane akcje. Wzrastają również zdolności postrzegania tego co się dzieje wokół.
+
+### Ranga B
+
+Czarownik przekracza kolejną barierę szybkości, dzięki czemu staje się jeszcze bardziej nieuchwytny dla coraz większej grupy osób. Poruszanie się z szybkością równą 150km/h nie sprawia najmniejszych kłopotów, nie męczy również w żaden sposób. Maksymalna prędkość jaką użytkownik jest w stanie rozwinąć w sytuacjach kryzysowych to 200km/h. Należy jednak pamiętać, że jak w poprzednich poziomach można ją utrzymać jedynie przez krótki czas. Oczywiście wzrasta również szybkość wykonywanych ruchów.
+
+### Ranga A
+
+Kiedy zdaje się, że już został osiągnięty szczyt, zawsze wtedy pojawia się kolejny do zdobycia. Tak samo jest i w przypadku tego poziomu. Użytkownik jest w stanie płynnie poruszać się z prędkością 225km/h i utrzymywać ją bez jakichkolwiek problemów. W momencie kiedy okaże się to konieczne, jest w stanie rozwinąć swoją szybkość aż do 300km/h na bardzo ograniczony czas, poświęcając przy tym duże ilości swojej energii.
+
+### Ranga S
+
+Przedostatni, a co za tym idzie jeden z najwyższych poziomów jakie może osiągnąć w swoim życiu użytkownik Jujutsu. Ranga ta umożliwia poruszanie się ze stałą prędkością wynoszącą 340km/h przy niemalże zerowym wysiłku. Dodatkowo osoba jest w stanie na chwilę przekroczyć ten limit i osiągnąć wartość maksymalną o równowartości 450km/h. Jak w poprzednich poziomach, tak i tutaj wzrasta szybkość wykonywanych ruchów, które odpowiadają możliwościom użytkownika.
+
+### Ranga S+
+
+Osoba, która dotarła do tego poziomu z czystym sumieniem może uznać się za jednego z tych wybrańców, którzy osiągnęli w tej dziedzinie mistrzostwo. Poruszanie się z prędkością 500km/h to normalność, a w sytuacjach krytycznych na moment użytkownik jest w stanie rozpędzić się aż do 675km/h. Szybkość wykonywanych ruchów i uderzeń zdaje się osiągnąć górny limit szybkości.
 
 ## Zręczność
 
-Statystyka odpowiadająca za to jak płynne ruchy wykonuje postać, a także do jak dużych "ewolucji" jest zdolna, a także jak sprawnie używa broni. Umożliwia także wykonywanie uników, lecz do ich prawidłowego działania konieczne jest również rozwijanie szybkości.
+Statystyka odpowiadająca za to jak płynne ruchy wykonuje postać, a także do jak dużych "ewolucji" jest zdolna, a także jak sprawnie używa broni. Umożliwia także wykonywanie uników, lecz do ich prawidłowego działania konieczne jest również rozwijanie szybkości:
 
-1. Ranga E - Podstawowy poziom, z którym rozpoczyna każdy Czarownik. Na tym etapie ruchy przyrównać można raczej do refleksu bardziej zręcznego człowieka. Nie ma również większych problemów z wykonywaniem prostych ruchów i ataków ćwiczonej broni, a także standardowych forteli mających na celu zmylenie przeciwnika, bądź dodanie większego elementu zaskoczenia.
-2. Ranga D - Wraz z wyższym poziomem, wzrasta również doświadczenie w wykorzystywaniu swojej zręczności. Podstawowe ruchy postaci są coraz bardziej wyuczone, a co za tym idzie nie musi się już tak bardzo skupiać na ich wykonywaniu. Zdarzają się sytuacje, w których Czarownik jest w stanie uniknąć ciosów, które normalnie byłyby niemożliwe do podjęcia jakiejkolwiek reakcji. Ponadto wzrasta umiejętność władania orężem, a także wykonywania coraz to bardziej zaawansowanych ruchów atletycznych.
-3. Ranga C - Postać radzi sobie jeszcze lepiej ze wszelkimi ruchami. Wszystkie wykonywane manewry przestają wyglądać jak wyuczone na pamięć mechaniki i przypominają bardziej naturalne ruchy pozbawione gracji. Dzięki temu zaczyna pojawiać się możliwość markowania swoich ciosów, a nawet całych ruchów. Czarownik zaczyna być uznawany za bardzo dobrego przedstawiciela swojego stylu walki, a nawet czasem zdarzy się, że ktoś postawi wykonany przez niego ruch jako przykład. Robienie wszelkiej maści piruetów, itp. nie stanowi już zbyt dużego problemu.
-4. Ranga B - Poziom, który dla znacznej części zaczyna być powoli całkowitym potencjałem. Ruchy, które były wyuczane przez lata, teraz są już bardzo płynne i mają odpowiedni czas reakcji. Postać radzi sobie z wykonywaniem uników, a trafienie jej podczas walki może być bardzo trudne dla mniej zręcznego przeciwnika. Posługiwanie się bronią zdaje się być opanowane niemalże całkowicie, a oręż zdaje się przypominać coraz bardziej przedłużenie ręki. W połączeniu z bardzo prawidłowymi ruchami, Czarownik staje się niebezpiecznym przeciwnikiem.
-5. Ranga A - Dla większości Czarowników jest to zdecydowany szczyt możliwości. Użytkownik jest w stanie poruszać się w pełni płynnie, a jego ruchy w żaden sposób nie przypominają, aby były ćwiczone. Wszystko zdaje się być spójne i dopracowane. Ruchy bronią zdają się być wyćwiczone do perfekcji i ciężko szukać ludzi, którzy w ogóle są w stanie tak dobrze się nią posługiwać. Ze spokojnym sumieniem można takiemu Czarownikowi posłać na nauki młodzika, będąc przy tym pewnym iż zostanie wręcz podręcznikowo wytrenowany.
-6. Ranga S - Ci, którzy posiadają nie tylko wiedzę, ale również i wrodzony talent, są w stanie osiągnąć ten poziom. Ruchy użytkownika są w pełni płynne, gdyż przychodzą mu one całkowicie naturalnie. Nie ma on problemów z maskowaniem swoich akcji, czy markowaniem ciosów. Broń w jego rękach nie jest jedynie niebezpiecznym narzędziem, ale jednocześnie staje się samym wojownikiem, który jest w stanie dokonywać rzeczy niemożliwych z jej udziałem. Wszystko to dzięki nadludzkiemu wręcz refleksowi.
-7. Ranga S+ - Poziom zdobywany przez tych, którzy swoje ruchy wynieśli ponad wszelkie standardy piękna. Walka takiego osobnika przypomina dużo bardziej chwytającą za serce sztukę, aniżeli pojedynek. Każdy ruch ma swój cel, pozbawiony jest zbyteczności, a jedyne co w nim widać to prawdziwy pietyzm.
+### Ranga E
+
+Podstawowy poziom, z którym rozpoczyna każdy Czarownik. Na tym etapie ruchy przyrównać można raczej do refleksu bardziej zręcznego człowieka. Nie ma również większych problemów z wykonywaniem prostych ruchów i ataków ćwiczonej broni, a także standardowych forteli mających na celu zmylenie przeciwnika, bądź dodanie większego elementu zaskoczenia.
+
+### Ranga D
+
+Wraz z wyższym poziomem, wzrasta również doświadczenie w wykorzystywaniu swojej zręczności. Podstawowe ruchy postaci są coraz bardziej wyuczone, a co za tym idzie nie musi się już tak bardzo skupiać na ich wykonywaniu. Zdarzają się sytuacje, w których Czarownik jest w stanie uniknąć ciosów, które normalnie byłyby niemożliwe do podjęcia jakiejkolwiek reakcji. Ponadto wzrasta umiejętność władania orężem, a także wykonywania coraz to bardziej zaawansowanych ruchów atletycznych.
+
+### Ranga C
+
+Postać radzi sobie jeszcze lepiej ze wszelkimi ruchami. Wszystkie wykonywane manewry przestają wyglądać jak wyuczone na pamięć mechaniki i przypominają bardziej naturalne ruchy pozbawione gracji. Dzięki temu zaczyna pojawiać się możliwość markowania swoich ciosów, a nawet całych ruchów. Czarownik zaczyna być uznawany za bardzo dobrego przedstawiciela swojego stylu walki, a nawet czasem zdarzy się, że ktoś postawi wykonany przez niego ruch jako przykład. Robienie wszelkiej maści piruetów, itp. nie stanowi już zbyt dużego problemu.
+
+### Ranga B
+
+Poziom, który dla znacznej części zaczyna być powoli całkowitym potencjałem. Ruchy, które były wyuczane przez lata, teraz są już bardzo płynne i mają odpowiedni czas reakcji. Postać radzi sobie z wykonywaniem uników, a trafienie jej podczas walki może być bardzo trudne dla mniej zręcznego przeciwnika. Posługiwanie się bronią zdaje się być opanowane niemalże całkowicie, a oręż zdaje się przypominać coraz bardziej przedłużenie ręki. W połączeniu z bardzo prawidłowymi ruchami, Czarownik staje się niebezpiecznym przeciwnikiem.
+
+### Ranga A
+
+Dla większości Czarowników jest to zdecydowany szczyt możliwości. Użytkownik jest w stanie poruszać się w pełni płynnie, a jego ruchy w żaden sposób nie przypominają, aby były ćwiczone. Wszystko zdaje się być spójne i dopracowane. Ruchy bronią zdają się być wyćwiczone do perfekcji i ciężko szukać ludzi, którzy w ogóle są w stanie tak dobrze się nią posługiwać. Ze spokojnym sumieniem można takiemu Czarownikowi posłać na nauki młodzika, będąc przy tym pewnym iż zostanie wręcz podręcznikowo wytrenowany.
+
+### Ranga S
+
+Ci, którzy posiadają nie tylko wiedzę, ale również i wrodzony talent, są w stanie osiągnąć ten poziom. Ruchy użytkownika są w pełni płynne, gdyż przychodzą mu one całkowicie naturalnie. Nie ma on problemów z maskowaniem swoich akcji, czy markowaniem ciosów. Broń w jego rękach nie jest jedynie niebezpiecznym narzędziem, ale jednocześnie staje się samym wojownikiem, który jest w stanie dokonywać rzeczy niemożliwych z jej udziałem. Wszystko to dzięki nadludzkiemu wręcz refleksowi.
+
+### Ranga S+
+
+Poziom zdobywany przez tych, którzy swoje ruchy wynieśli ponad wszelkie standardy piękna. Walka takiego osobnika przypomina dużo bardziej chwytającą za serce sztukę, aniżeli pojedynek. Każdy ruch ma swój cel, pozbawiony jest zbyteczności, a jedyne co w nim widać to prawdziwy pietyzm.
 
 ## Opanowanie
 
 Statystyka ta odpowiada za to jak bardzo Czarownik panuje nad swoją Przeklętą Energią, a także w jaki sposób jest w stanie ją wykorzystać. Im wyższy poziom tym pojawia się więcej możliwości, które bezpośrednio przekładają się na powiększenie "arsenału" użytkownika.
 
-1. Ranga E - Podstawowy poziom kontroli, który posiada każdy Czarownik świadomy posiadania przez siebie Przeklętej Energii. Na tym etapie użytkownik jest w stanie pasywnie widzieć klątwy, a także wprawiać w ruch znajdującą się w jego ciele moc, którą wykorzystać może do tworzenia podstawowych technik. Ta ranga umożliwia tworzenie technik poziomów E i D.
-2. Ranga D - Zwiększa się zdolność kontroli swojej Przeklętej Energii i teraz Czarownik jest w stanie wtłoczyć ją nie tylko w części swojego ciała, ale również przedmioty, które ma w bezpośrednim kontakcie. Na tym etapie nie ma jeszcze możliwości, aby zwiększyć siłę swoich uderzeń bronią, gdyż po prostu by ona pękła. Stan ten umożliwia jednakże już walkę z klątwami przy użyciu zwykłego oręża. Czarownik jest w stanie tworzyć techniki do poziomu C.
-3. Ranga C - Czarownik mający Opanowanie na tym poziomie jest w stanie jeszcze lepiej manipulować swoją Energią, a co za tym idzie zwiększa się pula jego zdolności. Bronie, które dotychczas były nasączane jedynie delikatną ilością energii, teraz mogą mieć znacznie więcej zastosowań, a sam oręż zdaje się być twardszy. Jednakże zbyt długie wprowadzanie energii do broni może zakończyć się jej pęknięciem. Czarownik ma możliwość wykonywania technik aż do poziomu B.
-4. Ranga B - Zdolności podnoszą się jeszcze bardziej, a to wszystko za sprawą coraz to lepszej kontroli nad własną Przeklętą Energią. Użytkownik jest teraz w stanie nasączyć przedmiot swoją mocą, a następnie posłać go w stronę przeciwnika. Energia szybko się wytraca, ale przy małej odległości jest w stanie zadać odpowiednie obrażenia. Pojawiają się także pierwsze możliwości z technikami przestrzennymi, a także osoba zdolna jest do rozpoczęcia pracy nad swoją Prostą Domeną, której zadaniem ma być ochrona przed silniejszymi przeciwnikami. Opanowanie technik do poziomu A.
-5. Ranga A - Dla osoby posiadającej Opanowanie na tym poziomie, techniki przestrzenne nie stanowią już większego problemu. Ponadto pojawia się możliwość kontroli Przeklętej Energii na zaawansowaniu podobnym do molekularnego. Użytkownik nie ma problemu z nasączaniem przedmiotów swoją mocą, a także na utrzymaniu jej przez dłuższy czas w obiekcie, który wymknął jej się z rąk. Czarownik jest w stanie również wejść na wyższy poziom kreacji i zająć się tworzeniem swojej Niekompletnej Domeny. Ataki użytkownika są również w stanie przyzwać Czarne Wyładowania Energii zwane "Czarnym Błyskiem". Możliwości pozwalają na używanie technik poziomu S.
-6. Ranga S - Użytkownik, który posiada Opanowanie na tak zaawansowanym poziomie, nie ma najmniejszych kłopotów z opanowaniem technik przestrzennych, a także tych całkowicie zaginających rzeczywistość oraz czas. Osoba jest w stanie swoimi technikami stworzyć prawdziwy pogrom na polu bitwy, a jej zdolności mrożą krew w żyłach przeciwników. Pojawia się możliwość skompletowania całkowicie swojej Domeny, a więc postawienia swojego własnego wymiaru. Czarownik jest w stanie używać technik każdego poziomu bez większych problemów, nawet tych z oznaczeniem S+.
-7. Ranga S+ - Najwyższy możliwy poziom jaki Czarownik jest w stanie osiągnąć. Na tym etapie kontrola Przeklętej Energii przebiega z tak dużą precyzją, że użytkownik nie ma najmniejszych problemów z dosłownym rozszczepianiem atomów i naginaniem rzeczywistości wedle swoich własnych widzimisie. Ci, którzy dali radę dojść do takiej rangi są nazywani prawdziwymi perfekcjonistami we władaniu Przeklętą Energią.
+### Ranga E
+
+Podstawowy poziom kontroli, który posiada każdy Czarownik świadomy posiadania przez siebie Przeklętej Energii. Na tym etapie użytkownik jest w stanie pasywnie widzieć klątwy, a także wprawiać w ruch znajdującą się w jego ciele moc, którą wykorzystać może do tworzenia podstawowych technik. Ta ranga umożliwia tworzenie technik poziomów E i D.
+
+### Ranga D
+
+Zwiększa się zdolność kontroli swojej Przeklętej Energii i teraz Czarownik jest w stanie wtłoczyć ją nie tylko w części swojego ciała, ale również przedmioty, które ma w bezpośrednim kontakcie. Na tym etapie nie ma jeszcze możliwości, aby zwiększyć siłę swoich uderzeń bronią, gdyż po prostu by ona pękła. Stan ten umożliwia jednakże już walkę z klątwami przy użyciu zwykłego oręża. Czarownik jest w stanie tworzyć techniki do poziomu C.
+
+### Ranga C
+
+Czarownik mający Opanowanie na tym poziomie jest w stanie jeszcze lepiej manipulować swoją Energią, a co za tym idzie zwiększa się pula jego zdolności. Bronie, które dotychczas były nasączane jedynie delikatną ilością energii, teraz mogą mieć znacznie więcej zastosowań, a sam oręż zdaje się być twardszy. Jednakże zbyt długie wprowadzanie energii do broni może zakończyć się jej pęknięciem. Czarownik ma możliwość wykonywania technik aż do poziomu B.
+
+### Ranga B
+
+Zdolności podnoszą się jeszcze bardziej, a to wszystko za sprawą coraz to lepszej kontroli nad własną Przeklętą Energią. Użytkownik jest teraz w stanie nasączyć przedmiot swoją mocą, a następnie posłać go w stronę przeciwnika. Energia szybko się wytraca, ale przy małej odległości jest w stanie zadać odpowiednie obrażenia. Pojawiają się także pierwsze możliwości z technikami przestrzennymi, a także osoba zdolna jest do rozpoczęcia pracy nad swoją Prostą Domeną, której zadaniem ma być ochrona przed silniejszymi przeciwnikami. Opanowanie technik do poziomu A.
+
+### Ranga A
+
+Dla osoby posiadającej Opanowanie na tym poziomie, techniki przestrzenne nie stanowią już większego problemu. Ponadto pojawia się możliwość kontroli Przeklętej Energii na zaawansowaniu podobnym do molekularnego. Użytkownik nie ma problemu z nasączaniem przedmiotów swoją mocą, a także na utrzymaniu jej przez dłuższy czas w obiekcie, który wymknął jej się z rąk. Czarownik jest w stanie również wejść na wyższy poziom kreacji i zająć się tworzeniem swojej Niekompletnej Domeny. Ataki użytkownika są również w stanie przyzwać Czarne Wyładowania Energii zwane "Czarnym Błyskiem". Możliwości pozwalają na używanie technik poziomu S.
+
+### Ranga S
+
+Użytkownik, który posiada Opanowanie na tak zaawansowanym poziomie, nie ma najmniejszych kłopotów z opanowaniem technik przestrzennych, a także tych całkowicie zaginających rzeczywistość oraz czas. Osoba jest w stanie swoimi technikami stworzyć prawdziwy pogrom na polu bitwy, a jej zdolności mrożą krew w żyłach przeciwników. Pojawia się możliwość skompletowania całkowicie swojej Domeny, a więc postawienia swojego własnego wymiaru. Czarownik jest w stanie używać technik każdego poziomu bez większych problemów, nawet tych z oznaczeniem S+.
+
+### Ranga S+
+
+Najwyższy możliwy poziom jaki Czarownik jest w stanie osiągnąć. Na tym etapie kontrola Przeklętej Energii przebiega z tak dużą precyzją, że użytkownik nie ma najmniejszych problemów z dosłownym rozszczepianiem atomów i naginaniem rzeczywistości wedle swoich własnych widzimisie. Ci, którzy dali radę dojść do takiej rangi są nazywani prawdziwymi perfekcjonistami we władaniu Przeklętą Energią.

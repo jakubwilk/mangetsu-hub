@@ -1,31 +1,35 @@
-# Fabuła forum
+# Fabuła Forum
 
-## Upadek Króla Klątw
+## Fabuła Forum
+
+### Upadek Króla Klątw
 
 Era Heian nie bez powodu nazwana została jednym z najbardziej "przeklętych" okresów w dziejach Japonii, nawet jeśli miano to nosiła w środowisku Jujutsu. To właśnie w tamtym okresie Ryomen Sukuna, po już milenijnym jestestwie, wprowadził swoje rządy, a dzięki bezapelacyjnym umiejętnościom obwieszczony został Królem Klątw. Jego istnienie zwiastowało chaos na świecie, a także upadek gatunku ludzkiego. Na szczęście, w momencie kiedy znikała jakakolwiek nadzieja, na przeciwko Sukuny stanęło czterech potężnych Czarowników. Wykorzystując pełnie swoich zdolności, a także wszelkiego rodzaju fortele, z niemałym trudem udało im się pokonać przeciwnika i zakończyć jego bestialskie panowanie. Niestety, w związku z tym, że Sukuna już dawno przestał być pojmowany w kategoriach zwykłego człowieka, po śmierci nawet jego martwe ciało nie pozwoliło na to, aby być potraktowane na równi ze zwykłymi śmiertelnikami. W taki sposób powstało 20 przeklętych przedmiotów nazywanych do dziś "Palcami Sukuny". W każdym z nich drzemie potężna moc, a Ci którzy kiedykolwiek mieli z nimi styczność mówili, że czuli w nich obecność samego Króla Klątw.
 
-## Narodziny Pierwszych Klanów
+### Narodziny Pierwszych Klanów
 
 Lata mijały, a co za tym idzie z czasem nadszedł również moment, w którym świat musiał pożegnać się z czterema Czarownikami Jujutsu. Nie zanikło jednak ich dziedzictwo, gdyż wyjątkowe zdolności przekazane zostały przez nich następnemu pokoleniu. W taki oto sposób powstały pierwsze Cztery Klany, które istnieją do dziś, a są nimi: Gojo, Kamo, Zenin oraz Inumaki. To właśnie te rodziny uznawane są za prekursorów posiadających Zdolności Dziedziczne.
+
 Podczas mijających dekad, Czarownicy z klanów pierwotnych mieszali się jeszcze bardziej z innymi, aby w jak największym stopniu stworzyć zróżnicowanie. W związku z takim działaniem, po zaledwie dwóch wiekach pojawiły się rodziny pochodne od Wielkiej Czwórki. Dla Klanu Gojo była to rodzina Shizen, która w dużej mierze dała radę zapanować nad naturą pod postacią żywiołów i wykorzystać ją do walki z klątwami. Odnogą klanu Zenin stało się Senshi, rodzina wojowników, którzy potrafili w każdej chwili skorzystać z szerokiej gamy broni znajdującej się w ich zbrojowni, a zwłaszcza w mistycznych Bramach Babilonu. Ito, klan wywodzący się z rodu Kamo, pokazał że jest w stanie przenieść kontrolę na dużo wyższy poziom niż własna krew. Stali się oni najlepszymi marionetkarzami i twórcami Przeklętych Ciał w całej społeczności Jujutsu. Ostatnim, ale równie ważnym był klan Kusari, który po swoich "ojcach" z rodu Inumaki odziedziczył zdolność zmuszania klątw do pokłonienia się im - nawet wbrew własnej woli.
 
-## "Kość" Niezgody
+### "Kość" Niezgody
 
 Nadszedł 1748 rok. Niestety nawet w społeczności Jujutsu z czasem pojawić mogły się niesnaski. W związku z tym, że klany coraz bardziej rosły w siłę, a ich pozycje stawały się coraz bardziej scementowane, zaczęły się pojawiać zdecydowanie silniejsze głosy prawiące o przyszłości Czarowników. Część klanów bowiem przestała uważać, że ich zdolności mają służyć ludziom i zapewniać im bezpieczeństwo. Coraz częściej dało się słyszeć osoby, które mówiły o tym iż Czarownicy to kolejny etap ewolucji, a zgodnie z historią stare musi zniknąć, aby nowe mogło się rozwijać. Słowne przepychanki zmieniły się w fizyczne, a niedługo potem, bo w 1752 roku rozpoczęła się otwarta wojna domowa między Klanami.
 
-## Wielka Wojna
+### Wielka Wojna
 
 Po jednej stronie konfliktu opowiedziały się rodziny Gojo, Shizen, Inumaki oraz Kusari. Po drugiej zaś znalazły się Zenin, Senshi, Kamo oraz Ito. Stworzyły się dwa obozy, które poza Klanami zebrały również swoich popleczników wśród innych Czarowników. Znaleźli się oczywiście również i tacy, którzy w ogóle nie chcieli brać udziału w tym konflikcie. Wojna ta była zdecydowanie brutalna i zostawiła za sobą dziesiątki, jeśli nie setki trupów. Nie tylko aktywni Czarownicy, ale również i członkowie ich rodzin musieli uważać na swoje zdrowie każdego dnia i być gotowymi, że mogą ponieść śmierć. Konflikt trwał aż do lutego 1952 roku.
 
-## Narodziny Pokoju
+### Narodziny Pokoju
 
-Wpołowie roku 1951 świat Jujutsu obiegła informacja o tym, że w klanie Gojo po niemalże 30 latach, urodzić ma się chłopiec. Była to niepokojąca informacja dla rodzin przeciwnych, w końcu oznaczało to, że rodzina zyska pierworodnego. To jednak co najbardziej zmroziło krew w żyłach rodu Zenin i ich popleczników, to przepowiednia która mówiła, że dziecko to posiadać będzie obie z Przeklętych Zdolności swojej rodziny, a mowa tu o Nieskończoności oraz Szóstym Oku. Niemalże od razu po uzyskaniu tych informacji, został stworzony plan mający na celu zabicie matki - oczywiście wraz z dzieckiem.
+**W** połowie roku 1951 świat Jujutsu obiegła informacja o tym, że w klanie Gojo po niemalże 30 latach, urodzić ma się chłopiec. Była to niepokojąca informacja dla rodzin przeciwnych, w końcu oznaczało to, że rodzina zyska pierworodnego. To jednak co najbardziej zmroziło krew w żyłach rodu Zenin i ich popleczników, to przepowiednia która mówiła, że dziecko to posiadać będzie obie z Przeklętych Zdolności swojej rodziny, a mowa tu o Nieskończoności oraz Szóstym Oku. Niemalże od razu po uzyskaniu tych informacji, został stworzony plan mający na celu zabicie matki - oczywiście wraz z dzieckiem.
+
 Ku uciesze wielu nie udało się jednak osiągnąć zamierzonego celu, a wszystko to dzięki oddaniu wszystkich sojuszników klanu Gojo. To dzięki nim i ich gotowości do oddania życia za dziecko, przeprowadzony zamach zakończył się fiaskiem. 01.01.1952 roku w domu rodziny Gojo rozległ się płacz, a jego właścicielem był chłopiec o lazurowych oczach. Ojciec dał mu na imię Minato.
 
-## Mangetsu
+### Mangetsu
 
 Narodziny dziecka, które posiada tak niewyobrażalną moc, spowodowało załamanie się morale w szeregach Zenin i ich popleczników. Teraz klan Gojo, który miał potężną kartę przetargową, zaczął dyktować warunki. Lekko ponad miesiąc po narodzinach dziecka, odbyło się spotkanie wszystkich rodzin. Podczas niego zawarty został nie tylko sojusz i koniec wojny, ale również powołana została do życia organizacja Mangetsu, której zadaniem miało być ochranianie ludzi przed klątwami, a także trzymanie porządku w świecie Jujutsu.
 
-## Czasy Współczesne
+### Czasy Współczesne
 
 Aktualnie Mangetsu ma już ponad 70 lat, a dzięki jej działaniu w Japonii żyje się zdecydowanie lepiej. Organizacja wypełnia prawidłowo swoje obowiązki i umożliwia tym samym życie innym klanom w taki sposób jaki tylko sobie życzą - o ile oczywiście nie jest to wbrew przyjętym zasadom. Zdaje się, że wszystko to zapewnia Gojo Minato, który od prawie 50 lat pełni rolę Głównego Dyrektora organizacji. Spokój i sielanka niestety zdają się powoli kończyć, gdyż od kilku miesięcy dobiegają do uszu Czarowników Jujutsu bardzo niepokojące informacje na temat Okinawy. Zgodnie z ustaleń świadków, pojawiły się tam bardzo potężne klątwy najwyższych kręgów, a wszystkie z nich wypowiadają tylko jedno imię... Jednakże każdy kto je usłyszy po prostu umiera... Wszystkie znaki na niebie i na ziemi mówią, że znów nadchodzi czas, w którym Czarownicy będą musieli się zjednoczyć, aby móc stawić czoło większemu złu.
