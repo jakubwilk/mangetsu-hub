@@ -17,7 +17,8 @@ const hostOnlyCookie = (name: string) => ({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
-  providers: [Discord],
+  // Discord sends `iss` on the OAuth callback (RFC 9207); without it Auth.js expects the authjs.dev placeholder.
+  providers: [Discord({ issuer: 'https://discord.com' })],
   session: { strategy: 'database' },
   useSecureCookies,
   cookies: {
