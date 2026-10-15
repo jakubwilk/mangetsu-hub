@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { ModelConfigError } from 'server/ai/model'
 import { readJsonBody, verifyOrigin } from 'server/authorize'
 import { classifyMessage, type MessageVerdict, POLISH_ONLY_MESSAGE } from 'server/guardrails'
 import { getRequestDate, releaseRateLimit, reserveRateLimit } from 'server/rateLimit'
@@ -47,9 +48,10 @@ export const POST = async (request: NextRequest) => {
       classifyMessage(searchQuery),
       buildPromptContext(userId, searchQuery, sessionId),
     ])
-  } catch {
+  } catch (err) {
     await releaseRateLimit(userId, TUTORIALS_APP, requestDate)
-    return NextResponse.json({ error: 'Usługa chwilowo niedostępna.' }, { status: 503 })
+    const error = err instanceof ModelConfigError ? err.message : 'Usługa chwilowo niedostępna.'
+    return NextResponse.json({ error }, { status: 503 })
   }
 
   if (verdict === 'injection') {
