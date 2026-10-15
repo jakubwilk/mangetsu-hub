@@ -1,4 +1,5 @@
 import { openai } from './ai'
+import { ModelConfigError, requireModel } from './ai/model'
 
 export type MessageVerdict = 'ok' | 'injection' | 'language'
 
@@ -21,7 +22,7 @@ const GUARDRAIL_TIMEOUT_MS = 5000
 
 const classify = async (message: string): Promise<MessageVerdict> => {
   const completion = await openai.chat.completions.create({
-    model: process.env.OVH_AI_MODEL ?? 'Meta-Llama-3.1-70B-Instruct',
+    model: requireModel('LLM_FALLBACK_AI_MODEL'),
     messages: [
       { role: 'system', content: GUARDRAIL_SYSTEM_PROMPT },
       { role: 'user', content: message },
@@ -43,5 +44,9 @@ export const classifyMessage = async (message: string): Promise<MessageVerdict> 
     setTimeout(() => resolve('ok'), GUARDRAIL_TIMEOUT_MS),
   )
 
-  return Promise.race([classify(message).catch((): MessageVerdict => 'ok'), timeout])
+  const verdict = classify(message).catch((err: unknown): MessageVerdict => {
+    if (err instanceof ModelConfigError) throw err
+    return 'ok'
+  })
+  return Promise.race([verdict, timeout])
 }
