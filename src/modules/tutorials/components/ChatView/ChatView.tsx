@@ -108,7 +108,7 @@ const ChatView = () => {
 
   return (
     <div className="flex h-full flex-col">
-      <MessageList messages={messages} isLoading={isLoading} />
+      <MessageList key={activeSessionId} messages={messages} isLoading={isLoading} />
       {isDbError ? (
         <Alert variant="destructive" className="m-4 w-auto">
           <ServerOff />
