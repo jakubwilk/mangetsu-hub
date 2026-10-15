@@ -121,13 +121,15 @@ Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjow
 
 ### AI / LLM
 
-- **Dual-provider LLM** — primary: dowolny endpoint kompatybilny z OpenAI (`LLM_AI_ENDPOINT` /
-  `LLM_AI_API_KEY` / `LLM_AI_MODEL`, obecnie Mistral); automatyczny fallback na **OVH AI
-  Endpoints** (`OVH_AI_ENDPOINT` / `OVH_AI_API_KEY` / `OVH_AI_MODEL`), gdy primary zawiedzie —
+- **Dual-provider LLM** — primary: dowolny endpoint kompatybilny z OpenAI (`LLM_MAIN_AI_ENDPOINT` /
+  `LLM_MAIN_AI_API_KEY` / `LLM_MAIN_AI_MODEL`, obecnie Mistral); automatyczny fallback (obecnie
+  **OVH AI Endpoints**: `LLM_FALLBACK_AI_ENDPOINT` / `LLM_FALLBACK_AI_API_KEY` /
+  `LLM_FALLBACK_AI_MODEL`), gdy primary zawiedzie —
   logika w `src/server/ai/fallback.ts` i `src/server/ai/endpoint.ts`
 - API obu providerów kompatybilne z OpenAI; używaj pakietu `openai` npm z własnym `baseURL`
 - Każdy endpoint ma **osobny URL** — trzymaj go w odpowiedniej zmiennej env, nie hardkoduj
-- Embeddingi nadal wyłącznie przez OVH AI Endpoints (`OVH_AI_EMBEDDING_ENDPOINT`)
+- Embeddingi przez osobny endpoint z własnym kluczem (`LLM_AI_EMBEDDING_ENDPOINT` /
+  `LLM_AI_EMBEDDING_API_KEY` / `LLM_AI_EMBEDDING_MODEL`, obecnie OVH AI Endpoints)
 - Token OVH ma TTL — używaj service credentials dla produkcji, nie osobistego tokenu
 - Klient: `new OpenAI({ apiKey, baseURL })` z pakietu `openai`
 - Prompt engineering: system prompt Poradników w `src/server/tutorials/prompts.ts`
