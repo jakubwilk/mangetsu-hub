@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { streamChatCompletion } from 'server/ai'
+import { splitDelta } from 'server/ai/content'
 import { type ChatMessage, getRecentHistory, saveExchange } from 'server/conversations'
 import { searchChunks } from 'server/rag'
 import { releaseRateLimit } from 'server/rateLimit'
@@ -127,7 +128,11 @@ export const createChatStream = (params: {
         for await (const chunk of completion) {
           // Last one wins: a primary that dies before its first token is followed by fallback chunks.
           if (chunk.model) model = chunk.model
-          const content = chunk.choices[0]?.delta?.content ?? ''
+          // Thinking is shown live but never saved or sent back to the model as history.
+          const { text: content, thinking } = splitDelta(chunk.choices[0]?.delta?.content)
+          if (thinking) {
+            controller.enqueue(sseEvent({ type: 'thinking', content: thinking }))
+          }
           if (content) {
             fullContent += content
             controller.enqueue(sseEvent({ type: 'token', content }))

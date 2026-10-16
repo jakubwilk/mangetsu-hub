@@ -77,4 +77,20 @@ describe('chatStore', () => {
 
     expect(chatStore.getSnapshot().sessions[0]!.messages.map((m) => m.id)).toEqual(['a-m0'])
   })
+
+  it('keeps thinking in memory but never writes it to localStorage', () => {
+    seed([session('a', 0)], 'a')
+    chatStore.addMessage({ id: 'r', role: 'assistant', content: '' })
+
+    chatStore.appendToMessage('r', 'Myślę', 'thinking')
+    chatStore.appendToMessage('r', 'Odpowiedź')
+    chatStore.persistCurrentState()
+
+    expect(chatStore.getSnapshot().sessions[0]!.messages[0]).toMatchObject({
+      content: 'Odpowiedź',
+      thinking: 'Myślę',
+    })
+    const stored = JSON.parse(storage.get('mangetsu:tutorials:chat-sessions')!) as ChatSession[]
+    expect(stored[0]!.messages[0]).toEqual({ id: 'r', role: 'assistant', content: 'Odpowiedź' })
+  })
 })

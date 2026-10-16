@@ -177,6 +177,27 @@ describe('createChatStream', () => {
     expect(saveExchange).toHaveBeenCalledWith(expect.objectContaining({ question: 'Pytanie' }))
   })
 
+  it('streams thinking separately and saves only the answer text', async () => {
+    const reasoning = (
+      parts: unknown[],
+      finishReason: ChatCompletionChunk.Choice['finish_reason'],
+    ) =>
+      ({
+        choices: [{ delta: { content: parts }, index: 0, finish_reason: finishReason }],
+      }) as unknown as ChatCompletionChunk
+    const thought = (text: string) => ({ type: 'thinking', thinking: [{ type: 'text', text }] })
+
+    const output = await run([
+      reasoning([thought('Gracz pyta.')], null),
+      reasoning([thought(' Odpowiem.'), { type: 'text', text: 'Na' }], null),
+      chunk(' podstawie.', 'stop'),
+    ])
+
+    expect(output).toContain(JSON.stringify({ type: 'thinking', content: 'Gracz pyta.' }))
+    expect(output).toContain(JSON.stringify({ type: 'token', content: 'Na' }))
+    expect(saveExchange).toHaveBeenCalledWith(expect.objectContaining({ answer: 'Na podstawie.' }))
+  })
+
   it('saves the model reported by the provider', async () => {
     await run([chunk('Odpowiedź.', null, 'model-a'), chunk('', 'stop', 'model-a')])
 
