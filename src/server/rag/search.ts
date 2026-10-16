@@ -1,4 +1,5 @@
 import { embedText } from 'server/ai/embeddings'
+import { ModelConfigError } from 'server/ai/model'
 import { db } from 'server/db'
 
 import { SECTION_SEPARATOR } from './chunker'
@@ -241,7 +242,13 @@ export const searchChunks = async (
   const [andResults, trigramResults, queryEmbedding] = await Promise.all([
     runFts(app, tsAndQuery, fetchLimit).catch(() => [] as SearchResult[]),
     runTrigram(app, query, fetchLimit),
-    Promise.race([embedText(query).catch(() => null), embeddingTimeout]),
+    Promise.race([
+      embedText(query).catch((err: unknown) => {
+        if (err instanceof ModelConfigError) throw err
+        return null
+      }),
+      embeddingTimeout,
+    ]),
   ])
 
   // Resolve FTS results (OR fallback if AND returned too few)

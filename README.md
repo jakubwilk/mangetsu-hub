@@ -28,18 +28,18 @@ poradników (hybrid search: full-text + trigram + embeddingi).
 
 ## Stack technologiczny
 
-| Warstwa       | Technologia                                                                                           |
-| ------------- | ----------------------------------------------------------------------------------------------------- |
-| Frontend      | Next.js 16 (App Router), TypeScript                                                                   |
-| UI            | shadcn/ui (Radix, styl `radix-nova`), Tailwind CSS v4, lucide-react, sonner                           |
-| Backend       | Next.js Route Handlers                                                                                |
-| Baza danych   | PostgreSQL + `pgvector` + `pg_trgm` (Prisma ORM)                                                      |
-| Auth          | NextAuth (Auth.js) v5 — Discord OAuth, sesje w bazie, ochrona tras przez `src/proxy.ts`               |
-| LLM           | primary: dowolny endpoint kompatybilny z OpenAI (`LLM_AI_*`), fallback: OVH AI Endpoints (`OVH_AI_*`) |
-| Embeddingi    | OVH AI Endpoints                                                                                      |
-| Automatyzacja | n8n (webhooki: zmiana roli, usunięcie konta, dodawanie źródeł)                                        |
-| Hosting       | OVH VPS → Coolify + Nixpacks                                                                          |
-| Testy         | Vitest + Testing Library                                                                              |
+| Warstwa       | Technologia                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Frontend      | Next.js 16 (App Router), TypeScript                                                                                 |
+| UI            | shadcn/ui (Radix, styl `radix-nova`), Tailwind CSS v4, lucide-react, sonner                                         |
+| Backend       | Next.js Route Handlers                                                                                              |
+| Baza danych   | PostgreSQL + `pgvector` + `pg_trgm` (Prisma ORM)                                                                    |
+| Auth          | NextAuth (Auth.js) v5 — Discord OAuth, sesje w bazie, ochrona tras przez `src/proxy.ts`                             |
+| LLM           | primary: dowolny endpoint kompatybilny z OpenAI (`LLM_MAIN_AI_*`), fallback: OVH AI Endpoints (`LLM_FALLBACK_AI_*`) |
+| Embeddingi    | OVH AI Endpoints                                                                                                    |
+| Automatyzacja | n8n (webhooki: zmiana roli, usunięcie konta, dodawanie źródeł)                                                      |
+| Hosting       | OVH VPS → Coolify + Nixpacks                                                                                        |
+| Testy         | Vitest + Testing Library                                                                                            |
 
 ## Architektura
 
@@ -104,7 +104,7 @@ Zapytanie:
   - `OK` → zwykła ścieżka;
   - błąd lub timeout (5 s) → wiadomość jest przepuszczana (fail-open).
 - **Prompt** (`server/tutorials/prompts.ts`): odpowiedzi wyłącznie na podstawie fragmentów poradników. Pytania spoza forum dostają stałe zdanie `OFF_TOPIC_MESSAGE`. Promptowi przekazywane jest 6 ostatnich wiadomości z rozmowy.
-- **LLM z fallbackiem** (`server/ai`): najpierw primary (`LLM_AI_*`), a gdy zawiedzie przed wysłaniem pierwszego tokenu, automatycznie OVH (`OVH_AI_*`).
+- **LLM z fallbackiem** (`server/ai`): najpierw primary (`LLM_MAIN_AI_*`), a gdy zawiedzie przed wysłaniem pierwszego tokenu, automatycznie fallback (`LLM_FALLBACK_AI_*`).
 - **Limit przed kosztami:** limit dzienny jest rezerwowany przed wywołaniami płatnych usług (guardrail, embeddingi) i zwalniany przy odrzuceniu lub błędzie.
 
 ### Historia czatu
@@ -164,16 +164,16 @@ Pozostałe skrypty:
 
 Placeholdery są w `.env.example` (dev: `.env.local`, prod: panel Coolify).
 
-| Grupa                  | Zmienne                                                                                                            |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Baza                   | `DATABASE_URL`                                                                                                     |
-| Auth                   | `AUTH_SECRET`, `AUTH_URL`, `AUTH_TRUST_HOST`, `AUTH_DISCORD_ID`, `AUTH_DISCORD_SECRET`                             |
-| LLM primary            | `LLM_AI_ENDPOINT`, `LLM_AI_API_KEY`, `LLM_AI_MODEL` (bez `LLM_AI_ENDPOINT` czat idzie od razu do OVH)              |
-| OVH (fallback, guard.) | `OVH_AI_ENDPOINT`, `OVH_AI_API_KEY`, `OVH_AI_MODEL`                                                                |
-| Embeddingi (OVH)       | `OVH_AI_EMBEDDING_ENDPOINT`, `OVH_AI_EMBEDDING_MODEL`                                                              |
-| Webhooki n8n           | `N8N_WEBHOOK_BASE_URL`, `N8N_WEBHOOK_SECRET`, `N8N_ROLE_ACTIVATION_WEBHOOK_PATH`, `N8N_USER_DELETION_WEBHOOK_PATH` |
-| Źródła                 | `SOURCES_WEBHOOK_URL`                                                                                              |
-| Pozostałe              | `DAILY_REQUEST_LIMIT`, `NEXT_PUBLIC_FORUM_URL`                                                                     |
+| Grupa                | Zmienne                                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Baza                 | `DATABASE_URL`                                                                                                                  |
+| Auth                 | `AUTH_SECRET`, `AUTH_URL`, `AUTH_TRUST_HOST`, `AUTH_DISCORD_ID`, `AUTH_DISCORD_SECRET`                                          |
+| LLM primary          | `LLM_MAIN_AI_ENDPOINT`, `LLM_MAIN_AI_API_KEY`, `LLM_MAIN_AI_MODEL` (bez `LLM_MAIN_AI_ENDPOINT` czat idzie od razu do fallbacku) |
+| LLM fallback, guard. | `LLM_FALLBACK_AI_ENDPOINT`, `LLM_FALLBACK_AI_API_KEY`, `LLM_FALLBACK_AI_MODEL`                                                  |
+| Embeddingi           | `LLM_AI_EMBEDDING_ENDPOINT`, `LLM_AI_EMBEDDING_API_KEY`, `LLM_AI_EMBEDDING_MODEL`                                               |
+| Webhooki n8n         | `N8N_WEBHOOK_BASE_URL`, `N8N_WEBHOOK_SECRET`, `N8N_ROLE_ACTIVATION_WEBHOOK_PATH`, `N8N_USER_DELETION_WEBHOOK_PATH`              |
+| Źródła               | `SOURCES_WEBHOOK_URL`                                                                                                           |
+| Pozostałe            | `DAILY_REQUEST_LIMIT`, `NEXT_PUBLIC_FORUM_URL`                                                                                  |
 
 Ważne dla izolacji sesji: na produkcji `AUTH_URL` musi być pełnym adresem
 `https://mangetsu.thalverntable.app`, bo od niego zależą prefiksy `__Host-` cookies.

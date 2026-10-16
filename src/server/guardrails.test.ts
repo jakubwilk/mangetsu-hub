@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { ModelConfigError } from './ai/model'
 import { classifyMessage } from './guardrails'
 
 const { createMock } = vi.hoisted(() => ({ createMock: vi.fn() }))
@@ -14,10 +15,12 @@ const completionWith = (content: string) => ({
 
 beforeEach(() => {
   createMock.mockReset()
+  vi.stubEnv('LLM_FALLBACK_AI_MODEL', 'test-model')
 })
 
 afterEach(() => {
   vi.useRealTimers()
+  vi.unstubAllEnvs()
 })
 
 describe('classifyMessage', () => {
@@ -55,6 +58,13 @@ describe('classifyMessage', () => {
     createMock.mockRejectedValue(new Error('OVH endpoint unavailable'))
 
     await expect(classifyMessage('Jakiekolwiek pytanie')).resolves.toBe('ok')
+  })
+
+  it('rejects instead of failing open when the model is not configured', async () => {
+    vi.stubEnv('LLM_FALLBACK_AI_MODEL', '')
+
+    await expect(classifyMessage('Pytanie testowe')).rejects.toBeInstanceOf(ModelConfigError)
+    expect(createMock).not.toHaveBeenCalled()
   })
 
   it('fails open (returns ok) when the classifier call exceeds the timeout', async () => {

@@ -1,3 +1,4 @@
+import { ModelConfigError } from 'server/ai/model'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { searchChunks } from './search'
@@ -63,6 +64,15 @@ describe('searchChunks', () => {
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id).toBe('c1')
+  })
+
+  it('rejects instead of falling back when the embedding model is not configured', async () => {
+    queryRawMock.mockResolvedValue([])
+    embedTextMock.mockRejectedValue(new ModelConfigError('LLM_AI_EMBEDDING_MODEL'))
+
+    await expect(searchChunks('kolejka postów', { app: 'tutorials' })).rejects.toBeInstanceOf(
+      ModelConfigError,
+    )
   })
 
   it('merges FTS and trigram by position, not by their incomparable raw scores', async () => {

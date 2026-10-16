@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { ModelConfigError } from 'server/ai/model'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { POST } from './route'
@@ -98,6 +99,16 @@ describe('POST /api/tutorials/chat', () => {
     const res = await post()
 
     expect(res.status).toBe(503)
+    expect(mocks.release).toHaveBeenCalled()
+  })
+
+  it('reports a missing model configuration to the user', async () => {
+    mocks.classifyMessage.mockRejectedValue(new ModelConfigError('LLM_FALLBACK_AI_MODEL'))
+
+    const res = await post()
+
+    expect(res.status).toBe(503)
+    expect((await res.json()).error).toContain('LLM_FALLBACK_AI_MODEL')
     expect(mocks.release).toHaveBeenCalled()
   })
 
