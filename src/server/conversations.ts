@@ -46,8 +46,9 @@ export const saveExchange = async (params: {
   question: string
   answer: string
   tokensUsed: number
+  model: string | undefined
 }) => {
-  const { userId, app, sessionId, ip, question, answer, tokensUsed } = params
+  const { userId, app, sessionId, ip, question, answer, tokensUsed, model } = params
 
   const conversationId =
     params.conversationId ??
@@ -56,7 +57,7 @@ export const saveExchange = async (params: {
   await db.message.createMany({
     data: [
       { conversationId, role: 'user', content: question, tokensUsed: 0 },
-      { conversationId, role: 'assistant', content: answer, tokensUsed },
+      { conversationId, role: 'assistant', content: answer, tokensUsed, model },
     ],
   })
 }

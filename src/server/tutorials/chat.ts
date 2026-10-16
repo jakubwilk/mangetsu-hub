@@ -122,8 +122,11 @@ export const createChatStream = (params: {
 
         let fullContent = ''
         let tokensUsed = 0
+        let model: string | undefined
 
         for await (const chunk of completion) {
+          // Last one wins: a primary that dies before its first token is followed by fallback chunks.
+          if (chunk.model) model = chunk.model
           const content = chunk.choices[0]?.delta?.content ?? ''
           if (content) {
             fullContent += content
@@ -147,6 +150,7 @@ export const createChatStream = (params: {
           question: searchQuery,
           answer: fullContent,
           tokensUsed,
+          model,
         })
 
         controller.enqueue(sseEvent({ type: 'done', requestsUsed }))

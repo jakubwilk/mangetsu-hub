@@ -121,8 +121,13 @@ describe('buildPromptContext', () => {
 })
 
 describe('createChatStream', () => {
-  const chunk = (content: string, finishReason: ChatCompletionChunk.Choice['finish_reason']) =>
+  const chunk = (
+    content: string,
+    finishReason: ChatCompletionChunk.Choice['finish_reason'],
+    model?: string,
+  ) =>
     ({
+      model,
       choices: [{ delta: { content }, index: 0, finish_reason: finishReason }],
     }) as ChatCompletionChunk
 
@@ -170,5 +175,17 @@ describe('createChatStream', () => {
       content: 'fragmenty + Pytanie',
     })
     expect(saveExchange).toHaveBeenCalledWith(expect.objectContaining({ question: 'Pytanie' }))
+  })
+
+  it('saves the model reported by the provider', async () => {
+    await run([chunk('Odpowiedź.', null, 'model-a'), chunk('', 'stop', 'model-a')])
+
+    expect(saveExchange).toHaveBeenCalledWith(expect.objectContaining({ model: 'model-a' }))
+  })
+
+  it('saves the fallback model when the primary failed after an empty chunk', async () => {
+    await run([chunk('', null, 'primary'), chunk('Odpowiedź.', 'stop', 'fallback')])
+
+    expect(saveExchange).toHaveBeenCalledWith(expect.objectContaining({ model: 'fallback' }))
   })
 })
