@@ -51,18 +51,17 @@ const ChatView = () => {
             return
           }
 
-          if (event.type === 'token') {
+          if (event.type === 'thinking' || event.type === 'token') {
             if (!assistantMessageId) {
               assistantMessageId = crypto.randomUUID()
-              chatStore.addMessage({
-                id: assistantMessageId,
-                role: 'assistant',
-                content: event.content,
-              })
+              chatStore.addMessage({ id: assistantMessageId, role: 'assistant', content: '' })
               setIsLoading(false)
-            } else {
-              chatStore.appendToMessage(assistantMessageId, event.content)
             }
+            chatStore.appendToMessage(
+              assistantMessageId,
+              event.content,
+              event.type === 'thinking' ? 'thinking' : 'content',
+            )
           }
 
           if (event.type === 'done') {

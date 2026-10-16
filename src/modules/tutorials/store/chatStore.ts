@@ -61,7 +61,13 @@ export const ensureActiveSession = (
 const commit = (next: Partial<StoreSnapshot>, { persist = true } = {}) => {
   snapshot = { ...snapshot, ...next }
   if (persist) {
-    localStorage.setItem(SESSIONS_KEY, JSON.stringify(snapshot.sessions))
+    // Thinking lives only in memory: it's shown while the answer streams, never kept across reloads.
+    localStorage.setItem(
+      SESSIONS_KEY,
+      JSON.stringify(snapshot.sessions, (key, value: unknown) =>
+        key === 'thinking' ? undefined : value,
+      ),
+    )
     localStorage.setItem(ACTIVE_KEY, snapshot.activeSessionId)
   }
   listeners.forEach((l) => l())
@@ -102,11 +108,11 @@ export const chatStore = {
   },
 
   // Streaming deltas skip localStorage; persistCurrentState() writes once the stream ends.
-  appendToMessage: (id: string, delta: string) => {
+  appendToMessage: (id: string, delta: string, field: 'content' | 'thinking' = 'content') => {
     commit(
       {
         sessions: updateActiveMessages((messages) =>
-          messages.map((m) => (m.id === id ? { ...m, content: m.content + delta } : m)),
+          messages.map((m) => (m.id === id ? { ...m, [field]: (m[field] ?? '') + delta } : m)),
         ),
       },
       { persist: false },
