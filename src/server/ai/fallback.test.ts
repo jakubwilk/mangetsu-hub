@@ -109,6 +109,38 @@ describe('streamWithFallback', () => {
     errorSpy.mockRestore()
   })
 
+  it('still falls back when primary fails after streaming only thinking', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const thinkingChunk = {
+      choices: [
+        {
+          delta: { content: [{ type: 'thinking', thinking: [{ type: 'text', text: 'hmm' }] }] },
+          index: 0,
+          finish_reason: null,
+        },
+      ],
+    } as unknown as ChatCompletionChunk
+    const primaryCreate = vi.fn().mockResolvedValue({
+      [Symbol.asyncIterator]: async function* () {
+        yield thinkingChunk
+        throw new Error('dropped')
+      },
+    })
+    const secondaryCreate = vi.fn().mockResolvedValue(asyncIterable([chunk('fallback')]))
+
+    const result = await drain(
+      streamWithFallback(
+        provider('LLM_AI', primaryCreate),
+        provider('OVH_AI', secondaryCreate),
+        [],
+      ),
+    )
+
+    expect(result.at(-1)?.choices[0]?.delta.content).toBe('fallback')
+    expect(secondaryCreate).toHaveBeenCalledOnce()
+    errorSpy.mockRestore()
+  })
+
   it('calls secondary directly when primary is undefined', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const secondaryCreate = vi.fn().mockResolvedValue(asyncIterable([chunk('only')]))

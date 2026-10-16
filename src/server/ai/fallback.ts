@@ -4,6 +4,8 @@ import type {
   ChatCompletionMessageParam,
 } from 'openai/resources/chat/completions'
 
+import { splitDelta } from './content'
+
 export type ChatProvider = { client: OpenAI; model: string; name: string }
 
 // The openai SDK wraps network failures in a generic APIConnectionError whose `message` is
@@ -27,14 +29,15 @@ const describeError = (err: unknown): string => {
 
 const CHAT_COMPLETION_OPTIONS = {
   temperature: 0.3,
-  max_tokens: 4096,
+  // Reasoning models spend part of this on thinking before the answer starts.
+  max_tokens: 8192,
   stream: true as const,
   stream_options: { include_usage: true },
 }
 
 // Falls back from `primary` to `secondary` only if `primary` fails before it has streamed
-// any real token — once content has reached the caller, switching providers mid-stream
-// would produce a garbled response, so a later failure just propagates instead.
+// any answer text (thinking doesn't count) — once the answer has reached the caller, switching
+// providers mid-stream would produce a garbled response, so a later failure just propagates.
 export async function* streamWithFallback(
   primary: ChatProvider | undefined,
   secondary: ChatProvider,
@@ -49,7 +52,7 @@ export async function* streamWithFallback(
         ...CHAT_COMPLETION_OPTIONS,
       })
       for await (const chunk of stream) {
-        if (chunk.choices[0]?.delta?.content) tokenSent = true
+        if (splitDelta(chunk.choices[0]?.delta?.content).text) tokenSent = true
         yield chunk
       }
       return
