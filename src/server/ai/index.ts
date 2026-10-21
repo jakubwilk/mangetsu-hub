@@ -18,7 +18,10 @@ const llmClient = new OpenAI({
   baseURL: normalizeEndpoint(process.env.LLM_MAIN_AI_ENDPOINT),
 })
 
-export const streamChatCompletion = (messages: Parameters<typeof streamWithFallback>[2]) => {
+export const streamChatCompletion = (
+  messages: Parameters<typeof streamWithFallback>[2],
+  signal?: AbortSignal,
+) => {
   const secondary: ChatProvider = {
     client: openai,
     model: requireModel('LLM_FALLBACK_AI_MODEL'),
@@ -28,7 +31,7 @@ export const streamChatCompletion = (messages: Parameters<typeof streamWithFallb
   // Only LLM_MAIN_AI_ENDPOINT gates the primary attempt: without it, the SDK would default to
   // api.openai.com and hit a real third party with a bogus key on every request.
   if (!process.env.LLM_MAIN_AI_ENDPOINT) {
-    return streamWithFallback(undefined, secondary, messages)
+    return streamWithFallback(undefined, secondary, messages, signal)
   }
 
   const primary: ChatProvider = {
@@ -37,5 +40,5 @@ export const streamChatCompletion = (messages: Parameters<typeof streamWithFallb
     name: 'LLM_MAIN_AI',
   }
 
-  return streamWithFallback(primary, secondary, messages)
+  return streamWithFallback(primary, secondary, messages, signal)
 }

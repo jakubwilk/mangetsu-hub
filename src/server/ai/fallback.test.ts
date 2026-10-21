@@ -141,6 +141,30 @@ describe('streamWithFallback', () => {
     errorSpy.mockRestore()
   })
 
+  it('does not fall back when the caller aborted the request', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const abort = new AbortController()
+    abort.abort()
+    const primaryCreate = vi.fn().mockRejectedValue(new Error('Request was aborted.'))
+    const secondaryCreate = vi.fn()
+
+    await expect(
+      drain(
+        streamWithFallback(
+          provider('LLM_AI', primaryCreate),
+          provider('OVH_AI', secondaryCreate),
+          [],
+          abort.signal,
+        ),
+      ),
+    ).rejects.toThrow('Request was aborted.')
+
+    expect(primaryCreate).toHaveBeenCalledWith(expect.anything(), { signal: abort.signal })
+    expect(secondaryCreate).not.toHaveBeenCalled()
+    expect(errorSpy).not.toHaveBeenCalled()
+    errorSpy.mockRestore()
+  })
+
   it('calls secondary directly when primary is undefined', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const secondaryCreate = vi.fn().mockResolvedValue(asyncIterable([chunk('only')]))

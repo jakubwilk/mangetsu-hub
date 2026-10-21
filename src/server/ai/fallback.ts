@@ -38,37 +38,37 @@ const CHAT_COMPLETION_OPTIONS = {
 // Falls back from `primary` to `secondary` only if `primary` fails before it has streamed
 // any answer text (thinking doesn't count) — once the answer has reached the caller, switching
 // providers mid-stream would produce a garbled response, so a later failure just propagates.
+// An aborted `signal` is the caller giving up, not a provider failure — it never falls back.
 export async function* streamWithFallback(
   primary: ChatProvider | undefined,
   secondary: ChatProvider,
   messages: ChatCompletionMessageParam[],
+  signal?: AbortSignal,
 ): AsyncGenerator<ChatCompletionChunk> {
   if (primary) {
     let tokenSent = false
     try {
-      const stream = await primary.client.chat.completions.create({
-        model: primary.model,
-        messages,
-        ...CHAT_COMPLETION_OPTIONS,
-      })
+      const stream = await primary.client.chat.completions.create(
+        { model: primary.model, messages, ...CHAT_COMPLETION_OPTIONS },
+        { signal },
+      )
       for await (const chunk of stream) {
         if (splitDelta(chunk.choices[0]?.delta?.content).text) tokenSent = true
         yield chunk
       }
       return
     } catch (err) {
-      if (tokenSent) throw err
+      if (tokenSent || signal?.aborted) throw err
       console.error(
         `[chat] ${primary.name} failed before streaming any tokens, falling back to ${secondary.name}: ${describeError(err)}`,
       )
     }
   }
 
-  const stream = await secondary.client.chat.completions.create({
-    model: secondary.model,
-    messages,
-    ...CHAT_COMPLETION_OPTIONS,
-  })
+  const stream = await secondary.client.chat.completions.create(
+    { model: secondary.model, messages, ...CHAT_COMPLETION_OPTIONS },
+    { signal },
+  )
   for await (const chunk of stream) {
     yield chunk
   }
