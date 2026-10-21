@@ -3,9 +3,16 @@ import type { ChatCompletionChunk } from 'openai/resources/chat/completions'
 import { streamChatCompletion } from 'server/ai'
 import { getRecentHistory, saveExchange } from 'server/conversations'
 import { searchChunks } from 'server/rag'
+import { releaseRateLimit } from 'server/rateLimit'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { buildPromptContext, createChatStream, parseChatRequest, TRUNCATION_NOTE } from './chat'
+import {
+  buildPromptContext,
+  createChatStream,
+  parseChatRequest,
+  THINKING_LIMIT_MESSAGE,
+  TRUNCATION_NOTE,
+} from './chat'
 
 vi.mock('./access', () => ({ TUTORIALS_APP: 'tutorials' }))
 vi.mock('server/rag', () => ({ searchChunks: vi.fn().mockResolvedValue([]) }))
@@ -131,24 +138,26 @@ describe('createChatStream', () => {
       choices: [{ delta: { content }, index: 0, finish_reason: finishReason }],
     }) as ChatCompletionChunk
 
+  const streamParams = {
+    searchQuery: 'Pytanie',
+    systemPrompt: 'system',
+    userMessage: 'fragmenty + Pytanie',
+    history: [],
+    conversationId: undefined,
+    sessionId: 'session-1',
+    userId: 'user-1',
+    ip: '127.0.0.1',
+    requestDate: new Date('2026-10-03'),
+    requestsUsed: 1,
+  }
+
   const run = async (chunks: ChatCompletionChunk[]) => {
     vi.mocked(streamChatCompletion).mockReturnValue(
       (async function* () {
         yield* chunks
       })(),
     )
-    const stream = createChatStream({
-      searchQuery: 'Pytanie',
-      systemPrompt: 'system',
-      userMessage: 'fragmenty + Pytanie',
-      history: [],
-      conversationId: undefined,
-      sessionId: 'session-1',
-      userId: 'user-1',
-      ip: '127.0.0.1',
-      requestDate: new Date('2026-10-03'),
-      requestsUsed: 1,
-    })
+    const stream = createChatStream(streamParams)
     return new Response(stream).text()
   }
 
@@ -196,6 +205,47 @@ describe('createChatStream', () => {
     expect(output).toContain(JSON.stringify({ type: 'thinking', content: 'Gracz pyta.' }))
     expect(output).toContain(JSON.stringify({ type: 'token', content: 'Na' }))
     expect(saveExchange).toHaveBeenCalledWith(expect.objectContaining({ answer: 'Na podstawie.' }))
+  })
+
+  it('aborts a model that keeps thinking without answering', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const thought = {
+      choices: [
+        {
+          delta: {
+            content: [
+              { type: 'thinking', thinking: [{ type: 'text', text: 'z/t? '.repeat(1000) }] },
+            ],
+          },
+          index: 0,
+          finish_reason: null,
+        },
+      ],
+    } as unknown as ChatCompletionChunk
+
+    const output = await run([thought, thought, thought, chunk('Odpowiedź.', 'stop')])
+
+    const signal = vi.mocked(streamChatCompletion).mock.calls[0][1]
+    expect(signal?.aborted).toBe(true)
+    expect(output).toContain(JSON.stringify({ type: 'error', message: THINKING_LIMIT_MESSAGE }))
+    expect(output).not.toContain('Odpowiedź.')
+    expect(saveExchange).not.toHaveBeenCalled()
+    expect(releaseRateLimit).toHaveBeenCalledOnce()
+    errorSpy.mockRestore()
+  })
+
+  it('aborts the model call when the client disconnects', async () => {
+    vi.mocked(streamChatCompletion).mockReturnValue(
+      (async function* () {
+        yield chunk('Odp', null)
+        yield chunk('owiedź.', 'stop')
+      })(),
+    )
+    const stream = createChatStream(streamParams)
+
+    await stream.cancel()
+
+    expect(vi.mocked(streamChatCompletion).mock.calls[0][1]?.aborted).toBe(true)
   })
 
   it('saves the model reported by the provider', async () => {

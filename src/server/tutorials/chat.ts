@@ -17,6 +17,14 @@ const MAX_MESSAGE_LENGTH = 1000
 // Leading blank lines close a markdown table the model may have been cut off in the middle of.
 export const TRUNCATION_NOTE = '\n\n_Odpowiedź została ucięta — dopytaj o konkretną część._'
 
+// A reasoning model can loop in its thinking until max_tokens — cut it off well before that.
+const MAX_THINKING_CHARS = 12_000
+
+export const THINKING_LIMIT_MESSAGE =
+  'Model nie poradził sobie z tym pytaniem — spróbuj sformułować je inaczej.'
+
+class ThinkingLimitError extends Error {}
+
 // Long past answers pull the model into continuing them and re-asserting their mistakes as facts.
 const HISTORY_ANSWER_CHARS = 400
 
@@ -112,16 +120,24 @@ export const createChatStream = (params: {
   const { searchQuery, systemPrompt, userMessage, history, userId, requestDate, requestsUsed } =
     params
 
+  // Stops the paid LLM call when the client disconnects or the thinking runs away.
+  const abort = new AbortController()
+  let cancelled = false
+
   return new ReadableStream({
     async start(controller) {
       try {
-        const completion = streamChatCompletion([
-          { role: 'system', content: systemPrompt },
-          ...history,
-          { role: 'user', content: userMessage },
-        ])
+        const completion = streamChatCompletion(
+          [
+            { role: 'system', content: systemPrompt },
+            ...history,
+            { role: 'user', content: userMessage },
+          ],
+          abort.signal,
+        )
 
         let fullContent = ''
+        let thinkingChars = 0
         let tokensUsed = 0
         let model: string | undefined
 
@@ -131,6 +147,14 @@ export const createChatStream = (params: {
           // Thinking is shown live but never saved or sent back to the model as history.
           const { text: content, thinking } = splitDelta(chunk.choices[0]?.delta?.content)
           if (thinking) {
+            thinkingChars += thinking.length
+            if (!fullContent && thinkingChars > MAX_THINKING_CHARS) {
+              abort.abort()
+              console.error(
+                `[chat] ${model ?? 'model'} thought for over ${MAX_THINKING_CHARS} chars without answering, aborted`,
+              )
+              throw new ThinkingLimitError(THINKING_LIMIT_MESSAGE)
+            }
             controller.enqueue(sseEvent({ type: 'thinking', content: thinking }))
           }
           if (content) {
@@ -161,13 +185,19 @@ export const createChatStream = (params: {
         controller.enqueue(sseEvent({ type: 'done', requestsUsed }))
       } catch (err) {
         await releaseRateLimit(userId, TUTORIALS_APP, requestDate)
+        // The client is gone and the stream already closed — there's no one left to tell.
+        if (cancelled) return
         const detail = err instanceof Error ? err.message : 'Nieznany błąd'
-        controller.enqueue(
-          sseEvent({ type: 'error', message: `Błąd połączenia z modelem AI: ${detail}` }),
-        )
+        const message =
+          err instanceof ThinkingLimitError ? detail : `Błąd połączenia z modelem AI: ${detail}`
+        controller.enqueue(sseEvent({ type: 'error', message }))
       } finally {
-        controller.close()
+        if (!cancelled) controller.close()
       }
+    },
+    cancel() {
+      cancelled = true
+      abort.abort()
     },
   })
 }
