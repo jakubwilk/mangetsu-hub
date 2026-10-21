@@ -19,6 +19,7 @@ export async function* sendMessage(
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
+  let finished = false
 
   while (true) {
     const { done, value } = await reader.read()
@@ -30,11 +31,17 @@ export async function* sendMessage(
 
     for (const part of parts) {
       if (!part.startsWith('data: ')) continue
+      let event: ChatStreamEvent
       try {
-        yield JSON.parse(part.slice(6)) as ChatStreamEvent
+        event = JSON.parse(part.slice(6)) as ChatStreamEvent
       } catch {
         continue
       }
+      if (event.type === 'done' || event.type === 'error') finished = true
+      yield event
     }
   }
+
+  // A connection cut mid-answer closes the body cleanly too — the server never saved that answer.
+  if (!finished) throw new Error('Stream ended without a final event')
 }
