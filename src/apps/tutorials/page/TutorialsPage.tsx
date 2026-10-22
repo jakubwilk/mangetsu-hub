@@ -1,9 +1,14 @@
+import { ChatShell, ChatSidebar, ChatView } from 'chat'
 import { readFile } from 'fs/promises'
 import path from 'path'
 import type { ReactNode } from 'react'
 import { getSession } from 'server/auth'
 
-import { AddSourceModal, ChatSidebar, ChatView, DocsPanel, TutorialsShell } from '../components'
+import { AddSourceModal, DocsPanel } from '../components'
+import loadingMessages from '../data/loading-messages.json'
+import { tutorialsManifest } from '../manifest'
+
+const APP_ID = tutorialsManifest.id
 
 interface HeaderSlots {
   actions: ReactNode
@@ -28,14 +33,18 @@ const TutorialsPage = async ({ header }: TutorialsPageProps) => {
         actions: canEdit && <AddSourceModal />,
         menuItems: canEdit && <AddSourceModal asMenuItem />,
       })}
-      <TutorialsShell
-        sidebar={<ChatSidebar />}
-        sidebarDrawer={<ChatSidebar fluid />}
+      <ChatShell
+        sidebar={<ChatSidebar appId={APP_ID} />}
+        sidebarDrawer={<ChatSidebar appId={APP_ID} fluid />}
         docsPanel={<DocsPanel content={docsContent} />}
         docsPanelDrawer={<DocsPanel content={docsContent} fluid />}
       >
-        <ChatView />
-      </TutorialsShell>
+        <ChatView
+          appId={APP_ID}
+          emptyTitle="Zadaj pytanie o poradniki"
+          loadingMessages={loadingMessages}
+        />
+      </ChatShell>
     </div>
   )
 }

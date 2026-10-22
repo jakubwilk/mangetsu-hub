@@ -1,7 +1,7 @@
 import { requireAppRole } from 'server/authorize'
 
-export const TUTORIALS_APP = 'tutorials'
+import { tutorialsManifest } from '../manifest'
 
-export const requireTutorialsUser = () => requireAppRole(TUTORIALS_APP, ['USER', 'EDITOR'])
+export const TUTORIALS_APP = tutorialsManifest.id
 
 export const requireTutorialsEditor = () => requireAppRole(TUTORIALS_APP, ['EDITOR'])

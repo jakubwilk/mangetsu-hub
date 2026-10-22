@@ -1,8 +1,3 @@
-export { requireTutorialsEditor, requireTutorialsUser, TUTORIALS_APP } from './access'
-export {
-  buildPromptContext,
-  createChatStream,
-  createFixedReplyStream,
-  parseChatRequest,
-} from './chat'
+export { requireTutorialsEditor, TUTORIALS_APP } from './access'
+export { tutorialsChat } from './chatConfig'
 export { type SourceMethod, submitSourceToWebhook } from './sources'
