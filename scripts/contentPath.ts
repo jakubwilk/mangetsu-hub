@@ -1,4 +1,4 @@
-import { type AppId, isAppId } from '../src/modules/common/apps'
+import { type AppId, isAppId } from '../src/apps'
 
 export interface ContentFile {
   app: AppId

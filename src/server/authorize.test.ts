@@ -3,9 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { readJsonBody, requireAppRole, requireRoot, verifyOrigin } from './authorize'
 
-const { authMock } = vi.hoisted(() => ({ authMock: vi.fn() }))
+const { authMock, isAppEnabledMock } = vi.hoisted(() => ({
+  authMock: vi.fn(),
+  isAppEnabledMock: vi.fn(),
+}))
 
 vi.mock('./auth', () => ({ auth: authMock }))
+vi.mock('apps', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('apps')>()),
+  isAppEnabled: isAppEnabledMock,
+}))
 
 const sessionFor = (user: { isRoot?: boolean; apps?: Record<string, string> }) => ({
   user: { id: 'u1', isRoot: false, apps: {}, ...user },
@@ -13,7 +20,10 @@ const sessionFor = (user: { isRoot?: boolean; apps?: Record<string, string> }) =
 
 const statusOf = (result: unknown) => (result instanceof NextResponse ? result.status : 200)
 
-beforeEach(() => authMock.mockReset())
+beforeEach(() => {
+  authMock.mockReset()
+  isAppEnabledMock.mockReset().mockReturnValue(true)
+})
 
 describe('requireAppRole', () => {
   it('returns 401 without a session', async () => {
@@ -39,6 +49,12 @@ describe('requireAppRole', () => {
   it('always passes ROOT', async () => {
     authMock.mockResolvedValue(sessionFor({ isRoot: true }))
     expect(statusOf(await requireAppRole('tutorials', ['EDITOR']))).toBe(200)
+  })
+
+  it('returns 404 for a disabled app, even for ROOT', async () => {
+    isAppEnabledMock.mockReturnValue(false)
+    authMock.mockResolvedValue(sessionFor({ isRoot: true }))
+    expect(statusOf(await requireAppRole('tutorials', ['EDITOR']))).toBe(404)
   })
 })
 

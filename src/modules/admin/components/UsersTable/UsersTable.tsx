@@ -10,7 +10,7 @@ import {
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { type AppId, APPS, getApp, ROOT_LABEL } from 'common/apps'
+import { type AppId, getApp, getEnabledApps, ROOT_LABEL } from 'apps'
 import {
   Badge,
   Button,
@@ -50,7 +50,7 @@ const STATUS_OPTIONS = [
   { value: ALL, label: 'Wszyscy' },
   { value: PENDING, label: 'Oczekujący na aktywację' },
   { value: ROOT, label: 'Administratorzy' },
-  ...APPS.map((app) => ({ value: appFilter(app.id), label: `Dostęp: ${app.name}` })),
+  ...getEnabledApps().map((app) => ({ value: appFilter(app.id), label: `Dostęp: ${app.name}` })),
 ]
 
 const isPending = (user: AdminUser) => !user.isRoot && Object.keys(user.apps).length === 0
@@ -58,7 +58,7 @@ const isPending = (user: AdminUser) => !user.isRoot && Object.keys(user.apps).le
 const matchesStatus = (user: AdminUser, status: string) => {
   if (status === PENDING) return isPending(user)
   if (status === ROOT) return user.isRoot
-  const app = APPS.find((a) => appFilter(a.id) === status)
+  const app = getEnabledApps().find((a) => appFilter(a.id) === status)
   if (app) return user.apps[app.id] !== undefined
   return true
 }
@@ -144,7 +144,7 @@ const UsersTable = ({ users: initialUsers }: UsersTableProps) => {
       sortingFn: 'text',
       cell: ({ row }) => <UserIdentity user={row.original} />,
     },
-    ...APPS.map((app): ColumnDef<AdminUser> => ({
+    ...getEnabledApps().map((app): ColumnDef<AdminUser> => ({
       id: `app-${app.id}`,
       header: app.name,
       enableSorting: false,

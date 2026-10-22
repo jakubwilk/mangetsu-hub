@@ -1,4 +1,4 @@
-import type { AppRoles } from 'common/apps'
+import type { AppRoles } from 'apps'
 
 export interface AdminUser {
   id: string

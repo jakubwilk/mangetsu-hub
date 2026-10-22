@@ -1,4 +1,4 @@
-import type { AppId } from 'common/apps'
+import type { AppId } from 'apps'
 import { db } from 'server/db'
 
 export type ChatMessage = { role: 'user' | 'assistant'; content: string }

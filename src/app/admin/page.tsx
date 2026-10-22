@@ -1,5 +1,5 @@
 import { type AdminUser, UsersTable } from 'admin'
-import { toAppRoles } from 'common/apps'
+import { toAppRoles } from 'apps'
 import { notFound } from 'next/navigation'
 import { getSession } from 'server/auth'
 import { db } from 'server/db'

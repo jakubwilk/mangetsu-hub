@@ -1,6 +1,6 @@
+import { getAccessibleApps } from 'apps'
 import { SignOutButton } from 'auth'
 import { Logo } from 'common'
-import { getAccessibleApps } from 'common/apps'
 import { redirect } from 'next/navigation'
 import { getSession } from 'server/auth'
 

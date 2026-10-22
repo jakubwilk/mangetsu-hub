@@ -1,6 +1,6 @@
 'use client'
 
-import type { App } from 'common/apps'
+import type { App } from 'apps'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'common/components/ui'
 
 // Radix Select can't hold an empty value, so "no access" needs a sentinel.

@@ -118,4 +118,49 @@ describe('chunkText', () => {
 
     expect(chunkText(text)[1]!.sections).toEqual(['Pierwsza', 'Druga'])
   })
+
+  // Overlap (400) + piece (≤ 2200) + "Sekcja: …" label.
+  const MAX_CHUNK_CHARS = 2700
+
+  it('cuts a paragraph longer than the target by lines', () => {
+    const lines = Array.from({ length: 60 }, (_, i) => `${i}: ${'L'.repeat(90)}`)
+
+    const chunks = chunkText(lines.join('\n'))
+
+    expect(chunks.length).toBeGreaterThan(1)
+    expect(chunks.every((c) => c.content.length <= MAX_CHUNK_CHARS)).toBe(true)
+    expect(chunks.at(-1)!.content).toContain('59: ')
+  })
+
+  it('cuts a single overlong line by sentences', () => {
+    const line = Array.from({ length: 60 }, (_, i) => `Zdanie ${i} ${'s'.repeat(80)}.`).join(' ')
+
+    const chunks = chunkText(line)
+
+    expect(chunks.length).toBeGreaterThan(1)
+    expect(chunks.every((c) => c.content.length <= MAX_CHUNK_CHARS)).toBe(true)
+    expect(chunks[1]!.content).toMatch(/Zdanie \d+ s+\.$/)
+  })
+
+  it('repeats the table header in every piece of a long table', () => {
+    const header = '| Przedmiot | Koszt |\n| --- | --- |'
+    const rows = Array.from(
+      { length: 80 },
+      (_, i) => `| Przedmiot ${i} ${'p'.repeat(40)} | ${i} PD |`,
+    )
+
+    const chunks = chunkText(['## Cennik', `${header}\n${rows.join('\n')}`].join('\n\n'))
+
+    expect(chunks.length).toBeGreaterThan(1)
+    for (const chunk of chunks.slice(1)) {
+      expect(chunk.content).toContain(header)
+      expect(chunk.content.startsWith('Sekcja: Cennik')).toBe(true)
+    }
+    expect(chunks.at(-1)!.content).toContain('Przedmiot 79')
+  })
+
+  it('leaves paragraphs within the target untouched', () => {
+    const paragraph = Array.from({ length: 20 }, (_, i) => `Linia ${i}`).join('\n')
+    expect(chunkText(paragraph)).toEqual([{ content: paragraph, chunkIndex: 0, sections: [] }])
+  })
 })

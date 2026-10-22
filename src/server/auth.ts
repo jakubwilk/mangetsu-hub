@@ -1,5 +1,5 @@
 import { PrismaAdapter } from '@auth/prisma-adapter'
-import { canAccessApp, getAppByPath, toAppRoles } from 'common/apps'
+import { canAccessApp, getAccessibleApps, getAppByPath, toAppRoles } from 'apps'
 import { NextResponse } from 'next/server'
 import NextAuth from 'next-auth'
 import Discord from 'next-auth/providers/discord'
@@ -52,13 +52,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!auth) return false
 
       const access = auth.user
-      const isPending = !access.isRoot && Object.keys(access.apps).length === 0
+      const isPending = !access.isRoot && getAccessibleApps(access).length === 0
       if (pathname === '/pending') return isPending ? true : redirectTo('/')
       if (isPending) return redirectTo('/pending')
 
       if (pathname.startsWith('/admin')) return access.isRoot ? true : redirectTo('/')
 
       const app = getAppByPath(pathname)
+      // A path no route matches renders the not-found page with a 404 status.
+      if (app && !app.enabled)
+        return NextResponse.rewrite(new URL('/disabled-app', request.nextUrl))
       if (app && !canAccessApp(access, app.id)) return redirectTo('/')
 
       return true

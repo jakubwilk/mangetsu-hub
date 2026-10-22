@@ -4,8 +4,8 @@ export interface ForumTopic {
   slug: string
 }
 
-// Forum threads behind content/tutorials/<category>/<slug>.md — keep in sync with
-// docs/tutorials/documents-info.md, which lists the same threads for users.
+// Forum threads behind content/tutorials/<category>/<slug>.md — backfillDocuments.ts takes the
+// documents' source links from here.
 export const FORUM_TOPICS: ForumTopic[] = [
   { topic: 2, category: 'realia', slug: 'fabula-forum' },
   { topic: 3, category: 'realia', slug: 'linia-czasu' },

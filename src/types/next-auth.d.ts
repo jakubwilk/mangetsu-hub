@@ -1,4 +1,4 @@
-import type { AppRoles } from 'common/apps'
+import type { AppRoles } from 'apps'
 import type { DefaultSession } from 'next-auth'
 
 declare module 'next-auth' {

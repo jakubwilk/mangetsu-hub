@@ -1,4 +1,4 @@
-import type { AppId } from 'common/apps'
+import type { AppId } from 'apps'
 import { NextResponse } from 'next/server'
 import { db } from 'server/db'
 
@@ -44,6 +44,7 @@ export const reserveRateLimit = async (
   userId: string,
   app: AppId,
   requestDate: Date,
+  limit = DAILY_LIMIT,
 ): Promise<{ count: number } | NextResponse> => {
   const rateLimit = await db.rateLimit.upsert({
     where: counterKey(userId, app, requestDate),
@@ -51,7 +52,7 @@ export const reserveRateLimit = async (
     update: { count: { increment: 1 } },
   })
 
-  if (rateLimit.count > DAILY_LIMIT) {
+  if (rateLimit.count > limit) {
     await releaseRateLimit(userId, app, requestDate)
     return NextResponse.json(
       { error: 'Przekroczono dzienny limit zapytań. Spróbuj ponownie jutro.' },

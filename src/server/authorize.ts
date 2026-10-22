@@ -1,4 +1,4 @@
-import type { AppId, AppRole } from 'common/apps'
+import { type AppId, type AppRole, isAppEnabled } from 'apps'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
@@ -15,8 +15,10 @@ export const requireRoot = async () => {
   return { session }
 }
 
-// ROOT has access to every app regardless of `roles`.
+// ROOT has access to every app regardless of `roles`; a disabled app is gone for everyone.
 export const requireAppRole = async <A extends AppId>(appId: A, roles: readonly AppRole<A>[]) => {
+  if (!isAppEnabled(appId)) return errorResponse('Nie znaleziono.', 404)
+
   const session = await auth()
 
   if (!session) return errorResponse('Wymagane logowanie.', 401)

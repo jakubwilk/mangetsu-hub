@@ -1,6 +1,6 @@
+import { getAccessibleApps } from 'apps'
 import { AuthErrorNotice, DiscordSignInButton } from 'auth'
 import { Logo } from 'common'
-import { getAccessibleApps } from 'common/apps'
 import { AppTiles } from 'hub'
 import { redirect } from 'next/navigation'
 import { getSession } from 'server/auth'

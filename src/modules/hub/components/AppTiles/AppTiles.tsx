@@ -1,4 +1,4 @@
-import type { App } from 'common/apps'
+import type { App } from 'apps'
 import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'

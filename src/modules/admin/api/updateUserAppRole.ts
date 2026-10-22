@@ -1,5 +1,5 @@
+import type { AppId } from 'apps'
 import { requestJson } from 'common/api'
-import type { AppId } from 'common/apps'
 
 export const updateUserAppRole = (userId: string, app: AppId, role: string | null) =>
   requestJson<{ webhookOk: boolean }>(

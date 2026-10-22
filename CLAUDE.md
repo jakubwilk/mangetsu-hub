@@ -104,7 +104,9 @@ Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjow
 
 - **Next.js Route Handlers** — `/src/app/api/`
 - **PostgreSQL** — przez **Prisma ORM**
-  - Schema: `prisma/schema.prisma`
+  - Schema: folder `prisma/schema/` — `platform.prisma` (generator, datasource, auth, role, historia,
+    limity), `rag.prisma` (dokumenty, chunki); tabele własne apki w `prisma/schema/apps/<app>.prisma`
+    z nazwami `<app>_*`
   - Migracje: `prisma migrate dev` (dev), `prisma migrate deploy` (prod)
   - Klient: singleton w `src/server/db` (ważne w Next.js — jedna instancja globalnie)
   - Kolumna `search_vector` (tsvector) jako `Unsupported("tsvector")` — zapytania FTS przez `prisma.$queryRaw`
@@ -132,7 +134,7 @@ Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjow
   `LLM_AI_EMBEDDING_API_KEY` / `LLM_AI_EMBEDDING_MODEL`, obecnie OVH AI Endpoints)
 - Token OVH ma TTL — używaj service credentials dla produkcji, nie osobistego tokenu
 - Klient: `new OpenAI({ apiKey, baseURL })` z pakietu `openai`
-- Prompt engineering: system prompt Poradników w `src/server/tutorials/prompts.ts`
+- Prompt engineering: system prompt Poradników w `src/apps/tutorials/server/prompts.ts`
 - Rate limiting w tabeli `rate_limits` liczony jest per zalogowany użytkownik i mini-apka
   (`userId` + `app`, `src/server/rateLimit.ts`), nie per IP — IP z `X-Forwarded-For` służy wyłącznie
   do audytu w tabeli `conversations`. Rezerwuj limit **przed** płatnymi wywołaniami (LLM, embeddingi)
@@ -151,7 +153,9 @@ Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjow
 
 n8n u nas to zewnętrzna automatyzacja wywoływana przez webhooki (aktywacja/zmiana roli,
 usuwanie konta, zgłaszanie nowych źródeł — patrz `src/server/webhooks.ts`,
-`src/server/sources.ts`), nie główny przedmiot pracy. Mimo to bywa, że trzeba coś
+`src/apps/tutorials/server/sources.ts`), nie główny przedmiot pracy. W drugą stronę n8n woła
+wewnętrzne API aplikacji `/api/internal/*` (sekret `INTERNAL_API_SECRET`, `src/server/internal.ts`)
+— np. `PUT /api/internal/rag/documents` przelicza dokument bazy wiedzy. Mimo to bywa, że trzeba coś
 zbudować/zmienić bezpośrednio na instancji — wtedy obowiązują poniższe zasady.
 
 - Przy pytaniach o n8n (węzły, wyrażenia, konfiguracja, API) korzystaj z oficjalnej
@@ -282,17 +286,24 @@ widać całość na raz. Commit zrobiony automatycznie ten moment przeskakuje.
 ## Kontekst projektu
 
 - Forum: Mangetsu (forum RP)
-- Treść RAG: `content/<app>/<kategoria>/*.md`, dokumenty pomocnicze: `docs/<app>/`
-- Pliki NIE są w `public/` — są czytane serwerowo przez API Routes
+- Treść RAG: źródłem prawdy jest tabela `documents` (markdown, `contentHash`, `slug`, `sourceUrl`),
+  zmieniana wyłącznie przez `ingestDocument` (`src/server/rag/ingest.ts`: normalizacja → hash →
+  chunki + embeddingi tylko przy zmianie treści). Kategorie w manifeście apki (`rag.categories`).
+  `content/<app>/<kategoria>/*.md` to stara kopia — zostaje do etapu 3b (`PLAN.md`), nie edytuj jej
+  i nie odpalaj `pnpm db:seed`; lokalną bazę zasilaj przez `pnpm rag:dump` / `pnpm rag:load`
 - **Hub mini-apek** pod `mangetsu.thalverntable.app`: `/` = logowanie albo kafelki, każda
-  mini-apka pod własną ścieżką (`/tutorials`, …). Rejestr: `src/modules/common/apps/registry.ts`
-  (id, ścieżka, kafelek, role) — z niego korzystają proxy, kafelki, admin i walidacja ról
+  mini-apka pod własną ścieżką (`/tutorials`, …). Rejestr: `src/apps/index.ts` (alias `apps`) złożony
+  z manifestów `src/apps/<id>/manifest.ts` (id, ścieżka, kafelek, role, `enabled`) — z niego korzystają
+  proxy, kafelki, admin i walidacja ról. `enabled: false` → apka znika z kafelków i admina, jej strony
+  i API zwracają 404, role w bazie zostają
 - Logowanie wyłącznie przez Discord OAuth (NextAuth v5, sesje w bazie) — brak logowania hasłem
 - **Role per mini-apka**: tabela `app_roles` (userId, app, role); każda mini-apka ma własny zestaw
   ról z `USER` zawsze w zestawie. **ROOT jest globalny** (`users.isRoot`, nadawany tylko w bazie):
   dostęp do wszystkiego, jedyny w `/admin`. Konto bez ról trafia na `/pending`
 - W Route Handlerach: `requireAppRole(app, roles)` / `requireRoot()` + `verifyOrigin()` na każdej
-  mutacji (`src/server/authorize.ts`). Trasy stron chronione przez `src/proxy.ts`
+  mutacji (`src/server/authorize.ts`). Trasy stron chronione przez `src/proxy.ts`. Wyjątek:
+  `/api/internal/*` (wywołania z n8n) jest poza proxy i bez sesji — każdy handler zaczyna od
+  `requireInternal(request)`
 - **Izolacja subdomen**: inne subdomeny i domena główna `thalverntable.app` to obce aplikacje.
   Cookies Auth.js są host-only, a przy HTTPS mają prefiks `__Host-` (`src/server/auth.ts`) — nie
   ustawiaj `Domain` w cookies i nie luzuj `verifyOrigin` (porównuje host co do znaku)
@@ -306,44 +317,70 @@ widać całość na raz. Commit zrobiony automatycznie ten moment przeskakuje.
 
 Kod aplikacji podzielony na moduły według domeny w `src/modules/`:
 
-| Moduł       | Zawartość                                                                                                            |
-| ----------- | -------------------------------------------------------------------------------------------------------------------- |
-| `common`    | Powłoka huba (AppHeader, Logo), `ui/` (shadcn), `apps/` (rejestr mini-apek), `api/` (`requestJson`), utils (notify*) |
-| `hub`       | Kafelki mini-apek (AppTiles)                                                                                         |
-| `auth`      | DiscordSignInButton, SignOutButton, UserMenu, AuthErrorNotice, Server Action logowania                               |
-| `admin`     | UsersTable (role per mini-apka), UserCard, UserIdentity, AppRoleSelect, DeleteUserModal, api                         |
-| `notices`   | NoticesPopover, store (odrzucone ogłoszenia w localStorage) — ogłoszenia globalne dla huba                           |
-| `tutorials` | Mini-apka Poradniki: ChatView, ChatSidebar, MessageList…, TutorialsShell, DocsPanel, AddSourceModal, store, api      |
+| Moduł     | Zawartość                                                                                    |
+| --------- | -------------------------------------------------------------------------------------------- |
+| `common`  | Powłoka huba (AppHeader, Logo), `ui/` (shadcn), `api/` (`requestJson`), utils (notify*)      |
+| `hub`     | Kafelki mini-apek (AppTiles)                                                                 |
+| `auth`    | DiscordSignInButton, SignOutButton, UserMenu, AuthErrorNotice, Server Action logowania       |
+| `admin`   | UsersTable (role per mini-apka), UserCard, UserIdentity, AppRoleSelect, DeleteUserModal, api |
+| `notices` | NoticesPopover, store (odrzucone ogłoszenia w localStorage) — ogłoszenia globalne dla huba   |
+| `chat`    | Generyczny UI czatu RAG per `appId`: ChatShell, ChatView, ChatSidebar, `getChatStore`, api   |
+
+`chat` to klocek platformy: korzystają z niego apki, nie moduły huba; sam nie importuje `server/*`.
 
 Warstwa serwerowa (`src/server/`) — bez importów po stronie klienta:
 
-| Plik / katalog            | Zawartość                                                                            |
-| ------------------------- | ------------------------------------------------------------------------------------ |
-| `server/db`               | Singleton Prisma Client                                                              |
-| `server/ai`               | Klient LLM (primary + automatyczny fallback OVH), funkcja embedText()                |
-| `server/rag`              | Chunker + hybrid search (FTS + trigram + embeddingi, RRF) z parametrem `app`         |
-| `server/tutorials`        | Poradniki: orkiestracja czatu, prompt, synonimy, webhook źródeł, `requireTutorials*` |
-| `server/apps/hooks.ts`    | Serwerowe hooki mini-apek (zmiana roli)                                              |
-| `server/auth.ts`          | NextAuth (Discord, Prisma adapter, cookies `__Host-`, reguły proxy), `getSession()`  |
-| `server/authorize.ts`     | `requireRoot()`, `requireAppRole()`, `readJsonBody()`, `verifyOrigin()`              |
-| `server/rateLimit.ts`     | Dzienny limit per użytkownik + mini-apka                                             |
-| `server/conversations.ts` | Historia rozmów z kontrolą właściciela                                               |
+| Plik / katalog            | Zawartość                                                                           |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| `server/db`               | Singleton Prisma Client                                                             |
+| `server/ai`               | Klient LLM (primary + automatyczny fallback OVH), funkcja embedText()               |
+| `server/rag`              | Chunker, hybrid search (FTS + trigram + embeddingi, RRF), ingest, normalizacja      |
+| `server/rag/sources`      | Źródła treści: wątek forum jcink (link → wersja do druku → markdown)                |
+| `server/rag/routes.ts`    | Wewnętrzne API dokumentów dla n8n (`GET`/`PUT`/`DELETE`)                            |
+| `server/internal.ts`      | `requireInternal()` — sekret wywołań z n8n (porównanie stałoczasowe)                |
+| `server/chat`             | Silnik czatu RAG: `createRagChatRoutes(config)` → handlery czatu, sesji i limitu    |
+| `server/apps/hooks.ts`    | Serwerowe hooki mini-apek (zmiana roli)                                             |
+| `server/auth.ts`          | NextAuth (Discord, Prisma adapter, cookies `__Host-`, reguły proxy), `getSession()` |
+| `server/authorize.ts`     | `requireRoot()`, `requireAppRole()`, `readJsonBody()`, `verifyOrigin()`             |
+| `server/rateLimit.ts`     | Dzienny limit per użytkownik + mini-apka                                            |
+| `server/conversations.ts` | Historia rozmów z kontrolą właściciela                                              |
 
-Miejsce spotkania modułów to `src/app` — w tym `src/app/_components/HubHeader` (nagłówek
-składający `auth`, `notices` i akcje mini-apki).
+Mini-apki żyją w `src/apps/<id>/` (rejestr: `src/apps/index.ts`, alias `apps`). Poradniki
+(`src/apps/tutorials/`):
 
-Historyczny harmonogram implementacji: **`PLAN.md`** w root projektu (fazy 1–11 ukończone).
+| Folder                 | Zawartość                                                                               |
+| ---------------------- | --------------------------------------------------------------------------------------- |
+| `manifest.ts`          | Metadane bezpieczne dla klienta i proxy (bez kodu serwerowego), kategorie bazy wiedzy   |
+| `components/` `api/` … | UI apki: DocsPanel (lista dokumentów z bazy), AddSourceModal (+ edytor), `submitSource` |
+| `server/`              | Config czatu `tutorialsChat` (prompt, synonimy, koszty PD), webhook źródeł, dostęp      |
+| `routes/`              | Handlery z `createRagChatRoutes(tutorialsChat)` + `sourcesPost` — re-eksportowane       |
+| `page/`                | `TutorialsPage` (ChatShell z `chat`) — `src/app/tutorials/page.tsx` podaje `HubHeader`  |
+
+Nowy czat RAG = manifest (z `rag.categories`) + `RagChatConfig` w `server/` + `createRagChatRoutes` w `routes/` + strona
+z komponentami `chat`. Jakość wyszukiwania przed i po zmianach: `pnpm rag:eval` (`--save` zapisuje
+wynik bazowy z lokalnej bazy).
+
+`server/*` wolno importować wyłącznie w `server/`, `routes/` i `page/` apki.
+
+Miejsce spotkania modułów i apek to `src/app` — w tym `src/app/_components/HubHeader` (nagłówek
+składający `auth`, `notices` i akcje mini-apki). Granice importów egzekwuje ESLint
+(`no-restricted-imports` w `eslint.config.mjs`).
+
+Aktualny plan refaktoru (mini-apki jako klocki + zaplecze w n8n): **`PLAN.md`** w root projektu,
+postęp śledzony checkboxami. Historyczne fazy 1–11 są w historii gita.
 
 ## Frontend — kanon
 
 Pięć reguł, które najłatwiej złamać przez przypadek:
 
-1. **Moduł importuje wyłącznie z `common` albo z samego siebie.** Import między modułami
-   domenowymi (`hub`, `auth`, `admin`, `notices`, `tutorials`, …) jest błędem architektonicznym;
-   jedynym miejscem, w którym moduły się spotykają, jest `src/app`.
+1. **Moduł importuje wyłącznie z `common`, z rejestru `apps` albo z samego siebie.** Import między
+   modułami (`hub`, `auth`, `admin`, `notices`, `chat`) albo do wnętrza apki (`apps/<id>/…`) jest
+   błędem architektonicznym. Apka importuje z siebie, `apps`, `common`, `chat` i `server/*`, nigdy
+   z innej apki ani z modułów huba. Jedynym miejscem, w którym moduły i apki się spotykają, jest
+   `src/app`.
 2. **Alias zatrzymuje się na podfolderze i nigdy nie schodzi do pliku**: `common/components`,
    nie `common/components/Button`. Aliasu `@/*` nie ma — każdy moduł ma własny alias
-   (`common`, `hub`, `auth`, `admin`, `notices`, `tutorials`, plus `server/*` — zobacz
+   (`common`, `hub`, `auth`, `admin`, `notices`, `chat`, `apps`, plus `server/*` — zobacz
    `tsconfig.json` → `paths`). Komponenty shadcn importuj z `common/components/ui`.
 3. **Jeden plik = jeden komponent**, nazwa pliku `PascalCase.tsx` zgodna z nazwą eksportu,
    własny folder z barrelem (`index.ts`). **Wyjątek: `common/components/ui/`** — pliki generowane

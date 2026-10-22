@@ -48,3 +48,5 @@ next-env.d.ts
 
 *.local.json
 .mcp.json
+# local RAG eval baseline (reflects the local DB)
+/scripts/.rag-eval-baseline.json

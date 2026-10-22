@@ -55,4 +55,12 @@ describe('reserveRateLimit', () => {
     expect((result as NextResponse).status).toBe(429)
     expect(updateMock).toHaveBeenCalledWith({ where: key, data: { count: { decrement: 1 } } })
   })
+
+  it('applies an app’s own limit instead of the default', async () => {
+    upsertMock.mockResolvedValue({ count: 6 })
+
+    const result = await reserveRateLimit('user-1', 'tutorials', requestDate, 5)
+
+    expect((result as NextResponse).status).toBe(429)
+  })
 })
