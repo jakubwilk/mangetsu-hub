@@ -23,21 +23,21 @@ interface EvalResult {
 }
 
 const CASES: EvalCase[] = [
-  { question: 'Jak działa przeklęta energia?', expected: ['Przekleta Energia'] },
+  { question: 'Jak działa przeklęta energia?', expected: ['Przeklęta Energia'] },
   // Triggers the extra PD cost search.
   { question: 'Ile PD kosztuje zwiększenie statystyki z C do A?', expected: ['Statystyki'] },
-  { question: 'Jakie są poziomy klątw?', expected: ['Poziomy Klatw'] },
+  { question: 'Jakie są poziomy klątw?', expected: ['Poziomy Klątw'] },
   // "postów" is expanded to the "kolejk" stem by the synonyms.
-  { question: 'Ile postów trzeba napisać na misji?', expected: ['Misje I Wyzwania'] },
+  { question: 'Ile postów trzeba napisać na misji?', expected: ['Misje i Wyzwania'] },
   { question: 'Jak stworzyć własną technikę?', expected: ['Techniki'] },
   { question: 'Jakie profesje mogę wybrać?', expected: ['Profesje'] },
-  { question: 'Czym są kontrakty i restrykcje?', expected: ['Kontrakty I Restrykcje'] },
+  { question: 'Czym są kontrakty i restrykcje?', expected: ['Kontrakty i Restrykcje'] },
   { question: 'Jak działa rozszerzenie domeny?', expected: ['Domeny'] },
   { question: 'Jakie waluty są na forum?', expected: ['Waluty'] },
-  { question: 'Jak działa leczenie ran?', expected: ['System Obrażeń I Leczenie'] },
+  { question: 'Jak działa leczenie ran?', expected: ['System Obrażeń i Leczenie'] },
   { question: 'Jakie style walki są dostępne?', expected: ['Style Walki'] },
-  { question: 'Czym są rzeczy przeklęte?', expected: ['Rzeczy Przeklete'] },
-  { question: 'Kiedy dzieje się fabuła forum?', expected: ['Fabula Forum'] },
+  { question: 'Czym są rzeczy przeklęte?', expected: ['Rzeczy Przeklęte'] },
+  { question: 'Kiedy dzieje się fabuła forum?', expected: ['Fabuła Forum'] },
   // A follow-up without its own topic relies on the previous question's search.
   {
     question: 'A co mogę tam kupić?',

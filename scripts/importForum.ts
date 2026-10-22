@@ -3,7 +3,7 @@ import './loadEnv'
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { topicHtmlToMarkdown } from './forumToMarkdown'
+import { topicHtmlToMarkdown } from '../src/server/rag/sources/forum'
 import { FORUM_TOPICS } from './forumTopics'
 
 const CONTENT_DIR = path.join(process.cwd(), 'content', 'tutorials')
