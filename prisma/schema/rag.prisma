@@ -1,12 +1,18 @@
 model Document {
-  id        String   @id @default(uuid())
-  app       String
-  title     String
-  category  String
-  filePath  String   @unique
-  createdAt DateTime @default(now())
-  chunks    Chunk[]
+  id          String   @id @default(uuid())
+  app         String
+  slug        String?
+  title       String
+  category    String
+  markdown    String?
+  contentHash String?
+  sourceUrl   String?
+  filePath    String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  chunks      Chunk[]
 
+  @@unique([app, slug])
   @@map("documents")
 }
 
