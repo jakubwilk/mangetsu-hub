@@ -332,7 +332,8 @@ Warstwa serwerowa (`src/server/`) — bez importów po stronie klienta:
 Miejsce spotkania modułów to `src/app` — w tym `src/app/_components/HubHeader` (nagłówek
 składający `auth`, `notices` i akcje mini-apki).
 
-Historyczny harmonogram implementacji: **`PLAN.md`** w root projektu (fazy 1–11 ukończone).
+Aktualny plan refaktoru (mini-apki jako klocki + zaplecze w n8n): **`PLAN.md`** w root projektu,
+postęp śledzony checkboxami. Historyczne fazy 1–11 są w historii gita.
 
 ## Frontend — kanon
 

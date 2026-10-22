@@ -1,385 +1,156 @@
-# Plan implementacji UI — Mangetsu Tutorials RAG
+# Plan refaktoru — Hub mini-apek jako klocki + zaplecze w n8n
 
 > Status: [ ] = do zrobienia, [x] = ukończone, [~] = w toku
 
 ---
 
-## Faza 1 — Konfiguracja motywu i dark mode
+## Context
 
-**Pliki:** `src/app/layout.tsx`, `src/app/globals.css`
+Dziś mini-apka (Poradniki) jest rozsiana po ~8 miejscach: `src/app/tutorials`, `src/app/api/tutorials/*`,
+`src/modules/tutorials`, `src/server/tutorials`, wpis w `common/apps/registry.ts`, `server/apps/hooks.ts`,
+`content/tutorials`, `docs/tutorials`, `scripts/*`. Dodanie lub wyłączenie apki wymaga zmian w wielu
+warstwach, a granica „platforma vs apka” nie jest jawna (choć `server/rag`, `rateLimit`, `conversations`,
+`ai` są już w praktyce generyczne). Treść RAG żyje w gicie i jest seedowana ręcznie.
 
-### Zadania
+Cel: **modularny monolit z manifestami** — każda mini-apka to jeden folder, platforma daje usługi
+(auth, role, limity, historia, LLM, RAG, silnik czatu), Next.js to cienka warstwa routingu. Wszystko,
+co asynchroniczne (import/sync treści, dodawanie źródeł, powiadomienia), orkiestruje **n8n**, wołając
+przetestowaną logikę w kodzie przez wewnętrzne API. Ścieżka czatu (auth → limit → guardrail ∥ search →
+stream) zostaje w kodzie bez zmian zachowania — zero regresu wydajności i jakości.
 
-- [x] Wygenerować 10-odcieniową paletę dla koloru `#10718f` (wymagane przez Mantine)
-- [x] Zarejestrować kolor własny w `createTheme({ colors: { mangetsu: [...] } })` i ustawić `primaryColor: 'mangetsu'`
-- [x] Wymusić dark mode na poziomie `MantineProvider`: `forceColorScheme="dark"` (bez przełącznika)
-- [x] Zaktualizować `ColorSchemeScript` z `defaultColorScheme="dark"`
-- [x] Oczyścić `globals.css` — usunąć zmienne dla light mode, zostawić tylko dark base
-- [x] Zaktualizować metadane (`title`, `description`) na właściwe dla projektu
+Decyzje: planowane apki RAG, apki z własnymi danymi + AI, narzędzia bez AI; routing przez cienkie pliki
+re-export; wyłączanie flagą `enabled` w manifeście; źródło prawdy treści RAG = baza; n8n = orkiestracja
+zaplecza, logika chunkingu/embeddingów w kodzie.
 
-**Uwaga:** Mantine wymaga tablicy 10 kolorów (shade 0–9). Kolor `#10718f` będzie na pozycji `[6]`.
-
----
-
-## Faza 2 — Pliki statyczne `docs/`
-
-**Pliki:** `docs/documents-info.md`, `docs/notices.json`
-
-### Zadania
-
-- [x] Utworzyć folder `docs/` w root projektu
-- [x] Utworzyć `docs/documents-info.md` — markdown z opisem dokumentów dostępnych w bazie (placeholder content)
-- [x] Utworzyć `docs/notices.json` — tablica obiektów z komunikatami
-
-**Dlaczego notices jako JSON (nie .md)?**
-Każdy komunikat potrzebuje `id` (do śledzenia odrzuconych w localStorage), `type` (info/warning) oraz `message`. Markdown nie daje tej struktury bez parsowania frontmatter — JSON jest tu czytelniejszy i prostszy.
-
-**Format `notices.json`:**
-
-```json
-[
-  {
-    "id": "demo-notice",
-    "type": "info",
-    "message": "To jest wersja DEMO — funkcjonalność jest ograniczona."
-  }
-]
-```
-
----
-
-## Faza 3 — App Shell (szkielet layoutu)
-
-**Pliki:** `src/app/layout.tsx`, nowe komponenty w `src/components/layout/`
-
-### Zadania
-
-- [x] Zaktualizować `src/app/layout.tsx` — uproszczony body (h-full overflow-hidden)
-- [x] Utworzyć `src/components/layout/AppLayout.tsx` — Server Component, custom flexbox (zamiast Mantine AppShell — AppShell nie obsługuje natywnie vw + max-width dla offsets)
-- [x] Utworzyć `src/components/layout/Topbar.tsx` — Server Component
-  - Logo nieselektowalne po lewej (c="mangetsu.4"), przycisk forum po prawej
-  - Wysokość: 60px, border-bottom
-  - URL forum: `process.env.NEXT_PUBLIC_FORUM_URL`
-- [x] Utworzyć `src/components/layout/ChatSidebar.tsx` — Client Component
-  - Przycisk „Nowy czat", placeholder historii, licznik zapytań na dole
-  - Szerokość: `20vw`, `maxWidth: 300px`
-- [x] Utworzyć `src/components/layout/DocsPanel.tsx` — Client Component (react-markdown wymaga client)
-  - Treść czytana serwerowo w `page.tsx`, przekazywana jako prop
-  - Renderuje przez `Typography` (Mantine v9 odpowiednik TypographyStylesProvider) + `react-markdown`
-  - Szerokość: `20vw`, `maxWidth: 300px`
-- [x] Zaktualizować `src/app/page.tsx` — czyta `docs/documents-info.md`, renderuje AppLayout
-
-**Układ:** `[Sidebar 20vw/max300px] | [Chat flex-1] | [DocsPanel 20vw/max300px]`
-
----
-
-## Faza 4 — Panel czatu (główna treść)
-
-**Pliki:** nowe komponenty w `src/components/chat/`, `src/app/page.tsx`
-
-### Zadania
-
-- [x] Przepisać `src/app/page.tsx` — czysty wrapper, ładuje `ChatView`
-- [x] Utworzyć `src/components/chat/ChatView.tsx` — Client Component, główny kontener
-- [x] Utworzyć `src/components/chat/MessageList.tsx` — lista wiadomości ze scrollem
-- [x] Utworzyć `src/components/chat/MessageBubble.tsx` — bąbelki user/assistant
-  - User: wyrównane do prawej, tło w kolorze primary, plain text
-  - Assistant: wyrównane do lewej, tło neutralne, treść przez `react-markdown`
-  - Animacja pojawiania się (CSS `bubble-in` — zamiast Mantine `Transition` ze względu na regułę ESLint `react-hooks/set-state-in-effect`)
-- [x] Utworzyć `src/components/chat/ChatInput.tsx` — pole tekstowe + przycisk wyślij
-  - `Textarea` z auto-resize (Mantine `autosize`)
-  - Enter wysyła, Shift+Enter = nowa linia
-  - Dezaktywacja podczas ładowania odpowiedzi
-- [x] Placeholder pusty czat — zachęta do wpisania pytania (widoczna gdy brak wiadomości)
-- [x] Typing indicator — ikona książki z pulsowaniem + losowy tekst z `src/data/loading-messages.json`
-- [x] Floating card design dla ChatInput (bez borderTop, `borderRadius`, `boxShadow`, `maxWidth`, `variant="unstyled"` na Textarea)
-
----
-
-## Faza 5 — System ogłoszeń (notices)
-
-**Pliki:** `src/components/notices/NoticesPopover.tsx`, integracja w `Topbar.tsx`
-
-### Zadania
-
-- [x] Utworzyć `src/components/notices/NoticesPopover.tsx` — Client Component
-  - Czyta notices przez props (przekazane z Server Component który czyta `docs/notices.json`)
-  - Ikona dzwonka (lub info) w topbarze z badge (liczba aktywnych)
-  - Popover z listą aktywnych komunikatów
-  - Każdy komunikat: przycisk X do odrzucenia (zapisuje id do `localStorage`)
-  - Przycisk „Pokaż wszystkie" — czyści dismissed list z `localStorage`
-- [x] Utworzyć `src/app/notices-loader.ts` (Server Component helper) — czyta i parsuje `docs/notices.json`
-- [x] Integracja z `Topbar.tsx` — notices icon po prawej, obok przycisku forum
-
----
-
-## Faza 6 — Powiadomienia systemowe (snackbary)
-
-**Pliki:** `src/app/layout.tsx` (już skonfigurowane), `src/lib/notifications.ts`
-
-### Zadania
-
-- [x] Skonfigurować Mantine `Notifications` — `position="top-center"`, `limit={3}`, `autoClose={10000}`
-- [x] Utworzyć `src/lib/notifications.ts` — helper funkcje `notifyError()`, `notifyInfo()`, `notifyWarning()` owijające `notifications.show()`
-- [x] Ostylować powiadomienia zgodnie z dark theme
-
----
-
-## Faza 7 — Integracja i cleanup
-
-### Zadania
-
-- [x] Podłączyć `session_id` (UUID z `localStorage`) do stanu czatu
-- [x] Podłączyć licznik zapytań do realnych danych (mock na start: `0/10`)
-- [x] Podłączyć listę historii czatów (z `localStorage` na start)
-- [x] Testy TypeScript — `tsc --noEmit`, zero błędów
-- [x] Usunąć wszystkie `console.log`, dead code, placeholder images Next.js
-- [x] Sprawdzić czy ESLint nie zgłasza błędów
-
----
-
----
-
-## Faza 8 — Baza danych i indeksowanie treści
-
-**Cel:** działająca baza z wczytanymi poradnikami, gotowa do przeszukiwania.
-
-### Nowe zależności
-
-- `prisma` (devDependency) + `@prisma/client` — ORM
-- `openai` — klient OVH AI Endpoints (instalowany już w tej fazie, używany w Fazie 9)
-
-### Zmiany konfiguracyjne
-
-- `package.json` — dodać `"postinstall": "prisma generate"` (wymagane dla Coolify)
-- `package.json` — dodać skrypt `"db:migrate": "prisma migrate dev"` i `"db:seed": "tsx scripts/seed.ts"`
-- `devDependencies` — dodać `tsx` do uruchamiania seed scriptu
-
-### Pliki do utworzenia
-
-| Plik                   | Co robi                                                               |
-| ---------------------- | --------------------------------------------------------------------- |
-| `prisma/schema.prisma` | Schema bazy: modele Document, Chunk, Conversation, Message, RateLimit |
-| `prisma/migrations/`   | Automatycznie generowane przez `prisma migrate dev`                   |
-| `src/lib/db.ts`        | Singleton Prisma Client (globalny, bezpieczny w Next.js dev)          |
-| `src/lib/chunker.ts`   | Podział plików `.md` na chunki (~500–800 tokenów, overlap ~100)       |
-| `scripts/seed.ts`      | Czyta `content/**/*.md`, chunkuje, zapisuje do bazy (idempotentny)    |
-
-### Schema bazy (Prisma)
+## Docelowa struktura
 
 ```
-Document   — id, title, category, filePath, createdAt
-           — relacja: chunks[]
-
-Chunk      — id, documentId, content, chunkIndex
-           — search_vector: Unsupported("tsvector")  ← FTS, aktualizowane triggerem SQL
-
-Conversation — id, sessionId, ip, createdAt
-             — relacja: messages[]
-
-Message    — id, conversationId, role, content, tokensUsed, createdAt
-
-RateLimit  — id, ip, requestDate, count
-           — unikalny indeks: (ip, requestDate)
+src/
+├── app/                         # tylko routing (cienkie re-eksporty) + strony huba
+│   ├── tutorials/page.tsx       # export { TutorialsPage as default } from 'apps/tutorials/routes'
+│   ├── api/tutorials/chat/route.ts   # export { chatPost as POST } from 'apps/tutorials/routes'
+│   └── api/internal/rag/…       # API dla n8n (sekret, bez sesji)
+├── apps/                        # NOWE: mini-apki
+│   ├── index.ts                 # rejestr (alias `apps`): APPS, getApp, isAppEnabled, typy AppId/AppRole
+│   └── tutorials/
+│       ├── manifest.ts          # metadane bezpieczne dla klienta/proxy: id, path, name, tile, roles, enabled
+│       ├── routes/              # strona + handlery API (składane z platformy)
+│       ├── server/              # config czatu: prompt, synonimy, dodatkowe wyszukiwania (PD), dailyLimit
+│       └── components/          # tylko to, co specyficzne: AddSourceModal, DocsPanel…
+├── modules/                     # powłoka huba + moduły platformowe UI
+│   ├── common/                  # bez rejestru apek (przeniesiony do `apps`)
+│   ├── chat/                    # NOWE: generyczny UI czatu RAG (ChatView, Sidebar, store, sendMessage) per appId
+│   └── hub/ auth/ admin/ notices/
+└── server/                      # platforma serwerowa
+    ├── chat/                    # NOWE: silnik czatu RAG (z server/tutorials/chat.ts + route)
+    ├── rag/ingest.ts            # NOWE: ingest dokumentu (z scripts/seed.ts), hash-skip
+    ├── rag/sources/forum.ts     # przeniesiony scripts/forumToMarkdown.ts
+    ├── events.ts                # NOWE: zdarzenia → jeden webhook n8n (zastępuje webhooks.ts + apps/hooks.ts)
+    └── internal.ts              # NOWE: requireInternal() — sekret dla wywołań z n8n
 ```
 
-### Trigger SQL (po migracji, przez `prisma.$executeRaw`)
+Reguły importów (egzekwowane przez `no-restricted-imports` w `eslint.config.mjs`, bez nowych zależności):
 
-```sql
--- Automatyczna aktualizacja search_vector przy INSERT/UPDATE na chunks
-CREATE TRIGGER chunks_search_vector_update
-BEFORE INSERT OR UPDATE ON chunks
-FOR EACH ROW EXECUTE FUNCTION
-tsvector_update_trigger(search_vector, 'pg_catalog.simple', content);
-```
+- `apps/<id>/**` importuje z: siebie, `apps` (rejestr), `common`, `chat`, `server/*` (tylko w `server/` i `routes/`). Nigdy z innej apki ani z `hub/auth/admin/notices`.
+- `hub/auth/admin/notices` importują z: siebie, `common`, `apps` (rejestr). Nigdy z `apps/<id>/…`.
+- Spotkanie wszystkiego: `src/app`.
 
-### Zadania
+Dodanie apki = folder `src/apps/<id>` + 1 linia w rejestrze + cienkie pliki w `src/app`.
+Wyłączenie = `enabled: false` → znika z kafelków i admina, proxy i `requireAppRole` zwracają 404, dane zostają.
 
-- [x] Zainstalować `prisma`, `@prisma/client`, `openai`, `tsx`
-- [x] Skonfigurować `prisma/schema.prisma` z wszystkimi modelami
-- [x] Uruchomić `prisma migrate dev --name initial` — wygenerować i zastosować migrację
-- [x] Dodać trigger `tsvector` przez osobny plik migracji SQL
-- [x] Utworzyć `src/lib/db.ts` — singleton Prisma Client
-- [x] Utworzyć `src/lib/chunker.ts` — logika chunkingu
-- [x] Utworzyć `scripts/seed.ts` — idempotentny seed (usuwa stare chunks dokumentu przed ponownym wstawieniem)
-- [x] Dodać `postinstall`, `db:migrate`, `db:seed` do `package.json`
-- [x] Uruchomić `npm run db:seed` i zweryfikować dane w bazie (20 docs, 118 chunks)
-- [x] `tsc --noEmit` + `eslint .` — zero błędów
+Każdy etap to osobny, działający stan (testy zielone, aplikacja działa). Commity robi człowiek —
+po każdym etapie proponowany podział i komunikaty.
 
 ---
 
-## Faza 9 — API `/api/chat` (RAG pipeline)
+## Etap 0 — Weryfikacje (read-only)
 
-**Cel:** endpoint przyjmujący pytanie, szukający w bazie, wywołujący LLM, zwracający odpowiedź.
+- [x] Zapis tego planu do `PLAN.md` w root (zastępuje historyczne fazy 1–11, które zostają w gicie); w CLAUDE.md wzmianka „Historyczny harmonogram… fazy 1–11 ukończone” → „Aktualny plan refaktoru: `PLAN.md`”
+- [ ] Re-eksport z rename (`export { chatPost as POST } from '…'`) w route handlerze i `export { X as default }` w page — potwierdzić w docs Next 16 (llms.txt) lub próbnym buildzie
+- [ ] Prisma 7.10 — wielo-plikowa schema (`schema: 'prisma/schema'` w `prisma.config.ts`) — potwierdzić w docs
+- [ ] n8n: `get_user_preferences`, `search_workflows` — obejrzeć istniejące workflowy (aktywacja, usunięcie konta, źródła), ich wejścia i powiązania
 
-### Nowe zmienne środowiskowe (już w `.env.example`)
+## Etap 1 — Klocki w kodzie (czysty refaktor, zero zmian zachowania)
 
-- `OVH_AI_ENDPOINT` — URL endpointu modelu
-- `OVH_AI_API_KEY` — klucz API OVH
-- `OVH_AI_MODEL` — nazwa modelu (np. `Meta-Llama-3.1-70B-Instruct`)
-- `DAILY_REQUEST_LIMIT` — dzienny limit zapytań per IP (domyślnie `20`)
+- [ ] `src/apps/index.ts` — rejestr przeniesiony z `common/apps/registry.ts` (te same helpery: `getAppByPath`, `canAccessApp`, `toAppRoles`, `isValidAppRole`…), wpisy z `apps/<id>/manifest.ts` (`as const satisfies AppManifest`, typy ról nadal wyprowadzane); nowe pole `enabled` + `getEnabledApps()`
+- [ ] Alias `apps` / `apps/*` w `tsconfig.json`; aktualizacja importów w `admin`, `hub`, `server/auth.ts`, `server/authorize.ts`, `scripts/contentPath.ts`
+- [ ] `enabled` respektowane w: `server/auth.ts` (`authorized`), `requireAppRole` (404), `getAccessibleApps`, kolumny w `UsersTable` / `UserCard`, PUT ról
+- [ ] Przeniesienie Poradników do `src/apps/tutorials/` (`modules/tutorials` + `server/tutorials`)
+- [ ] `src/app/tutorials` i `src/app/api/tutorials/*` → 1-linijkowe re-eksporty
+- [ ] Asset kafelka → `public/apps/tutorials/bg.png`, ścieżka w manifeście
+- [ ] Prisma schema → folder `prisma/schema/` (`platform.prisma`, `rag.prisma`, `apps/` na przyszłe tabele apek, konwencja nazw `<app>_*`) — `prisma migrate dev` bez różnic
+- [ ] Reguły ESLint granic modułów (`no-restricted-imports`)
+- [ ] Test rejestru: unikalne id/ścieżki; dla każdej apki istnieje `src/app/<path>/page.tsx`
+- [ ] Weryfikacja etapu: test / lint / tsc / build + smoke + propozycja commitów
 
-### Pliki do utworzenia
+## Etap 2 — Platforma czatu RAG (generyczna, Poradniki jako konfiguracja)
 
-| Plik                        | Co robi                                                                      |
-| --------------------------- | ---------------------------------------------------------------------------- |
-| `src/lib/prompts.ts`        | System prompt — instruuje LLM jak odpowiadać na pytania o Mangetsu           |
-| `src/lib/search.ts`         | FTS helper — rozbija query na tokeny, zwraca top 6 chunków przez `$queryRaw` |
-| `src/app/api/chat/route.ts` | POST handler — cały pipeline RAG                                             |
+- [ ] `scripts/ragEval.ts` — strażnik jakości: ~10–15 pytań → oczekiwane tytuły dokumentów w kontekście; zapis wyniku bazowego **przed** zmianami
+- [ ] `server/chat/` — z `server/tutorials/chat.ts` + `app/api/tutorials/chat/route.ts`: `createRagChatRoutes(config)` → `{ chatPost, sessionsGet, sessionsDelete, rateLimitGet }`; config: `app`, `roles`, `buildSystemPrompt(query)`, `expandQuery`, `extraSearches(query)` (tu `STAT_ADVANCEMENT_PATTERN` + `PD_CALC_RULES`), `dailyLimit`
+- [ ] `server/rateLimit.ts` — limit z configu apki z fallbackiem do `DAILY_REQUEST_LIMIT`
+- [ ] `modules/chat/` — ChatView, MessageList, MessageBubble, ChatInput, ThinkingBlock, TypingIndicator, ChatSidebar, DeleteSessionModal, `ChatShell` (z TutorialsShell), `chatStore`, `sendMessage` / `fetch*` sparametryzowane `appId` (endpointy `/api/${appId}/…`, klucze `mangetsu:${appId}:*` — identyczne jak dziś, lokalna historia przetrwa)
+- [ ] `apps/tutorials/` zostaje z: manifestem, `server/prompts.ts`, `server/synonyms.ts`, configiem, `AddSourceModal`, `DocsPanel`, stroną
+- [ ] Testy przeniesione razem z kodem (`chat.test.ts`, `route.test.ts`, `chatStore.test.ts`, prompts/synonyms), asercje bez zmian merytorycznych
+- [ ] Weryfikacja etapu: test / lint / tsc / build + `ragEval` identyczny z bazowym + smoke + propozycja commitów
 
-### Pipeline w `POST /api/chat`
+## Etap 3 — Treść RAG w bazie + API ingest dla n8n
 
-```
-Body: { message: string, sessionId: string }
+- [ ] Migracja (a) `documents`: `slug`, `markdown`, `sourceUrl?`, `contentHash`, `updatedAt` (nullable) + `@@unique([app, slug])`; `filePath` → nullable (dokument dodany tylko do bazy nie ma pliku)
+- [ ] `apps/tutorials/categories.ts` — `TUTORIAL_CATEGORIES` (`kompendium`, `mechanika`, `realia`, `inne`) + etykiety; bezpieczne dla klienta, jedno źródło prawdy dla modalu i walidacji serwerowej
+- [ ] `server/rag/normalize.ts` — `normalizeMarkdown(markdown, title)`: BOM, CRLF → LF, 3+ puste linie → 1; dokładnie jeden `# Tytuł` na górze (przy kilku `#` lub `#` nie na górze — wszystkie nagłówki o poziom niżej, max `######`, i dopisany `# Tytuł`); idempotentne dla `content/` (każdy plik ma dziś jeden `#`) + testy
+- [ ] `server/rag/slug.ts` — `slugify(title)` w stylu obecnych slugów (małe litery, polskie znaki zostają, spacje → `-`) + test
+- [ ] Chunker: akapit dłuższy niż `TARGET_CHARS` cięty po liniach, a gdy to nie wystarcza — po zdaniach (dziś w `content/` żaden akapit nie przekracza 2600 znaków → istniejące chunki bez zmian) + test (długi akapit, tabela)
+- [ ] `MAX_SOURCE_CHARS` (~100 000; największy dziś plik: 41 KB) — sprawdzany w modalu, `POST sources` i `PUT documents`
+- [ ] `server/rag/ingest.ts` — `ingestDocument({ app, slug, title, category, markdown, sourceUrl })` z logiki `scripts/seed.ts` (embeddingi poza transakcją, transakcja upsert + wymiana chunków); przed hashem `normalizeMarkdown`, walidacja kategorii z listy apki, pomijanie przy niezmienionym hashu; `deleteDocument`, `listDocuments(app)` + testy
+- [ ] `server/rag/sources/forum.ts` — konwerter z `scripts/forumToMarkdown.ts` (+ test, `topicHtmlToMarkdown` zwraca też `title`); `parseForumTopicUrl(url)` dla zwykłego linku (`index.php?showtopic=N`, host z `NEXT_PUBLIC_FORUM_URL`, tolerowane `&st=`, `&view=…`, `#entry…`; odrzucane obce hosty, `showforum`, `viewtopic.php`); `canonicalTopicUrl(N)` jako `sourceUrl` i klucz deduplikacji; pobieranie wersji do druku z timeoutem; testy na wszystkich linkach z `docs/tutorials/documents-info.md`; `turndown` z devDependencies → dependencies
+- [ ] `server/internal.ts` — `requireInternal(request)`: sekret `INTERNAL_API_SECRET` (porównanie stałoczasowe); `/api/internal/*` wyłączone z `authorized` / matchera w `src/proxy.ts`; wpis w `.env.example`
+- [ ] Endpointy: `GET /api/internal/rag/documents?app=`, `PUT /api/internal/rag/documents` (`{ app, slug, title, category, markdown | forumUrl, sourceUrl? }`), `DELETE /api/internal/rag/documents?app=&slug=`; odpowiedź `{ changed, chunks }`, `400` dla nieznanej kategorii / za dużej treści + testy integracyjne
+- [ ] Backfill: `scripts/backfillDocuments.ts` — `content/` → `markdown/hash/slug`, `sourceUrl` z `scripts/forumTopics.ts`, **bez ponownego chunkowania**
+- [ ] Backup bazy prod w Coolify przed migracją (b)
+- [ ] Migracja (b): NOT NULL + drop `filePath`
+- [ ] `DocsPanel` generowany z `listDocuments` zamiast `docs/tutorials/documents-info.md` (link do `sourceUrl`, jeśli jest — pliki `.md` go nie mają)
+- [ ] `pnpm rag:dump` / `pnpm rag:load` (JSON z markdownem, bez wektorów) do zasilenia lokalnej bazy
+- [ ] Usunięcie `content/`, `scripts/seed.ts`, `importForum.ts`, `forumTopics.ts`, `contentPath.ts` — **po osobnym potwierdzeniu**
+- [ ] Weryfikacja etapu: brak driftu Prisma, chunki i ich `id` identyczne po backfillu, `PUT` niezmienionego dokumentu → `changed: false` bez embeddingów, `ragEval` identyczny + propozycja commitów
 
-1. Walidacja inputu
-2. Pobierz IP z nagłówka X-Forwarded-For
-3. Sprawdź rate limit (tabela RateLimit, pole requestDate = dzisiaj)
-   → jeśli count >= DAILY_REQUEST_LIMIT: return 429
-4. FTS search → top 6 chunków (search.ts)
-5. Zbuduj prompt: system + chunki jako kontekst
-6. Wywołaj OVH przez openai package (baseURL = OVH_AI_ENDPOINT)
-7. Upsert Conversation (sessionId + ip), zapisz 2 Messages (user + assistant)
-8. Upsert RateLimit — count += 1
-9. Zwróć: { reply, tokensUsed, requestsUsed }
-```
+## Etap 4 — n8n jako zaplecze
 
-### Zadania
+Zgodnie z zasadami CLAUDE.md (SDK reference → best practices → nodes → walidacja → `test_workflow`
+z pełnym pin data; aktywacja tylko po potwierdzeniu).
 
-- [x] Utworzyć `src/lib/prompts.ts` — system prompt po polsku
-- [x] Utworzyć `src/lib/search.ts` — FTS przez `prisma.$queryRaw`
-- [x] Utworzyć `src/app/api/chat/route.ts` — pełny pipeline
-- [x] Przetestować endpoint przez `curl` / Postman
-- [x] `tsc --noEmit` + `eslint .` — zero błędów
+Podział przy dodawaniu źródeł: **kod** waliduje link / plik, konwertuje i normalizuje treść już przy
+zgłoszeniu (EDITOR od razu widzi błąd, ROOT zatwierdza dokładnie to, co trafi do bazy), liczy chunki
+i embeddingi; **n8n** tylko prosi ROOT o akceptację, woła `PUT documents` i powiadamia.
 
----
+- [ ] `server/events.ts` — `emitEvent(type, payload)` → `N8N_EVENTS_WEBHOOK_URL` (POST, `X-Webhook-Authorization`), wynik `ok` raportowany w adminie; zdarzenia `user.role_changed` (rola `null` → `GUEST` jak dziś), `user.deleted`, `rag.source_submitted` (`{ app, slug, title, category, markdown, sourceUrl?, mode: 'create' | 'update', chars, submittedBy: { name, discordId } }`)
+- [ ] `POST /api/tutorials/sources` (EDITOR + `verifyOrigin`) — body `{ type: 'FORUM', url, category, title? }` | `{ type: 'MARKDOWN', markdown, fileName?, category, title? }`; walidacja → konwersja forum / `normalizeMarkdown` → tytuł (pole z modalu > tytuł wątku / pierwszy `#` / nazwa pliku) → slug + `mode` (forum: dedup po `sourceUrl` z zachowaniem sluga; `.md`: istniejący `(app, slug)` = aktualizacja) → `emitEvent` → „Zgłoszono do akceptacji”; `422` gdy wątek nierozpoznany, `400` dla walidacji + testy integracyjne (rola, origin, kategoria, limit, błędny link, payload zdarzenia)
+- [ ] Przygotowanie n8n (użytkownik): credential `httpHeaderAuth` z `INTERNAL_API_SECRET`, prywatny kanał Discord tylko dla ROOT
+- [ ] Workflow **Hub events** — webhook → Switch po `type` → istniejąca logika aktywacji / usunięcia (Discord); stare ścieżki działają do przełączenia
+- [ ] Przełączenie aplikacji na `emitEvent`; usunięcie `server/webhooks.ts`, `server/apps/hooks.ts` (po potwierdzeniu działania)
+- [ ] Workflow **RAG forum sync** — cron → `GET documents` → `PUT` z `forumUrl` dla dokumentów z forum → zebrane `changed` → wiadomość na Discord
+- [ ] Workflow **RAG add source** (sub-workflow wołany z Hub events, który odpowiada **przed** oczekiwaniem — inaczej request z aplikacji wisi) — Discord _Send and wait_ (approval, Zatwierdź / Odrzuć, limit ~7 dni): tytuł, kategoria, nowy / aktualizacja, link do źródła, liczba znaków, autor, początek treści (limit wiadomości Discorda 2000 znaków) → zatwierdzono: `PUT documents` z gotowym markdownem → „Dodano X (n fragmentów)” z `<@discordId>` autora; odrzucono / wygasło → komunikat do autora; błąd HTTP → istniejący Error workflow. Do sprawdzenia w teście: czy _Send and wait_ działa z obecnym credentialem Discord typu webhook — jeśli nie, potrzebny credential Discord Bot
+- [ ] `AddSourceModal`: zakładki „Link do forum” (placeholder `…/index.php?showtopic=…` z `NEXT_PUBLIC_FORUM_URL` zamiast dzisiejszego `viewtopic.php`) / „Plik Markdown” (shadcn `Button` „Wybierz plik” + ukryty input `accept=".md,.markdown"` → `file.text()` → podgląd i poprawki w `MarkdownEditorField`, remount przez `key`, bo Crepe czyta tylko `defaultValue`); opcjonalne pole Tytuł z podpowiedzią; wymagany `Select` kategorii; limit znaków; `method` / `URL` / `CONTENT` → `type` / `FORUM` / `MARKDOWN`; `ENABLED = true`
+- [ ] Każdy workflow: `validate_workflow` + `test_workflow` z pełnym pin data + przegląd ścieżek błędów (dla add source: zatwierdzono, odrzucono, wygasło, błąd `PUT`); aktywacja po zgodzie
+- [ ] Sprzątanie po przełączeniu: archiwizacja starego workflow `Add source` (`job/source`), usunięcie `SOURCES_WEBHOOK_URL` z `.env.example` — **po potwierdzeniu**
+- [ ] Aktualizacja CLAUDE.md i README (struktura `apps`, endpointy wewnętrzne z sekretem, treść w bazie, zdarzenia n8n)
 
-## Faza 10 — Integracja frontendu z API
+## Poza zakresem (kolejny krok)
 
-**Cel:** zastąpienie mocka prawdziwym API, licznik zapytań z bazy, obsługa błędów.
-
-### Pliki do zmiany
-
-| Plik                               | Co się zmienia                                                          |
-| ---------------------------------- | ----------------------------------------------------------------------- |
-| `src/components/chat/ChatView.tsx` | `fetch('/api/chat')` zamiast mock, obsługa błędów przez `notifyError()` |
-| `src/store/chatStore.ts`           | `requestsUsed` aktualizowany z odpowiedzi API (nie tylko lokalnie)      |
-
-### Zadania
-
-- [x] Zastąpić mock w `ChatView` prawdziwym `fetch('/api/chat')`
-- [x] Obsłużyć błędy (429 = limit, 500 = błąd serwera) przez `notifyError()`
-- [x] Zaktualizować `requestsUsed` w `chatStore` z wartości zwróconej przez API
-- [ ] Sprawdzić działanie end-to-end: pytanie → odpowiedź z LLM → zapis w bazie
-- [x] `tsc --noEmit` + `eslint .` — zero błędów
-
----
-
-## Faza 11 — Embedding search (hybrid RAG)
-
-**Cel:** zastąpienie czystego FTS+trigram wyszukiwaniem hybrydowym (FTS + cosine similarity na wektorach embeddingów), eliminując błędy wynikające z luk semantycznych (np. "rodzaje klątw" → "Poziomy Klątw").
-
-**Model:** `Qwen3-Embedding-8B` przez OVH AI Endpoints (multilingual, #1 MTEB, 32k ctx, wymiary 4096)
-
-**Infrastruktura:** pgvector 0.8.2 aktywny lokalnie (Docker `pgvector/pgvector:pg18`) i na produkcji (Coolify PGVector 18)
-
-### Nowe zmienne środowiskowe
-
-- `OVH_AI_EMBEDDING_ENDPOINT` — osobny URL endpointu dla modelu embeddingowego (OVH, format OpenAI-compatible)
-
-### Pliki do zmiany
-
-| Plik                                 | Co się zmienia                                                                                       |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| `prisma/schema.prisma`               | Dodać `embedding Unsupported("vector(4096)")` do modelu `Chunk`                                      |
-| `prisma/migrations/`                 | Dwie migracje: `add_embeddings` (vector(1024) + pgvector ext) + `resize_embedding_4096` (ALTER TYPE) |
-| `.env.example`                       | Dodać `OVH_AI_EMBEDDING_ENDPOINT`                                                                    |
-| `src/server/ai/embeddings.ts`        | Nowy plik — klient embeddingów (OpenAI-compatible, `input` → `number[]`)                             |
-| `src/modules/search/utils/search.ts` | Hybrid search: FTS + `runEmbedding()` z cosine similarity, wyniki mergowane wagowo                   |
-| `scripts/seed.ts`                    | Generować embedding per chunk przy indeksowaniu, zapisywać do kolumny `embedding`                    |
-
-### Schema — zmiana w modelu Chunk
-
-```prisma
-model Chunk {
-  id           String                    @id @default(uuid())
-  documentId   String
-  content      String
-  chunkIndex   Int
-  searchVector Unsupported("tsvector")?  @map("search_vector")
-  embedding    Unsupported("vector(4096)")?
-  document     Document                  @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  @@map("chunks")
-}
-```
-
-### Hybrid search — logika (RRF)
-
-```
-1. Równolegle: embedText(query) + runFts(AND) + runTrigram(query)
-2. Jeśli AND < 3 wyników → runFts(OR) jako fallback
-3. FTS+trigram mergowane wagowo (trigram jako secondary z wagą 0.5)
-4. Embedding search z cosine similarity
-5. Finalne połączenie FTS i embedding przez RRF (k=60) — bez normalizacji rang
-6. Zwróć top limit wyników
-```
-
-### Zadania
-
-- [x] Dodać `OVH_AI_EMBEDDING_ENDPOINT` do `.env.example` i `.env`
-- [x] Zaktualizować `prisma/schema.prisma` — kolumna `embedding vector(4096)` w `Chunk`
-- [x] Uruchomić migracje: `add-embeddings` + `resize-embedding-4096`
-- [x] Utworzyć `src/server/ai/embeddings.ts` — funkcja `embedText(text: string): Promise<number[]>`
-- [x] Zaktualizować `scripts/seed.ts` — generować embedding per chunk, zapisywać przez `$executeRaw`
-- [x] Zaktualizować `src/modules/search/utils/search.ts` — dodać `runEmbedding()` + hybrid merge (RRF)
-- [x] Uruchomić `npm run db:seed` — 118/118 chunków z embeddingami
-- [x] Przetestować zapytania semantyczne — "rodzaje klątw" → trafia w "Poziomy Klątw" ✓
-- [x] `tsc --noEmit` + `npm run build` — zero błędów
+- [ ] UI zarządzania dokumentami dla EDITOR (lista + edycja w Milkdown → ingest)
 
 ---
 
-## Decyzje — podjęte
+## Ryzyka
 
-| #   | Pytanie                | Decyzja                                                                                   |
-| --- | ---------------------- | ----------------------------------------------------------------------------------------- |
-| 1   | Renderowanie markdown  | `react-markdown` — używane w docs panelu **i** w bąbelkach czatu (odpowiedzi AI)          |
-| 2   | Nazwa koloru w Mantine | `mangetsu`                                                                                |
-| 3   | Logo w topbarze        | Tekst nieselektowalny (`user-select: none`)                                               |
-| 4   | Wyszukiwanie chunków   | PostgreSQL full-text search (tsvector) — FTS przez `prisma.$queryRaw`                     |
-| 5   | Odpowiedź API          | Jednorazowa (nie streaming) — prostsze, typing indicator zostaje                          |
-| 6   | Rate limiting          | Per IP z nagłówka `X-Forwarded-For`                                                       |
-| 7   | ORM                    | Prisma — typy z automatu, migracje przez CLI                                              |
-| 8   | Embedding model        | `Qwen3-Embedding-8B` (OVH AI Endpoints) — wymiary 4096 (domyślne)                         |
-| 9   | Hybrid search merge    | RRF (Reciprocal Rank Fusion, k=60) — lepszy niż ważone summy bo nie wymaga normalizacji   |
-| 10  | Brak HNSW index        | pgvector HNSW max 2000 dims, mamy 4096 — sequential scan wystarczy przy ~100-200 chunkach |
+- Etapy 1–2 dotykają prawie wszystkich importów — robione mechanicznie, krokami, z testami po każdym
+- Backfill i drop `filePath` — backup bazy prod przed migracją (b)
+- Live n8n — nowe workflowy obok starych; przełączenie i aktywacja po testach i zgodzie
+- Konwerter forum zależy od szablonu wersji do druku jcink — po jego zmianie rzuca błąd (celowo: zgłoszenie odrzucone od razu, sync zgłasza błąd na Discordzie)
+- Przycisk „Zatwierdź” z Discorda działa dla każdego, kto widzi kanał — kanał tylko dla ROOT
+- Dokumentacja (CLAUDE.md, README) musi nadążyć za nową strukturą
 
----
+## Weryfikacja (każdy etap)
 
-## Znane ograniczenia platformy
-
-**Discord OAuth nie otwiera natywnej appki przy logowaniu (desktop i mobile).** Discord
-celowo blokuje deep-linking do natywnej aplikacji dla standardowego logowania
-(`identify`/`email` scope, używanego przez `next-auth/providers/discord`) — mechanizm ten
-działa wyłącznie dla flow bez callbacku do zewnętrznej strony, np. zaproszenia bota na
-serwer (`bot`/`applications.commands` scope), które kończy się całkowicie wewnątrz Discorda.
-Standardowe logowanie wymaga, żeby Discord odesłał użytkownika z powrotem do konkretnej
-karty przeglądarki trzymającej stan sesji (cookies, CSRF token) — deep-linking uniemożliwiłby
-to odesłanie i zerwałby flow. Potwierdzone przez staff Discorda:
-[discord-api-docs#7259](https://github.com/discord/discord-api-docs/discussions/7259),
-[discord-api-docs#1296](https://github.com/discord/discord-api-docs/issues/1296).
-
-Nie ma możliwej zmiany kodu, konfiguracji NextAuth ani ustawień w Discord Developer Portal,
-która by to naprawiła. Workaround w `DiscordSignInButton.tsx` (`<form>` + Server Action
-zamiast klienckiego `signIn()`, zachowujący synchroniczny user-gesture) zostaje — ma sens
-jako próba dla mobilnych Universal Links/App Links, ale nie gwarantuje deep-linkingu i nie
-dotyczy tego ograniczenia.
-
----
-
-## Kolejność implementacji (rekomendowana)
-
-```
-Faza 1 → Faza 2 → Faza 3 → Faza 4 → Faza 5 → Faza 6 → Faza 7 → Faza 8 → Faza 9 → Faza 10 → Faza 11
-```
-
-Każda faza jest niezależna — można zatwierdzać i commitować po kolei.
+- `pnpm test`, `pnpm lint`, `pnpm exec tsc --noEmit`, `pnpm build`
+- `scripts/ragEval.ts` — identyczny zestaw dokumentów w kontekście przed/po Etapach 2 i 3
+- Smoke (dev): logowanie Discord, kafelki, czat ze streamem i thinkingiem, limit, usuwanie sesji, `/admin` zmiana roli; `enabled: false` → apka znika, `/tutorials` i `/api/tutorials/*` → 404
