@@ -44,7 +44,7 @@ src/
 │   └── hub/ auth/ admin/ notices/
 └── server/                      # platforma serwerowa
     ├── chat/                    # silnik czatu RAG: createRagChatRoutes(config) — context, stream, routes
-    ├── rag/ingest.ts            # NOWE: ingest dokumentu (z scripts/seed.ts), hash-skip
+    ├── rag/ingest.ts            # ingest dokumentu (z scripts/seed.ts), hash-skip; rag/routes.ts — API dla n8n
     ├── rag/sources/forum.ts     # przeniesiony scripts/forumToMarkdown.ts
     ├── events.ts                # NOWE: zdarzenia → jeden webhook n8n (zastępuje webhooks.ts + apps/hooks.ts)
     └── internal.ts              # NOWE: requireInternal() — sekret dla wywołań z n8n
@@ -98,23 +98,34 @@ po każdym etapie proponowany podział i komunikaty.
 
 ## Etap 3 — Treść RAG w bazie + API ingest dla n8n
 
-- [ ] Migracja (a) `documents`: `slug`, `markdown`, `sourceUrl?`, `contentHash`, `updatedAt` (nullable) + `@@unique([app, slug])`; `filePath` → nullable (dokument dodany tylko do bazy nie ma pliku)
-- [ ] `apps/tutorials/categories.ts` — `TUTORIAL_CATEGORIES` (`kompendium`, `mechanika`, `realia`, `inne`) + etykiety; bezpieczne dla klienta, jedno źródło prawdy dla modalu i walidacji serwerowej
-- [ ] `server/rag/normalize.ts` — `normalizeMarkdown(markdown, title)`: BOM, CRLF → LF, 3+ puste linie → 1; dokładnie jeden `# Tytuł` na górze (przy kilku `#` lub `#` nie na górze — wszystkie nagłówki o poziom niżej, max `######`, i dopisany `# Tytuł`); idempotentne dla `content/` (każdy plik ma dziś jeden `#`) + testy
-- [ ] `server/rag/slug.ts` — `slugify(title)` w stylu obecnych slugów (małe litery, polskie znaki zostają, spacje → `-`) + test
-- [ ] Chunker: akapit dłuższy niż `TARGET_CHARS` cięty po liniach, a gdy to nie wystarcza — po zdaniach (dziś w `content/` żaden akapit nie przekracza 2600 znaków → istniejące chunki bez zmian) + test (długi akapit, tabela)
-- [ ] `MAX_SOURCE_CHARS` (~100 000; największy dziś plik: 41 KB) — sprawdzany w modalu, `POST sources` i `PUT documents`
-- [ ] `server/rag/ingest.ts` — `ingestDocument({ app, slug, title, category, markdown, sourceUrl })` z logiki `scripts/seed.ts` (embeddingi poza transakcją, transakcja upsert + wymiana chunków); przed hashem `normalizeMarkdown`, walidacja kategorii z listy apki, pomijanie przy niezmienionym hashu; `deleteDocument`, `listDocuments(app)` + testy
-- [ ] `server/rag/sources/forum.ts` — konwerter z `scripts/forumToMarkdown.ts` (+ test, `topicHtmlToMarkdown` zwraca też `title`); `parseForumTopicUrl(url)` dla zwykłego linku (`index.php?showtopic=N`, host z `NEXT_PUBLIC_FORUM_URL`, tolerowane `&st=`, `&view=…`, `#entry…`; odrzucane obce hosty, `showforum`, `viewtopic.php`); `canonicalTopicUrl(N)` jako `sourceUrl` i klucz deduplikacji; pobieranie wersji do druku z timeoutem; testy na wszystkich linkach z `docs/tutorials/documents-info.md`; `turndown` z devDependencies → dependencies
-- [ ] `server/internal.ts` — `requireInternal(request)`: sekret `INTERNAL_API_SECRET` (porównanie stałoczasowe); `/api/internal/*` wyłączone z `authorized` / matchera w `src/proxy.ts`; wpis w `.env.example`
-- [ ] Endpointy: `GET /api/internal/rag/documents?app=`, `PUT /api/internal/rag/documents` (`{ app, slug, title, category, markdown | forumUrl, sourceUrl? }`), `DELETE /api/internal/rag/documents?app=&slug=`; odpowiedź `{ changed, chunks }`, `400` dla nieznanej kategorii / za dużej treści + testy integracyjne
-- [ ] Backfill: `scripts/backfillDocuments.ts` — `content/` → `markdown/hash/slug`, `sourceUrl` z `scripts/forumTopics.ts`, **bez ponownego chunkowania**
+Podzielony na **3a** (kod + backfill, migracja tylko dodająca kolumny) i **3b** (NOT NULL, sprzątanie) —
+migracja (b) wdrożona przed backfillem na prod wywaliłaby deploy. Skrypty i migracje na prod odpalane
+lokalnie z `DATABASE_URL=<prod>` w wierszu poleceń (wygrywa z `.env.local`).
+
+### 3a
+
+- [x] Migracja (a) `20261022120000_rag_documents_content`: `slug`, `markdown`, `contentHash`, `sourceUrl` (nullable), `updatedAt` od razu NOT NULL (`@default(now()) @updatedAt`), `@@unique([app, slug])`, `filePath` → nullable
+- [x] Kategorie w manifeście (`rag.categories`: `realia`, `kompendium`, `mechanika`, `inne` + etykiety) zamiast `apps/tutorials/categories.ts` — serwer (`server/rag`) może czytać rejestr `apps`, ale nie wnętrze apki; `getRagCategories`, `isRagCategory` i `MAX_SOURCE_CHARS` (100 000) w rejestrze, bezpieczne dla klienta (modal w Etapie 4)
+- [x] `server/rag/normalize.ts` — `normalizeMarkdown(markdown, title)` (BOM, CRLF, 3+ puste linie, jeden `# Tytuł` na górze) + testy, w tym idempotencja na każdym pliku `content/`
+- [x] `server/rag/slug.ts` — `slugify` / `isValidSlug` + testy
+- [x] Chunker: akapit > `TARGET_CHARS` cięty po liniach, potem po zdaniach, na kawałki ≤ `TARGET − OVERLAP`; kawałki tabeli powtarzają nagłówek + testy (istniejące chunki bez zmian — sprawdzone backfillem)
+- [x] `server/rag/ingest.ts` — `ingestDocument` (walidacja → normalizacja → sha256 → przy niezmienionym hashu tylko metadane, bez embeddingów; inaczej embeddingi poza transakcją + upsert po `(app, slug)` i wymiana chunków), `deleteDocument`, `listDocuments`; `IngestError` ze statusem HTTP + testy
+- [x] `server/rag/sources/forum.ts` (`git mv` z `scripts/forumToMarkdown.ts`) — `topicHtmlToMarkdown` zwraca `title`; `parseForumTopicUrl`, `canonicalTopicUrl`, `fetchForumTopic` (timeout 15 s; 400 / 422 / 502) + testy na wszystkich 20 wątkach bazy wiedzy; `turndown` w dependencies
+- [x] `server/internal.ts` — `requireInternal` (`Authorization: Bearer`, `timingSafeEqual` na sha256, bez sekretu → 503); `api/internal/` poza matcherem `src/proxy.ts`; `INTERNAL_API_SECRET` w `.env.example`
+- [x] `server/rag/routes.ts` + `src/app/api/internal/rag/documents/route.ts` — `GET ?app=`, `PUT` (`markdown` + `sourceUrl?` albo `forumUrl` + `title?`), `DELETE ?app=&slug=`; `{ changed, chunks }`, błędy 400/401/404/422/502/503 + testy integracyjne
+- [x] `scripts/backfillDocuments.ts` (`pnpm rag:backfill [--dry-run]`) — tytuł z nagłówka `#` (polskie znaki), slug z nazwy pliku, `sourceUrl` z `forumTopics.ts`; zapis tylko gdy `chunkText(markdown)` = chunki w bazie; idempotentny
+- [x] `DocsPanel` z `listDocuments` (grupy wg kategorii z manifestu, link do `sourceUrl`); `docs/tutorials/documents-info.md` usunięty
+- [x] `pnpm rag:dump <plik>` / `pnpm rag:load <plik>` (JSON z markdownem, bez wektorów)
+- [x] `ragEval`: oczekiwane tytuły z polskimi znakami. Wynik bazowy z Etapu 2 był nieaktualny już przed 3a (baza lokalna przeseedowana — żadne z jego id chunków nie istniało); nowy zapisany po backfillu, stary w kopii
+- [~] Weryfikacja 3a: test / lint / tsc / build zielone; lokalnie brak driftu, backfill 20/20, id + treść + wektory chunków identyczne jak przed etapem, drugi przebieg bez zmian; API na `pnpm start` (401 bez sekretu, `GET` 20 dokumentów, `PUT` niezmienionego i z `forumUrl` → `changed: false`, zła kategoria → 400); `rag:dump` → `rag:load` bez zmian — smoke DocsPanel i wdrożenie na prod czekają na użytkownika; propozycja commitów
+- [ ] Wdrożenie 3a na prod: deploy → `DATABASE_URL=<prod> pnpm db:migrate:deploy` → `DATABASE_URL=<prod> pnpm rag:backfill --dry-run` → bez `--dry-run` → `INTERNAL_API_SECRET` w Coolify
+
+### 3b (po backfillu na prod)
+
 - [ ] Backup bazy prod w Coolify przed migracją (b)
-- [ ] Migracja (b): NOT NULL + drop `filePath`
-- [ ] `DocsPanel` generowany z `listDocuments` zamiast `docs/tutorials/documents-info.md` (link do `sourceUrl`, jeśli jest — pliki `.md` go nie mają)
-- [ ] `pnpm rag:dump` / `pnpm rag:load` (JSON z markdownem, bez wektorów) do zasilenia lokalnej bazy
-- [ ] Usunięcie `content/`, `scripts/seed.ts`, `importForum.ts`, `forumTopics.ts`, `contentPath.ts` — **po osobnym potwierdzeniu**
-- [ ] Weryfikacja etapu: brak driftu Prisma, chunki i ich `id` identyczne po backfillu, `PUT` niezmienionego dokumentu → `changed: false` bez embeddingów, `ragEval` identyczny + propozycja commitów
+- [ ] Migracja (b): NOT NULL na `slug`, `markdown`, `contentHash` + drop `filePath`; typy bez `null` w `listDocuments` / `rag:dump`
+- [ ] Usunięcie `content/`, `scripts/seed.ts`, `importForum.ts`, `forumTopics.ts`, `contentPath.ts`, `backfillDocuments.ts` (+ skrypty `db:seed`, `content:import`, `rag:backfill`, test idempotencji na `content/`) — **po osobnym potwierdzeniu**
+- [ ] Weryfikacja 3b: brak driftu Prisma, `ragEval` identyczny + propozycja commitów
 
 ## Etap 4 — n8n jako zaplecze
 

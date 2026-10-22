@@ -153,7 +153,9 @@ Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjow
 
 n8n u nas to zewnętrzna automatyzacja wywoływana przez webhooki (aktywacja/zmiana roli,
 usuwanie konta, zgłaszanie nowych źródeł — patrz `src/server/webhooks.ts`,
-`src/apps/tutorials/server/sources.ts`), nie główny przedmiot pracy. Mimo to bywa, że trzeba coś
+`src/apps/tutorials/server/sources.ts`), nie główny przedmiot pracy. W drugą stronę n8n woła
+wewnętrzne API aplikacji `/api/internal/*` (sekret `INTERNAL_API_SECRET`, `src/server/internal.ts`)
+— np. `PUT /api/internal/rag/documents` przelicza dokument bazy wiedzy. Mimo to bywa, że trzeba coś
 zbudować/zmienić bezpośrednio na instancji — wtedy obowiązują poniższe zasady.
 
 - Przy pytaniach o n8n (węzły, wyrażenia, konfiguracja, API) korzystaj z oficjalnej
@@ -284,8 +286,11 @@ widać całość na raz. Commit zrobiony automatycznie ten moment przeskakuje.
 ## Kontekst projektu
 
 - Forum: Mangetsu (forum RP)
-- Treść RAG: `content/<app>/<kategoria>/*.md`, dokumenty pomocnicze: `docs/<app>/`
-- Pliki NIE są w `public/` — są czytane serwerowo przez API Routes
+- Treść RAG: źródłem prawdy jest tabela `documents` (markdown, `contentHash`, `slug`, `sourceUrl`),
+  zmieniana wyłącznie przez `ingestDocument` (`src/server/rag/ingest.ts`: normalizacja → hash →
+  chunki + embeddingi tylko przy zmianie treści). Kategorie w manifeście apki (`rag.categories`).
+  `content/<app>/<kategoria>/*.md` to stara kopia — zostaje do etapu 3b (`PLAN.md`), nie edytuj jej
+  i nie odpalaj `pnpm db:seed`; lokalną bazę zasilaj przez `pnpm rag:dump` / `pnpm rag:load`
 - **Hub mini-apek** pod `mangetsu.thalverntable.app`: `/` = logowanie albo kafelki, każda
   mini-apka pod własną ścieżką (`/tutorials`, …). Rejestr: `src/apps/index.ts` (alias `apps`) złożony
   z manifestów `src/apps/<id>/manifest.ts` (id, ścieżka, kafelek, role, `enabled`) — z niego korzystają
@@ -296,7 +301,9 @@ widać całość na raz. Commit zrobiony automatycznie ten moment przeskakuje.
   ról z `USER` zawsze w zestawie. **ROOT jest globalny** (`users.isRoot`, nadawany tylko w bazie):
   dostęp do wszystkiego, jedyny w `/admin`. Konto bez ról trafia na `/pending`
 - W Route Handlerach: `requireAppRole(app, roles)` / `requireRoot()` + `verifyOrigin()` na każdej
-  mutacji (`src/server/authorize.ts`). Trasy stron chronione przez `src/proxy.ts`
+  mutacji (`src/server/authorize.ts`). Trasy stron chronione przez `src/proxy.ts`. Wyjątek:
+  `/api/internal/*` (wywołania z n8n) jest poza proxy i bez sesji — każdy handler zaczyna od
+  `requireInternal(request)`
 - **Izolacja subdomen**: inne subdomeny i domena główna `thalverntable.app` to obce aplikacje.
   Cookies Auth.js są host-only, a przy HTTPS mają prefiks `__Host-` (`src/server/auth.ts`) — nie
   ustawiaj `Domain` w cookies i nie luzuj `verifyOrigin` (porównuje host co do znaku)
@@ -327,7 +334,10 @@ Warstwa serwerowa (`src/server/`) — bez importów po stronie klienta:
 | ------------------------- | ----------------------------------------------------------------------------------- |
 | `server/db`               | Singleton Prisma Client                                                             |
 | `server/ai`               | Klient LLM (primary + automatyczny fallback OVH), funkcja embedText()               |
-| `server/rag`              | Chunker + hybrid search (FTS + trigram + embeddingi, RRF) z parametrem `app`        |
+| `server/rag`              | Chunker, hybrid search (FTS + trigram + embeddingi, RRF), ingest, normalizacja      |
+| `server/rag/sources`      | Źródła treści: wątek forum jcink (link → wersja do druku → markdown)                |
+| `server/rag/routes.ts`    | Wewnętrzne API dokumentów dla n8n (`GET`/`PUT`/`DELETE`)                            |
+| `server/internal.ts`      | `requireInternal()` — sekret wywołań z n8n (porównanie stałoczasowe)                |
 | `server/chat`             | Silnik czatu RAG: `createRagChatRoutes(config)` → handlery czatu, sesji i limitu    |
 | `server/apps/hooks.ts`    | Serwerowe hooki mini-apek (zmiana roli)                                             |
 | `server/auth.ts`          | NextAuth (Discord, Prisma adapter, cookies `__Host-`, reguły proxy), `getSession()` |
@@ -338,15 +348,15 @@ Warstwa serwerowa (`src/server/`) — bez importów po stronie klienta:
 Mini-apki żyją w `src/apps/<id>/` (rejestr: `src/apps/index.ts`, alias `apps`). Poradniki
 (`src/apps/tutorials/`):
 
-| Folder                 | Zawartość                                                                              |
-| ---------------------- | -------------------------------------------------------------------------------------- |
-| `manifest.ts`          | Metadane bezpieczne dla klienta i proxy (bez kodu serwerowego i komponentów)           |
-| `components/` `api/` … | UI specyficzne dla apki: DocsPanel, AddSourceModal (+ edytor), `submitSource`          |
-| `server/`              | Config czatu `tutorialsChat` (prompt, synonimy, koszty PD), webhook źródeł, dostęp     |
-| `routes/`              | Handlery z `createRagChatRoutes(tutorialsChat)` + `sourcesPost` — re-eksportowane      |
-| `page/`                | `TutorialsPage` (ChatShell z `chat`) — `src/app/tutorials/page.tsx` podaje `HubHeader` |
+| Folder                 | Zawartość                                                                               |
+| ---------------------- | --------------------------------------------------------------------------------------- |
+| `manifest.ts`          | Metadane bezpieczne dla klienta i proxy (bez kodu serwerowego), kategorie bazy wiedzy   |
+| `components/` `api/` … | UI apki: DocsPanel (lista dokumentów z bazy), AddSourceModal (+ edytor), `submitSource` |
+| `server/`              | Config czatu `tutorialsChat` (prompt, synonimy, koszty PD), webhook źródeł, dostęp      |
+| `routes/`              | Handlery z `createRagChatRoutes(tutorialsChat)` + `sourcesPost` — re-eksportowane       |
+| `page/`                | `TutorialsPage` (ChatShell z `chat`) — `src/app/tutorials/page.tsx` podaje `HubHeader`  |
 
-Nowy czat RAG = manifest + `RagChatConfig` w `server/` + `createRagChatRoutes` w `routes/` + strona
+Nowy czat RAG = manifest (z `rag.categories`) + `RagChatConfig` w `server/` + `createRagChatRoutes` w `routes/` + strona
 z komponentami `chat`. Jakość wyszukiwania przed i po zmianach: `pnpm rag:eval` (`--save` zapisuje
 wynik bazowy z lokalnej bazy).
 
