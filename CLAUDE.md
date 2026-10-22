@@ -317,6 +317,9 @@ Kod aplikacji podzielony na moduły według domeny w `src/modules/`:
 | `auth`    | DiscordSignInButton, SignOutButton, UserMenu, AuthErrorNotice, Server Action logowania       |
 | `admin`   | UsersTable (role per mini-apka), UserCard, UserIdentity, AppRoleSelect, DeleteUserModal, api |
 | `notices` | NoticesPopover, store (odrzucone ogłoszenia w localStorage) — ogłoszenia globalne dla huba   |
+| `chat`    | Generyczny UI czatu RAG per `appId`: ChatShell, ChatView, ChatSidebar, `getChatStore`, api   |
+
+`chat` to klocek platformy: korzystają z niego apki, nie moduły huba; sam nie importuje `server/*`.
 
 Warstwa serwerowa (`src/server/`) — bez importów po stronie klienta:
 
@@ -325,6 +328,7 @@ Warstwa serwerowa (`src/server/`) — bez importów po stronie klienta:
 | `server/db`               | Singleton Prisma Client                                                             |
 | `server/ai`               | Klient LLM (primary + automatyczny fallback OVH), funkcja embedText()               |
 | `server/rag`              | Chunker + hybrid search (FTS + trigram + embeddingi, RRF) z parametrem `app`        |
+| `server/chat`             | Silnik czatu RAG: `createRagChatRoutes(config)` → handlery czatu, sesji i limitu    |
 | `server/apps/hooks.ts`    | Serwerowe hooki mini-apek (zmiana roli)                                             |
 | `server/auth.ts`          | NextAuth (Discord, Prisma adapter, cookies `__Host-`, reguły proxy), `getSession()` |
 | `server/authorize.ts`     | `requireRoot()`, `requireAppRole()`, `readJsonBody()`, `verifyOrigin()`             |
@@ -337,10 +341,14 @@ Mini-apki żyją w `src/apps/<id>/` (rejestr: `src/apps/index.ts`, alias `apps`)
 | Folder                 | Zawartość                                                                              |
 | ---------------------- | -------------------------------------------------------------------------------------- |
 | `manifest.ts`          | Metadane bezpieczne dla klienta i proxy (bez kodu serwerowego i komponentów)           |
-| `components/` `api/` … | UI apki: ChatView, ChatSidebar, TutorialsShell, DocsPanel, AddSourceModal, store, api  |
-| `server/`              | Orkiestracja czatu, prompt, synonimy, webhook źródeł, `requireTutorials*`              |
-| `routes/`              | Handlery API (`chatPost`, `sessionsGet`…) — `src/app/api/tutorials/*` je re-eksportuje |
-| `page/`                | `TutorialsPage` — `src/app/tutorials/page.tsx` podaje mu tylko `HubHeader`             |
+| `components/` `api/` … | UI specyficzne dla apki: DocsPanel, AddSourceModal (+ edytor), `submitSource`          |
+| `server/`              | Config czatu `tutorialsChat` (prompt, synonimy, koszty PD), webhook źródeł, dostęp     |
+| `routes/`              | Handlery z `createRagChatRoutes(tutorialsChat)` + `sourcesPost` — re-eksportowane      |
+| `page/`                | `TutorialsPage` (ChatShell z `chat`) — `src/app/tutorials/page.tsx` podaje `HubHeader` |
+
+Nowy czat RAG = manifest + `RagChatConfig` w `server/` + `createRagChatRoutes` w `routes/` + strona
+z komponentami `chat`. Jakość wyszukiwania przed i po zmianach: `pnpm rag:eval` (`--save` zapisuje
+wynik bazowy z lokalnej bazy).
 
 `server/*` wolno importować wyłącznie w `server/`, `routes/` i `page/` apki.
 
@@ -356,12 +364,13 @@ postęp śledzony checkboxami. Historyczne fazy 1–11 są w historii gita.
 Pięć reguł, które najłatwiej złamać przez przypadek:
 
 1. **Moduł importuje wyłącznie z `common`, z rejestru `apps` albo z samego siebie.** Import między
-   modułami domenowymi (`hub`, `auth`, `admin`, `notices`) albo do wnętrza apki (`apps/<id>/…`) jest
-   błędem architektonicznym. Apka importuje z siebie, `apps`, `common` i `server/*`, nigdy z innej
-   apki ani z modułów huba. Jedynym miejscem, w którym moduły i apki się spotykają, jest `src/app`.
+   modułami (`hub`, `auth`, `admin`, `notices`, `chat`) albo do wnętrza apki (`apps/<id>/…`) jest
+   błędem architektonicznym. Apka importuje z siebie, `apps`, `common`, `chat` i `server/*`, nigdy
+   z innej apki ani z modułów huba. Jedynym miejscem, w którym moduły i apki się spotykają, jest
+   `src/app`.
 2. **Alias zatrzymuje się na podfolderze i nigdy nie schodzi do pliku**: `common/components`,
    nie `common/components/Button`. Aliasu `@/*` nie ma — każdy moduł ma własny alias
-   (`common`, `hub`, `auth`, `admin`, `notices`, `apps`, plus `server/*` — zobacz
+   (`common`, `hub`, `auth`, `admin`, `notices`, `chat`, `apps`, plus `server/*` — zobacz
    `tsconfig.json` → `paths`). Komponenty shadcn importuj z `common/components/ui`.
 3. **Jeden plik = jeden komponent**, nazwa pliku `PascalCase.tsx` zgodna z nazwą eksportu,
    własny folder z barrelem (`index.ts`). **Wyjątek: `common/components/ui/`** — pliki generowane

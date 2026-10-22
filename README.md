@@ -55,12 +55,12 @@ Rejestr mini-apek to `src/apps/index.ts`, złożony z manifestów `src/apps/<id>
 
 Dodanie mini-apki:
 
-1. Nowy moduł w `src/modules/<id>` oraz trasy `src/app/<id>` i `src/app/api/<id>`.
-2. Wpis w rejestrze `APPS`.
+1. Folder `src/apps/<id>` z `manifest.ts` i wpis manifestu w rejestrze `APPS` (`src/apps/index.ts`).
+2. Cienkie pliki tras w `src/app/<id>` i `src/app/api/<id>`, re-eksportujące `routes/` i `page/` apki.
 3. Opcjonalnie hook zmiany roli w `src/server/apps/hooks.ts` (np. webhook n8n).
-4. Dla RAG-a: treść w `content/<id>/<kategoria>/*.md` i `pnpm db:seed`. Wyszukiwanie
-   (`server/rag`), limit zapytań (`server/rateLimit.ts`) i historia rozmów
-   (`server/conversations.ts`) przyjmują id mini-apki jako parametr.
+4. Dla czatu RAG: `RagChatConfig` (prompt, synonimy, dodatkowe wyszukiwania, limit) →
+   `createRagChatRoutes` (`server/chat`) i komponenty `chat` (`ChatShell`, `ChatView`, `ChatSidebar`)
+   na stronie. Treść w `content/<id>/<kategoria>/*.md` i `pnpm db:seed`.
 
 ### Autoryzacja i izolacja subdomen
 
@@ -106,6 +106,7 @@ Zapytanie:
 - **Prompt** (`apps/tutorials/server/prompts.ts`): odpowiedzi wyłącznie na podstawie fragmentów poradników. Pytania spoza forum dostają stałe zdanie `OFF_TOPIC_MESSAGE`. Promptowi przekazywane jest 6 ostatnich wiadomości z rozmowy.
 - **LLM z fallbackiem** (`server/ai`): najpierw primary (`LLM_MAIN_AI_*`), a gdy zawiedzie przed wysłaniem pierwszego tokenu, automatycznie fallback (`LLM_FALLBACK_AI_*`).
 - **Limit przed kosztami:** limit dzienny jest rezerwowany przed wywołaniami płatnych usług (guardrail, embeddingi) i zwalniany przy odrzuceniu lub błędzie.
+- **Strażnik jakości** (`pnpm rag:eval`): zestaw pytań z oczekiwanymi dokumentami; `--save` zapisuje wynik bazowy z lokalnej bazy, zwykłe uruchomienie pokazuje różnice w chunkach trafiających do kontekstu.
 
 ### Historia czatu
 
@@ -119,9 +120,9 @@ wyświetlania historii, a przy starcie jest synchronizowany z listą sesji z ser
 ```
 ├── content/tutorials/              # Poradniki (markdown: kompendium, mechanika, realia)
 ├── docs/                           # notices.json (globalne), tutorials/documents-info.md
-├── prisma/                         # Schema i migracje
-├── public/                         # Grafiki (m.in. tła kafelków)
-├── scripts/                        # seed.ts (+ parser ścieżek treści), importForum.ts (forum → markdown)
+├── prisma/                         # schema/ (platform.prisma, rag.prisma) i migrations/
+├── public/apps/<id>/               # Grafiki mini-apek (tła kafelków)
+├── scripts/                        # seed.ts, importForum.ts (forum → markdown), ragEval.ts
 ├── docker-compose.yml              # Tylko lokalny Postgres z pgvector (nie do deploymentu)
 └── src/
     ├── app/
@@ -133,11 +134,12 @@ wyświetlania historii, a przy starcie jest synchronizowany z listą sesji z ser
     │       ├── auth/[...nextauth]/              # Auth.js
     │       ├── admin/users/[id]/                # DELETE konta
     │       ├── admin/users/[id]/apps/[app]/     # PUT roli w mini-apce
-    │       └── tutorials/{chat,sessions,rate-limit,sources}/
+    │       └── tutorials/{chat,sessions,rate-limit,sources}/  # re-eksporty z apps/tutorials/routes
+    ├── apps/                       # mini-apki: rejestr (index.ts) + tutorials/ (manifest, server, routes, page…)
     ├── generated/prisma/           # Prisma Client (generowany przez postinstall)
-    ├── modules/                    # common, hub, auth, admin, notices, tutorials
+    ├── modules/                    # common, hub, auth, admin, notices, chat (UI czatu RAG)
     ├── server/
-    │   ├── ai/  db/  rag/  apps/  tutorials/
+    │   ├── ai/  db/  rag/  chat/  apps/
     │   ├── auth.ts  authorize.ts  rateLimit.ts  conversations.ts  users.ts
     │   └── webhooks.ts  guardrails.ts  notices.ts
     └── proxy.ts

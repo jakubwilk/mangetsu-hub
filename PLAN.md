@@ -43,7 +43,7 @@ src/
 │   ├── chat/                    # NOWE: generyczny UI czatu RAG (ChatView, Sidebar, store, sendMessage) per appId
 │   └── hub/ auth/ admin/ notices/
 └── server/                      # platforma serwerowa
-    ├── chat/                    # NOWE: silnik czatu RAG (z server/tutorials/chat.ts + route)
+    ├── chat/                    # silnik czatu RAG: createRagChatRoutes(config) — context, stream, routes
     ├── rag/ingest.ts            # NOWE: ingest dokumentu (z scripts/seed.ts), hash-skip
     ├── rag/sources/forum.ts     # przeniesiony scripts/forumToMarkdown.ts
     ├── events.ts                # NOWE: zdarzenia → jeden webhook n8n (zastępuje webhooks.ts + apps/hooks.ts)
@@ -86,13 +86,15 @@ po każdym etapie proponowany podział i komunikaty.
 
 ## Etap 2 — Platforma czatu RAG (generyczna, Poradniki jako konfiguracja)
 
-- [ ] `scripts/ragEval.ts` — strażnik jakości: ~10–15 pytań → oczekiwane tytuły dokumentów w kontekście; zapis wyniku bazowego **przed** zmianami
-- [ ] `server/chat/` — z `server/tutorials/chat.ts` + `app/api/tutorials/chat/route.ts`: `createRagChatRoutes(config)` → `{ chatPost, sessionsGet, sessionsDelete, rateLimitGet }`; config: `app`, `roles`, `buildSystemPrompt(query)`, `expandQuery`, `extraSearches(query)` (tu `STAT_ADVANCEMENT_PATTERN` + `PD_CALC_RULES`), `dailyLimit`
-- [ ] `server/rateLimit.ts` — limit z configu apki z fallbackiem do `DAILY_REQUEST_LIMIT`
-- [ ] `modules/chat/` — ChatView, MessageList, MessageBubble, ChatInput, ThinkingBlock, TypingIndicator, ChatSidebar, DeleteSessionModal, `ChatShell` (z TutorialsShell), `chatStore`, `sendMessage` / `fetch*` sparametryzowane `appId` (endpointy `/api/${appId}/…`, klucze `mangetsu:${appId}:*` — identyczne jak dziś, lokalna historia przetrwa)
-- [ ] `apps/tutorials/` zostaje z: manifestem, `server/prompts.ts`, `server/synonyms.ts`, configiem, `AddSourceModal`, `DocsPanel`, stroną
-- [ ] Testy przeniesione razem z kodem (`chat.test.ts`, `route.test.ts`, `chatStore.test.ts`, prompts/synonyms), asercje bez zmian merytorycznych
-- [ ] Weryfikacja etapu: test / lint / tsc / build + `ragEval` identyczny z bazowym + smoke + propozycja commitów
+- [x] `scripts/ragEval.ts` (`pnpm rag:eval`, `--save`) — strażnik jakości: ~14 pytań (w tym koszt PD, synonim, pytanie uzupełniające) → oczekiwane tytuły dokumentów + uporządkowane `id` chunków; wynik bazowy w `scripts/.rag-eval-baseline.json` (gitignore), zapisany **przed** zmianami przez wydzielone `retrieveChunks`
+- [x] `server/chat/` — z `apps/tutorials/server/chat.ts` + `routes/*`: `createRagChatRoutes(config)` → `{ chatPost, sessionsGet, sessionsDelete, rateLimitGet }`; `RagChatConfig`: `app`, `roles`, `buildSystemPrompt(query)`, `buildUserMessage`, `expandQuery?`, `extraSearches?(query)`, `dailyLimit?`
+- [x] `server/rateLimit.ts` — limit z configu apki z fallbackiem do `DAILY_REQUEST_LIMIT`
+- [x] `apps/tutorials/server/chatConfig.ts` — `tutorialsChat` (`STAT_ADVANCEMENT_PATTERN` → zasady PD w prompcie + dodatkowe wyszukiwanie kosztów); `routes/index.ts` składa handlery z `createRagChatRoutes`
+- [x] `modules/chat/` (alias `chat`) — ChatView, MessageList, MessageBubble, ChatInput, ThinkingBlock, TypingIndicator, ChatSidebar, DeleteSessionModal, MobileNavBar, `ChatShell` (z TutorialsShell), `getChatStore(appId)`, `sendMessage` / `fetch*` sparametryzowane `appId` (endpointy `/api/${appId}/…`, klucze `mangetsu:${appId}:*` — identyczne jak dziś, lokalna historia przetrwa); teksty apki (`emptyTitle`, `loadingMessages`) z propsów
+- [x] `apps/tutorials/` zostaje z: manifestem, `server/prompts.ts`, `server/synonyms.ts`, configiem, źródłami (`AddSourceModal`, edytor, `submitSource`), `DocsPanel`, stroną
+- [x] ESLint: `modules/chat` bez modułów huba, wnętrza apek i `server/*`; hub, `common` i `src/server` bez `chat`
+- [x] Testy przeniesione razem z kodem (`chat.test.ts`, testy tras, `chatStore.test.ts`, `sendMessage.test.ts`), asercje bez zmian merytorycznych
+- [~] Weryfikacja etapu: test / lint / tsc / build zielone, `ragEval` 14/14 identyczny z bazowym (embeddingi deterministyczne — dwa przebiegi bazowe zgodne), endpointy bez sesji → 401 — smoke z zalogowanym kontem czeka na użytkownika; propozycja commitów
 
 ## Etap 3 — Treść RAG w bazie + API ingest dla n8n
 
