@@ -1,12 +1,15 @@
 // Manifests only — never an app's barrel: the proxy imports this registry and must not pull in components.
 import { tutorialsManifest } from './tutorials/manifest'
-import type { AppManifest } from './types'
+import type { AppManifest, RagCategory } from './types'
 
-export type { AppManifest } from './types'
+export type { AppManifest, RagCategory } from './types'
 
 export const APPS = [tutorialsManifest] as const satisfies readonly AppManifest[]
 
 export const ROOT_LABEL = 'Administrator'
+
+// Largest markdown accepted as a RAG source — the biggest forum topic today is ~40k characters.
+export const MAX_SOURCE_CHARS = 100_000
 
 export type App = (typeof APPS)[number]
 export type AppId = App['id']
@@ -32,6 +35,14 @@ export const isValidAppRole = (appId: AppId, role: string): boolean =>
 export const isAppEnabled = (appId: AppId): boolean => getApp(appId).enabled
 
 export const getEnabledApps = (): App[] => APPS.filter((app) => app.enabled)
+
+export const getRagCategories = (appId: AppId): readonly RagCategory[] => {
+  const app: AppManifest = getApp(appId)
+  return app.rag?.categories ?? []
+}
+
+export const isRagCategory = (appId: AppId, category: string): boolean =>
+  getRagCategories(appId).some((c) => c.id === category)
 
 export const canAccessApp = (access: AppAccess, appId: AppId): boolean =>
   access.isRoot || access.apps[appId] !== undefined

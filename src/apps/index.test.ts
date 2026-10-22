@@ -7,7 +7,9 @@ import {
   canAccessApp,
   getAccessibleApps,
   getAppByPath,
+  getRagCategories,
   isAppId,
+  isRagCategory,
   isValidAppRole,
   toAppRoles,
 } from '.'
@@ -69,5 +71,18 @@ describe('toAppRoles', () => {
         { app: 'tutorials', role: 'NOT_A_ROLE' },
       ]),
     ).toEqual({ tutorials: 'EDITOR' })
+  })
+})
+
+describe('getRagCategories / isRagCategory', () => {
+  it('lists the categories of an app knowledge base and accepts only those', () => {
+    expect(getRagCategories('tutorials').map((c) => c.id)).toEqual([
+      'realia',
+      'kompendium',
+      'mechanika',
+      'inne',
+    ])
+    expect(isRagCategory('tutorials', 'mechanika')).toBe(true)
+    expect(isRagCategory('tutorials', 'Mechanika')).toBe(false)
   })
 })
