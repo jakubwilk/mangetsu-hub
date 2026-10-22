@@ -1,6 +1,6 @@
+import { type AppId, getApp, ROOT_LABEL } from 'apps'
 import { UserMenu } from 'auth'
 import { AppHeader } from 'common'
-import { type AppId, getApp, ROOT_LABEL } from 'common/apps'
 import { Button } from 'common/components/ui'
 import { ExternalLink } from 'lucide-react'
 import { NoticesPopover } from 'notices'

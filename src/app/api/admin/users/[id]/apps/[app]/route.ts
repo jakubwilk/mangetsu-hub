@@ -1,4 +1,4 @@
-import { isAppId, isValidAppRole } from 'common/apps'
+import { isAppEnabled, isAppId, isValidAppRole } from 'apps'
 import { NextRequest, NextResponse } from 'next/server'
 import { APP_HOOKS } from 'server/apps/hooks'
 import { readJsonBody, requireRoot, verifyOrigin } from 'server/authorize'
@@ -17,7 +17,7 @@ export const PUT = async (
   if (authResult instanceof NextResponse) return authResult
 
   const { id, app } = await ctx.params
-  if (!isAppId(app)) {
+  if (!isAppId(app) || !isAppEnabled(app)) {
     return NextResponse.json({ error: 'Nieznana aplikacja.' }, { status: 404 })
   }
 
