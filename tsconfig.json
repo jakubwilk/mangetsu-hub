@@ -19,6 +19,8 @@
       }
     ],
     "paths": {
+      "apps": ["./src/apps/index"],
+      "apps/*": ["./src/apps/*"],
       "admin": ["./src/modules/admin/index"],
       "admin/*": ["./src/modules/admin/*"],
       "auth": ["./src/modules/auth/index"],
@@ -29,8 +31,6 @@
       "hub/*": ["./src/modules/hub/*"],
       "notices": ["./src/modules/notices/index"],
       "notices/*": ["./src/modules/notices/*"],
-      "tutorials": ["./src/modules/tutorials/index"],
-      "tutorials/*": ["./src/modules/tutorials/*"],
       "server/*": ["./src/server/*"]
     }
   },
