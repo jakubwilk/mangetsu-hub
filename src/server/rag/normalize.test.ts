@@ -1,17 +1,6 @@
-import { readdirSync, readFileSync } from 'fs'
-import path from 'path'
 import { describe, expect, it } from 'vitest'
 
 import { normalizeMarkdown } from './normalize'
-
-const CONTENT_DIR = path.join(process.cwd(), 'content')
-
-const listMarkdownFiles = (dir: string): string[] =>
-  readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const fullPath = path.join(dir, entry.name)
-    if (entry.isDirectory()) return listMarkdownFiles(fullPath)
-    return entry.name.endsWith('.md') ? [fullPath] : []
-  })
 
 describe('normalizeMarkdown', () => {
   it('strips the BOM, unifies line endings and collapses blank lines', () => {
@@ -47,11 +36,9 @@ describe('normalizeMarkdown', () => {
     expect(normalizeMarkdown(once, 'Tytuł')).toBe(once)
   })
 
-  // A changed text would change the hash, and the first sync would re-chunk every document.
-  it('leaves every file in content/ unchanged', () => {
-    for (const file of listMarkdownFiles(CONTENT_DIR)) {
-      const markdown = readFileSync(file, 'utf-8')
-      expect(normalizeMarkdown(markdown, 'ignored'), file).toBe(markdown)
-    }
+  // A changed text would change the hash, and the next sync would re-chunk the document.
+  it('leaves a converted forum topic unchanged, whatever title it is given', () => {
+    const topic = '# Ekwipunek\n\n## Mechanika\n\n### Zakupy\n\n- Miecz\n\n> **Przykład:**\n'
+    expect(normalizeMarkdown(topic, 'Inny tytuł')).toBe(topic)
   })
 })

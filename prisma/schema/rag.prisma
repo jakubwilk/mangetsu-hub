@@ -1,13 +1,12 @@
 model Document {
   id          String   @id @default(uuid())
   app         String
-  slug        String?
+  slug        String
   title       String
   category    String
-  markdown    String?
-  contentHash String?
+  markdown    String
+  contentHash String
   sourceUrl   String?
-  filePath    String?  @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
   chunks      Chunk[]

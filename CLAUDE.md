@@ -289,8 +289,7 @@ widać całość na raz. Commit zrobiony automatycznie ten moment przeskakuje.
 - Treść RAG: źródłem prawdy jest tabela `documents` (markdown, `contentHash`, `slug`, `sourceUrl`),
   zmieniana wyłącznie przez `ingestDocument` (`src/server/rag/ingest.ts`: normalizacja → hash →
   chunki + embeddingi tylko przy zmianie treści). Kategorie w manifeście apki (`rag.categories`).
-  `content/<app>/<kategoria>/*.md` to stara kopia — zostaje do etapu 3b (`PLAN.md`), nie edytuj jej
-  i nie odpalaj `pnpm db:seed`; lokalną bazę zasilaj przez `pnpm rag:dump` / `pnpm rag:load`
+  Treści nie ma w repo — lokalną bazę zasilaj zrzutem: `pnpm rag:dump` (np. z prod) → `pnpm rag:load`
 - **Hub mini-apek** pod `mangetsu.thalverntable.app`: `/` = logowanie albo kafelki, każda
   mini-apka pod własną ścieżką (`/tutorials`, …). Rejestr: `src/apps/index.ts` (alias `apps`) złożony
   z manifestów `src/apps/<id>/manifest.ts` (id, ścieżka, kafelek, role, `enabled`) — z niego korzystają
