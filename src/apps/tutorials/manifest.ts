@@ -14,4 +14,12 @@ export const tutorialsManifest = {
     { id: 'EDITOR', label: 'Redaktor' },
   ],
   enabled: true,
+  rag: {
+    categories: [
+      { id: 'realia', label: 'Realia' },
+      { id: 'kompendium', label: 'Kompendium' },
+      { id: 'mechanika', label: 'Mechanika' },
+      { id: 'inne', label: 'Inne' },
+    ],
+  },
 } as const satisfies AppManifest
