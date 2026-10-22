@@ -11,7 +11,6 @@ const main = async () => {
   if (!outFile) throw new Error('Użycie: pnpm rag:dump <plik.json>')
 
   const documents = await db.document.findMany({
-    where: { slug: { not: null }, markdown: { not: null } },
     orderBy: [{ app: 'asc' }, { slug: 'asc' }],
     select: { app: true, slug: true, title: true, category: true, markdown: true, sourceUrl: true },
   })
