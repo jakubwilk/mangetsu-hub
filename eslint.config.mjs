@@ -9,6 +9,9 @@ import unusedImports from 'eslint-plugin-unused-imports'
 
 // Module boundaries (see CLAUDE.md, "Frontend — kanon"): modules and apps meet only in src/app.
 const HUB_MODULES = ['hub', 'auth', 'admin', 'notices']
+// Platform UI building blocks: apps may use them, hub modules may not.
+const PLATFORM_MODULES = ['chat']
+const UI_MODULES = [...HUB_MODULES, ...PLATFORM_MODULES]
 const APP_IDS = readdirSync('src/apps', { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name)
@@ -46,15 +49,18 @@ const boundaries = [
       restrictImports([`src/apps/${id}/{server,routes,page}/**`], [NO_HUB_MODULES, noOtherApps]),
     ]
   }),
-  ...HUB_MODULES.map((name) =>
+  ...UI_MODULES.map((name) =>
     restrictImports(
       [`src/modules/${name}/**`],
       [
         {
-          regex: aliasOf(HUB_MODULES.filter((other) => other !== name)),
+          regex: aliasOf(UI_MODULES.filter((other) => other !== name)),
           message: 'Moduł importuje wyłącznie z `common` albo z samego siebie.',
         },
         NO_APP_INTERNALS,
+        ...(PLATFORM_MODULES.includes(name)
+          ? [{ regex: '^server/', message: 'Moduł platformowy UI działa po stronie klienta.' }]
+          : []),
       ],
     ),
   ),
@@ -62,7 +68,7 @@ const boundaries = [
     ['src/modules/common/**'],
     [
       {
-        regex: aliasOf([...HUB_MODULES, 'apps']),
+        regex: aliasOf([...UI_MODULES, 'apps']),
         message: '`common` nie zależy od żadnego innego modułu.',
       },
     ],
@@ -71,7 +77,7 @@ const boundaries = [
     ['src/server/**'],
     [
       {
-        regex: aliasOf(HUB_MODULES),
+        regex: aliasOf(UI_MODULES),
         allowTypeImports: true,
         message: 'Platforma serwerowa nie importuje kodu modułów UI (typy są dozwolone).',
       },

@@ -25,6 +25,8 @@
       "admin/*": ["./src/modules/admin/*"],
       "auth": ["./src/modules/auth/index"],
       "auth/*": ["./src/modules/auth/*"],
+      "chat": ["./src/modules/chat/index"],
+      "chat/*": ["./src/modules/chat/*"],
       "common": ["./src/modules/common/index"],
       "common/*": ["./src/modules/common/*"],
       "hub": ["./src/modules/hub/index"],
