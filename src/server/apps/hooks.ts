@@ -1,4 +1,4 @@
-import type { AppId } from 'common/apps'
+import type { AppId } from 'apps'
 import { notifyRoleActivation } from 'server/webhooks'
 
 export interface RoleChange {

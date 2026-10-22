@@ -1,4 +1,4 @@
-import type { AppId } from 'common/apps'
+import type { AppId } from 'apps'
 import { NextResponse } from 'next/server'
 import { db } from 'server/db'
 
