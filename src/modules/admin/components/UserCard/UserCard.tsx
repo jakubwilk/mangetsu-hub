@@ -1,6 +1,6 @@
 'use client'
 
-import { type AppId, APPS, ROOT_LABEL } from 'common/apps'
+import { type AppId, getEnabledApps, ROOT_LABEL } from 'apps'
 import { Badge, Button, Card } from 'common/components/ui'
 import { Trash2 } from 'lucide-react'
 
@@ -29,7 +29,7 @@ const UserCard = ({ user, pendingApp, onRoleChange, onDelete }: UserCardProps) =
     {user.isRoot ? (
       <Badge className="w-fit">{ROOT_LABEL}</Badge>
     ) : (
-      APPS.map((app) => (
+      getEnabledApps().map((app) => (
         <div key={app.id} className="flex items-center justify-between gap-2">
           <span className="text-muted-foreground text-sm">{app.name}</span>
           <AppRoleSelect
