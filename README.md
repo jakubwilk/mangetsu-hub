@@ -45,8 +45,8 @@ poradników (hybrid search: full-text + trigram + embeddingi).
 
 ### Mini-apki
 
-Rejestr mini-apek to `src/modules/common/apps/registry.ts`: id, ścieżka, nazwa, opis kafelka,
-ikona i lista ról. Z rejestru korzystają:
+Rejestr mini-apek to `src/apps/index.ts`, złożony z manifestów `src/apps/<id>/manifest.ts`: id,
+ścieżka, nazwa, opis kafelka, ikona, lista ról i flaga `enabled`. Z rejestru korzystają:
 
 - proxy (dostęp do ścieżek);
 - strona startowa (kafelki);
@@ -96,14 +96,14 @@ Zapytanie:
   - FTS (`simple`, najpierw AND, potem OR);
   - trigram (`word_similarity`);
   - embeddingi (cosine, waga 2× w RRF, timeout 8 s z fallbackiem do samego FTS).
-- **Synonimy** specyficzne dla poradników (`server/tutorials/synonyms.ts`) rozszerzają tylko zapytanie FTS.
+- **Synonimy** specyficzne dla poradników (`apps/tutorials/server/synonyms.ts`) rozszerzają tylko zapytanie FTS.
 - **Rozszerzenie kontekstu:** każde trafienie (w kolejności rankingu) dociąga najszerszą grupę, która mieści się w budżecie 12 000 znaków — cały dokument, a gdy się nie mieści, swoją sekcję `##`, a potem podsekcję `###`.
 - **Guardrail** (`server/guardrails.ts`): klasyfikator na modelu OVH działa równolegle z wyszukiwaniem i zwraca jeden z werdyktów:
   - `INJECTION` → odpowiedź 400;
   - `JEZYK` → stała odpowiedź „tylko po polsku”, bez wywołania głównego modelu i bez zapisu do historii;
   - `OK` → zwykła ścieżka;
   - błąd lub timeout (5 s) → wiadomość jest przepuszczana (fail-open).
-- **Prompt** (`server/tutorials/prompts.ts`): odpowiedzi wyłącznie na podstawie fragmentów poradników. Pytania spoza forum dostają stałe zdanie `OFF_TOPIC_MESSAGE`. Promptowi przekazywane jest 6 ostatnich wiadomości z rozmowy.
+- **Prompt** (`apps/tutorials/server/prompts.ts`): odpowiedzi wyłącznie na podstawie fragmentów poradników. Pytania spoza forum dostają stałe zdanie `OFF_TOPIC_MESSAGE`. Promptowi przekazywane jest 6 ostatnich wiadomości z rozmowy.
 - **LLM z fallbackiem** (`server/ai`): najpierw primary (`LLM_MAIN_AI_*`), a gdy zawiedzie przed wysłaniem pierwszego tokenu, automatycznie fallback (`LLM_FALLBACK_AI_*`).
 - **Limit przed kosztami:** limit dzienny jest rezerwowany przed wywołaniami płatnych usług (guardrail, embeddingi) i zwalniany przy odrzuceniu lub błędzie.
 

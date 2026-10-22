@@ -27,14 +27,15 @@ zaplecza, logika chunkingu/embeddingów w kodzie.
 ```
 src/
 ├── app/                         # tylko routing (cienkie re-eksporty) + strony huba
-│   ├── tutorials/page.tsx       # export { TutorialsPage as default } from 'apps/tutorials/routes'
+│   ├── tutorials/page.tsx       # <TutorialsPage header={(slots) => <HubHeader … />} /> (HubHeader zostaje w src/app)
 │   ├── api/tutorials/chat/route.ts   # export { chatPost as POST } from 'apps/tutorials/routes'
 │   └── api/internal/rag/…       # API dla n8n (sekret, bez sesji)
 ├── apps/                        # NOWE: mini-apki
 │   ├── index.ts                 # rejestr (alias `apps`): APPS, getApp, isAppEnabled, typy AppId/AppRole
 │   └── tutorials/
 │       ├── manifest.ts          # metadane bezpieczne dla klienta/proxy: id, path, name, tile, roles, enabled
-│       ├── routes/              # strona + handlery API (składane z platformy)
+│       ├── routes/              # handlery API (składane z platformy)
+│       ├── page/                # TutorialsPage — osobno, żeby barrel handlerów nie wciągał komponentów
 │       ├── server/              # config czatu: prompt, synonimy, dodatkowe wyszukiwania (PD), dailyLimit
 │       └── components/          # tylko to, co specyficzne: AddSourceModal, DocsPanel…
 ├── modules/                     # powłoka huba + moduły platformowe UI
@@ -51,7 +52,7 @@ src/
 
 Reguły importów (egzekwowane przez `no-restricted-imports` w `eslint.config.mjs`, bez nowych zależności):
 
-- `apps/<id>/**` importuje z: siebie, `apps` (rejestr), `common`, `chat`, `server/*` (tylko w `server/` i `routes/`). Nigdy z innej apki ani z `hub/auth/admin/notices`.
+- `apps/<id>/**` importuje z: siebie, `apps` (rejestr), `common`, `chat`, `server/*` (tylko w `server/`, `routes/` i `page/`). Nigdy z innej apki ani z `hub/auth/admin/notices`.
 - `hub/auth/admin/notices` importują z: siebie, `common`, `apps` (rejestr). Nigdy z `apps/<id>/…`.
 - Spotkanie wszystkiego: `src/app`.
 
@@ -66,22 +67,22 @@ po każdym etapie proponowany podział i komunikaty.
 ## Etap 0 — Weryfikacje (read-only)
 
 - [x] Zapis tego planu do `PLAN.md` w root (zastępuje historyczne fazy 1–11, które zostają w gicie); w CLAUDE.md wzmianka „Historyczny harmonogram… fazy 1–11 ukończone” → „Aktualny plan refaktoru: `PLAN.md`”
-- [ ] Re-eksport z rename (`export { chatPost as POST } from '…'`) w route handlerze i `export { X as default }` w page — potwierdzić w docs Next 16 (llms.txt) lub próbnym buildzie
-- [ ] Prisma 7.10 — wielo-plikowa schema (`schema: 'prisma/schema'` w `prisma.config.ts`) — potwierdzić w docs
-- [ ] n8n: `get_user_preferences`, `search_workflows` — obejrzeć istniejące workflowy (aktywacja, usunięcie konta, źródła), ich wejścia i powiązania
+- [x] Re-eksport z rename (`export { chatPost as POST } from '…'`) w route handlerze — docs Next 16.3.8 pokazują `export { handler as POST }`, wariant `from` potwierdzony buildem w Etapie 1. Route segment config (`runtime`, `maxDuration`…) musi zostać w pliku trasy (dziś brak)
+- [x] Prisma 7.10 — wielo-plikowa schema: `schema` w `prisma.config.ts` przyjmuje folder przeszukiwany rekurencyjnie (typy `@prisma/config@7.10.0`; webowe docs opisują już Prisma 8); `output` generatora względem pliku ze schemą
+- [x] n8n: brak zapisanych preferencji; 4 workflowy — `User activation` (webhook → Switch USER/EDITOR/GUEST → Discord webhook), `Add source` (placeholder: nic nie zapisuje, gałąź URL zepsuta, szkic ≠ wersja opublikowana), `Error workflow` + `Error notification`. **Brak workflowu usunięcia konta**, choć aplikacja woła `N8N_USER_DELETION_WEBHOOK_PATH`. Credentiale: Discord (webhook), Header Auth, Mistral, SMTP
 
 ## Etap 1 — Klocki w kodzie (czysty refaktor, zero zmian zachowania)
 
-- [ ] `src/apps/index.ts` — rejestr przeniesiony z `common/apps/registry.ts` (te same helpery: `getAppByPath`, `canAccessApp`, `toAppRoles`, `isValidAppRole`…), wpisy z `apps/<id>/manifest.ts` (`as const satisfies AppManifest`, typy ról nadal wyprowadzane); nowe pole `enabled` + `getEnabledApps()`
-- [ ] Alias `apps` / `apps/*` w `tsconfig.json`; aktualizacja importów w `admin`, `hub`, `server/auth.ts`, `server/authorize.ts`, `scripts/contentPath.ts`
-- [ ] `enabled` respektowane w: `server/auth.ts` (`authorized`), `requireAppRole` (404), `getAccessibleApps`, kolumny w `UsersTable` / `UserCard`, PUT ról
-- [ ] Przeniesienie Poradników do `src/apps/tutorials/` (`modules/tutorials` + `server/tutorials`)
-- [ ] `src/app/tutorials` i `src/app/api/tutorials/*` → 1-linijkowe re-eksporty
-- [ ] Asset kafelka → `public/apps/tutorials/bg.png`, ścieżka w manifeście
-- [ ] Prisma schema → folder `prisma/schema/` (`platform.prisma`, `rag.prisma`, `apps/` na przyszłe tabele apek, konwencja nazw `<app>_*`) — `prisma migrate dev` bez różnic
-- [ ] Reguły ESLint granic modułów (`no-restricted-imports`)
-- [ ] Test rejestru: unikalne id/ścieżki; dla każdej apki istnieje `src/app/<path>/page.tsx`
-- [ ] Weryfikacja etapu: test / lint / tsc / build + smoke + propozycja commitów
+- [x] `src/apps/index.ts` — rejestr przeniesiony z `common/apps/registry.ts` (te same helpery: `getAppByPath`, `canAccessApp`, `toAppRoles`, `isValidAppRole`…), wpisy z `apps/<id>/manifest.ts` (`as const satisfies AppManifest`, typy ról nadal wyprowadzane); nowe pole `enabled` + `getEnabledApps()`
+- [x] Alias `apps` / `apps/*` w `tsconfig.json`; aktualizacja importów w `admin`, `hub`, `server/auth.ts`, `server/authorize.ts`, `scripts/contentPath.ts`
+- [x] `enabled` respektowane w: `server/auth.ts` (`authorized`), `requireAppRole` (404), `getAccessibleApps`, kolumny w `UsersTable` / `UserCard`, PUT ról
+- [x] Przeniesienie Poradników do `src/apps/tutorials/` (`modules/tutorials` + `server/tutorials`)
+- [x] `src/app/tutorials` i `src/app/api/tutorials/*` → 1-linijkowe re-eksporty
+- [x] Asset kafelka → `public/apps/tutorials/bg.png`, ścieżka w manifeście
+- [x] Prisma schema → folder `prisma/schema/` (`platform.prisma`, `rag.prisma`, konwencja `apps/<app>.prisma` + tabele `<app>_*` — folder powstanie z pierwszą tabelą apki) — `prisma migrate diff` z bazą dev: pusta migracja
+- [x] Reguły ESLint granic modułów (`no-restricted-imports`)
+- [x] Test rejestru: unikalne id/ścieżki; dla każdej apki istnieje `src/app/<path>/page.tsx`
+- [~] Weryfikacja etapu: test / lint / tsc / build zielone — smoke (w tym `enabled: false` → 404) czeka na użytkownika; propozycja commitów
 
 ## Etap 2 — Platforma czatu RAG (generyczna, Poradniki jako konfiguracja)
 
@@ -125,7 +126,7 @@ i embeddingi; **n8n** tylko prosi ROOT o akceptację, woła `PUT documents` i po
 - [ ] `server/events.ts` — `emitEvent(type, payload)` → `N8N_EVENTS_WEBHOOK_URL` (POST, `X-Webhook-Authorization`), wynik `ok` raportowany w adminie; zdarzenia `user.role_changed` (rola `null` → `GUEST` jak dziś), `user.deleted`, `rag.source_submitted` (`{ app, slug, title, category, markdown, sourceUrl?, mode: 'create' | 'update', chars, submittedBy: { name, discordId } }`)
 - [ ] `POST /api/tutorials/sources` (EDITOR + `verifyOrigin`) — body `{ type: 'FORUM', url, category, title? }` | `{ type: 'MARKDOWN', markdown, fileName?, category, title? }`; walidacja → konwersja forum / `normalizeMarkdown` → tytuł (pole z modalu > tytuł wątku / pierwszy `#` / nazwa pliku) → slug + `mode` (forum: dedup po `sourceUrl` z zachowaniem sluga; `.md`: istniejący `(app, slug)` = aktualizacja) → `emitEvent` → „Zgłoszono do akceptacji”; `422` gdy wątek nierozpoznany, `400` dla walidacji + testy integracyjne (rola, origin, kategoria, limit, błędny link, payload zdarzenia)
 - [ ] Przygotowanie n8n (użytkownik): credential `httpHeaderAuth` z `INTERNAL_API_SECRET`, prywatny kanał Discord tylko dla ROOT
-- [ ] Workflow **Hub events** — webhook → Switch po `type` → istniejąca logika aktywacji / usunięcia (Discord); stare ścieżki działają do przełączenia
+- [ ] Workflow **Hub events** — webhook → Switch po `type` → istniejąca logika aktywacji (Discord); `user.deleted` do zbudowania od zera (na instancji nie ma workflowu usunięcia konta); stare ścieżki działają do przełączenia
 - [ ] Przełączenie aplikacji na `emitEvent`; usunięcie `server/webhooks.ts`, `server/apps/hooks.ts` (po potwierdzeniu działania)
 - [ ] Workflow **RAG forum sync** — cron → `GET documents` → `PUT` z `forumUrl` dla dokumentów z forum → zebrane `changed` → wiadomość na Discord
 - [ ] Workflow **RAG add source** (sub-workflow wołany z Hub events, który odpowiada **przed** oczekiwaniem — inaczej request z aplikacji wisi) — Discord _Send and wait_ (approval, Zatwierdź / Odrzuć, limit ~7 dni): tytuł, kategoria, nowy / aktualizacja, link do źródła, liczba znaków, autor, początek treści (limit wiadomości Discorda 2000 znaków) → zatwierdzono: `PUT documents` z gotowym markdownem → „Dodano X (n fragmentów)” z `<@discordId>` autora; odrzucono / wygasło → komunikat do autora; błąd HTTP → istniejący Error workflow. Do sprawdzenia w teście: czy _Send and wait_ działa z obecnym credentialem Discord typu webhook — jeśli nie, potrzebny credential Discord Bot
