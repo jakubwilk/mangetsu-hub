@@ -125,11 +125,10 @@ wyświetlania historii, a przy starcie jest synchronizowany z listą sesji z ser
 ## Struktura projektu
 
 ```
-├── content/tutorials/              # Stara kopia treści Poradników (do usunięcia w etapie 3b, źródło: baza)
 ├── docs/                           # notices.json (ogłoszenia globalne)
 ├── prisma/                         # schema/ (platform.prisma, rag.prisma) i migrations/
 ├── public/apps/<id>/               # Grafiki mini-apek (tła kafelków)
-├── scripts/                        # rag:eval / rag:dump / rag:load / rag:backfill (+ stare seed, importForum)
+├── scripts/                        # rag:eval, rag:dump, rag:load (treść bazy wiedzy żyje w bazie)
 ├── docker-compose.yml              # Tylko lokalny Postgres z pgvector (nie do deploymentu)
 └── src/
     ├── app/
@@ -160,7 +159,7 @@ cp .env.example .env.local         # 1. Zmienne środowiskowe
 docker compose up -d postgres      # 2. PostgreSQL z pgvector
 pnpm install                       # 3. Zależności
 pnpm db:migrate                    # 4. Migracje Prisma
-pnpm rag:load <zrzut.json>         # 5. Baza wiedzy ze zrzutu (pnpm rag:dump), chunking + embeddingi
+pnpm rag:load <zrzut.json>         # 5. Baza wiedzy ze zrzutu, chunking + embeddingi (patrz niżej)
 pnpm dev                           # 6. Dev server
 ```
 
@@ -170,8 +169,8 @@ Pozostałe skrypty:
 - lint: `pnpm lint`, `pnpm lint:fix`;
 - formatowanie (Prettier): `pnpm format`, `pnpm format:check`;
 - baza wiedzy: `pnpm rag:dump <plik.json>` (markdown bez wektorów), `pnpm rag:load <plik.json>`
-  (ingest, niezmienione dokumenty pomijane po hashu), `pnpm rag:eval` (strażnik jakości wyszukiwania),
-  `pnpm rag:backfill [--dry-run]` (jednorazowe przeniesienie `content/` do bazy bez ponownego chunkowania).
+  (ingest, niezmienione dokumenty pomijane po hashu), `pnpm rag:eval` (strażnik jakości wyszukiwania).
+  Treści nie ma w repo — zrzut do lokalnej bazy: `DATABASE_URL=<prod> pnpm rag:dump zrzut.json`.
 
 ## Zmienne środowiskowe
 
@@ -199,7 +198,7 @@ Ważne dla izolacji sesji: na produkcji `AUTH_URL` musi być pełnym adresem
 3. `postinstall` uruchamia `prisma generate`, więc klient Prismy powstaje przy każdej instalacji zależności.
 4. Postgres z `pgvector` działa jako oddzielna usługa w Coolify; migracje: `pnpm db:migrate:deploy`.
 5. Skrypty na bazie produkcyjnej odpala się lokalnie, podając jej adres w wierszu poleceń (wygrywa z
-   `.env.local`): `DATABASE_URL=<prod> pnpm db:migrate:deploy`, `DATABASE_URL=<prod> pnpm rag:backfill --dry-run`.
+   `.env.local`): `DATABASE_URL=<prod> pnpm db:migrate:deploy`, `DATABASE_URL=<prod> pnpm rag:dump zrzut.json`.
 6. Wersja aplikacji to pole `version` w `package.json`. Podbijaj ją przy wydaniu, bo jest widoczna dla użytkowników w popoverze ogłoszeń.
 
 ## Skalowalność

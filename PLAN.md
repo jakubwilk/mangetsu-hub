@@ -117,15 +117,15 @@ lokalnie z `DATABASE_URL=<prod>` w wierszu poleceń (wygrywa z `.env.local`).
 - [x] `DocsPanel` z `listDocuments` (grupy wg kategorii z manifestu, link do `sourceUrl`); `docs/tutorials/documents-info.md` usunięty
 - [x] `pnpm rag:dump <plik>` / `pnpm rag:load <plik>` (JSON z markdownem, bez wektorów)
 - [x] `ragEval`: oczekiwane tytuły z polskimi znakami. Wynik bazowy z Etapu 2 był nieaktualny już przed 3a (baza lokalna przeseedowana — żadne z jego id chunków nie istniało); nowy zapisany po backfillu, stary w kopii
-- [~] Weryfikacja 3a: test / lint / tsc / build zielone; lokalnie brak driftu, backfill 20/20, id + treść + wektory chunków identyczne jak przed etapem, drugi przebieg bez zmian; API na `pnpm start` (401 bez sekretu, `GET` 20 dokumentów, `PUT` niezmienionego i z `forumUrl` → `changed: false`, zła kategoria → 400); `rag:dump` → `rag:load` bez zmian — smoke DocsPanel i wdrożenie na prod czekają na użytkownika; propozycja commitów
-- [ ] Wdrożenie 3a na prod: deploy → `DATABASE_URL=<prod> pnpm db:migrate:deploy` → `DATABASE_URL=<prod> pnpm rag:backfill --dry-run` → bez `--dry-run` → `INTERNAL_API_SECRET` w Coolify
+- [x] Weryfikacja 3a: test / lint / tsc / build zielone; lokalnie brak driftu, backfill 20/20, id + treść + wektory chunków identyczne jak przed etapem, drugi przebieg bez zmian; API na `pnpm start` (401 bez sekretu, `GET` 20 dokumentów, `PUT` niezmienionego i z `forumUrl` → `changed: false`, zła kategoria → 400); `rag:dump` → `rag:load` bez zmian; propozycja commitów
+- [x] Wdrożenie 3a na prod (potwierdzone przez użytkownika): deploy → `DATABASE_URL=<prod> pnpm db:migrate:deploy` → `DATABASE_URL=<prod> pnpm rag:backfill --dry-run` → bez `--dry-run` → `INTERNAL_API_SECRET` w Coolify
 
 ### 3b (po backfillu na prod)
 
-- [ ] Backup bazy prod w Coolify przed migracją (b)
-- [ ] Migracja (b): NOT NULL na `slug`, `markdown`, `contentHash` + drop `filePath`; typy bez `null` w `listDocuments` / `rag:dump`
-- [ ] Usunięcie `content/`, `scripts/seed.ts`, `importForum.ts`, `forumTopics.ts`, `contentPath.ts`, `backfillDocuments.ts` (+ skrypty `db:seed`, `content:import`, `rag:backfill`, test idempotencji na `content/`) — **po osobnym potwierdzeniu**
-- [ ] Weryfikacja 3b: brak driftu Prisma, `ragEval` identyczny + propozycja commitów
+- [ ] Backup bazy prod w Coolify przed migracją (b) — użytkownik, przed wdrożeniem 3b
+- [x] Migracja (b) `20261023120000_rag_documents_required`: NOT NULL na `slug`, `markdown`, `contentHash` + drop `filePath` w jednym `ALTER` (przy dokumencie bez backfillu migracja pada, zanim cokolwiek usunie); `rag:dump` bez filtrów na `null`
+- [x] Usunięcie `content/`, `scripts/seed.ts`, `importForum.ts`, `forumTopics.ts`, `contentPath.ts`, `backfillDocuments.ts` (+ skrypty `db:seed`, `content:import`, `rag:backfill`, test idempotencji na `content/` zastąpiony testem na przekonwertowanym wątku) — potwierdzone przez użytkownika
+- [~] Weryfikacja 3b: lokalnie brak driftu, test / lint / tsc / build zielone, `ragEval` 14/14 — wdrożenie (backup → deploy → `DATABASE_URL=<prod> pnpm db:migrate:deploy`) czeka na użytkownika; propozycja commitów
 
 ## Etap 4 — n8n jako zaplecze
 
