@@ -1,6 +1,6 @@
 'use client'
 
-import { getRagCategories, MAX_SOURCE_CHARS, MAX_TITLE_LENGTH } from 'apps'
+import { MAX_SOURCE_CHARS, MAX_TITLE_LENGTH } from 'apps'
 import { cn } from 'cn'
 import {
   Button,
@@ -12,11 +12,6 @@ import {
   DialogTitle,
   DropdownMenuItem,
   Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Tabs,
   TabsContent,
   TabsList,
@@ -25,16 +20,16 @@ import {
 import { notifyError, notifyInfo } from 'common/utils'
 import { FileText, Link2, Plus, Upload } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
 import { type ChangeEvent, useRef, useState } from 'react'
 
 import { type SourceSubmissionBody, type SourceType, submitSource } from '../../api'
-import { tutorialsManifest } from '../../manifest'
+import { CategorySelect } from '../CategorySelect'
 
 const MarkdownEditorField = dynamic(() => import('../MarkdownEditorField/MarkdownEditorField'), {
   ssr: false,
 })
 
-const CATEGORIES = getRagCategories(tutorialsManifest.id)
 const FORUM_URL = process.env.NEXT_PUBLIC_FORUM_URL?.replace(/\/+$/, '') ?? ''
 // A UTF-8 character takes at most 4 bytes — anything bigger cannot fit the limit.
 const MAX_FILE_BYTES = MAX_SOURCE_CHARS * 4
@@ -50,6 +45,7 @@ interface AddSourceModalProps {
 }
 
 const AddSourceModal = ({ asMenuItem }: AddSourceModalProps) => {
+  const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [opened, setOpened] = useState(false)
@@ -116,6 +112,8 @@ const AddSourceModal = ({ asMenuItem }: AddSourceModalProps) => {
     try {
       notifyInfo(await submitSource(body))
       handleClose()
+      // ROOT's source is already in the base; an editor's waits, and the refresh costs nothing.
+      router.refresh()
     } catch (err) {
       notifyError(
         err instanceof Error ? err.message : 'Nie udało się zgłosić źródła. Spróbuj ponownie.',
@@ -228,18 +226,12 @@ const AddSourceModal = ({ asMenuItem }: AddSourceModalProps) => {
               <label htmlFor="source-category" className="text-sm font-medium">
                 Kategoria
               </label>
-              <Select value={category} onValueChange={setCategory} disabled={loading}>
-                <SelectTrigger id="source-category" className="w-full">
-                  <SelectValue placeholder="Wybierz kategorię" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <CategorySelect
+                id="source-category"
+                value={category}
+                onChange={setCategory}
+                disabled={loading}
+              />
             </div>
 
             <div className="flex flex-col gap-2">
