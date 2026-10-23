@@ -25,7 +25,11 @@ poradników (hybrid search: full-text + trigram + embeddingi).
   - dzienny limit zapytań (`DAILY_REQUEST_LIMIT`, domyślnie 20);
   - panel „Dodaj źródło” (rola `EDITOR`): link do wątku forum albo plik `.md`, kategoria i opcjonalny
     tytuł; treść jest konwertowana od razu, a do bazy trafia po akceptacji ROOT na Discordzie.
-    Błędy (zły link, nierozpoznany wątek, limit znaków) EDITOR widzi od razu.
+    Błędy (zły link, nierozpoznany wątek, limit znaków) EDITOR widzi od razu;
+  - zarządzanie bazą wiedzy (`/tutorials/docs`, `EDITOR`): tabela dokumentów, edycja tytułu,
+    kategorii i treści (dokument z forum: treść tylko z wątku, „Pobierz aktualną treść z forum”)
+    oraz usuwanie. Zmiany i usunięcia EDITORA czekają na akceptację ROOT; ROOT zapisuje, dodaje
+    i usuwa od razu.
 - **Ogłoszenia** (`docs/notices.json`) wspólne dla całego huba, pod ikoną dzwonka w nagłówku. Nagłówek popovera pokazuje też wersję aplikacji z `package.json`.
 
 ## Stack technologiczny
@@ -104,6 +108,10 @@ markdown, sourceUrl? }` albo `{ app, slug, category, forumUrl, title? }` → `{ 
   konwersja wątku albo normalizacja pliku, tytuł (pole > tytuł wątku / pierwszy `#` / nazwa pliku),
   slug i tryb `create` / `update` (wątek: po `sourceUrl`, plik: po slugu z nazwy pliku; plik nie
   nadpisze dokumentu z forum — 409) → zdarzenie `rag.source_submitted` z gotowym markdownem.
+- **Edycja i usuwanie dokumentów** (`server/rag/edit.ts`, `GET`/`PATCH`/`DELETE
+/api/tutorials/documents/[slug]`): edycja przygotowana jak zgłoszenie (`mode: 'update'`,
+  `changes`: tytuł / kategoria / treść; bez zmian → 400; treść dokumentu z forum tylko z wątku);
+  EDITOR → zdarzenie do akceptacji, ROOT → `ingestDocument` / `deleteDocument` od razu.
 - **Chunking:** ~650 tokenów z overlapem ~100; każdy chunk zna ścieżki sekcji, przez które przechodzi.
   Akapit dłuższy niż cel dzielony jest po liniach, potem po zdaniach; kawałki tabeli powtarzają nagłówek.
 - **Hybrid search:**
@@ -127,11 +135,12 @@ markdown, sourceUrl? }` albo `{ app, slug, category, forumUrl, title? }` → `{ 
 Aplikacja wysyła zdarzenia jednym webhookiem (`server/events.ts`, `POST N8N_EVENTS_WEBHOOK_URL`,
 body `{ type, data, occurredAt }`); n8n woła z powrotem wewnętrzne API z `INTERNAL_API_SECRET`.
 
-| Zdarzenie              | `data`                                                                       | Workflow n8n                                                                                                                   |
-| ---------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `user.role_changed`    | `id, discordId, name, email, app, role` (brak dostępu = `GUEST`)             | **Hub events** → wiadomość na Discordzie                                                                                       |
-| `user.deleted`         | `id, discordId, name, email, notify`                                         | **Hub events** → przy `notify` wiadomość na Discordzie                                                                         |
-| `rag.source_submitted` | `app, slug, title, category, markdown, sourceUrl?, mode, chars, submittedBy` | **Hub events** odpowiada od razu → **RAG add source**: akceptacja ROOT (Discord, bot) → `PUT documents` → powiadomienie autora |
+| Zdarzenie                       | `data`                                                                                 | Workflow n8n                                                                                                                           |
+| ------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `user.role_changed`             | `id, discordId, name, email, app, role` (brak dostępu = `GUEST`)                       | **Hub events** → wiadomość na Discordzie                                                                                               |
+| `user.deleted`                  | `id, discordId, name, email, notify`                                                   | **Hub events** → przy `notify` wiadomość na Discordzie                                                                                 |
+| `rag.source_submitted`          | `app, slug, title, category, markdown, sourceUrl?, mode, chars, changes?, submittedBy` | **Hub events** odpowiada od razu → **RAG add source**: akceptacja ROOT (Discord, bot) → `PUT documents` → powiadomienie autora         |
+| `rag.document_delete_requested` | `app, slug, title, category, sourceUrl, chunks, submittedBy`                           | **Hub events** odpowiada od razu → **RAG remove document**: akceptacja ROOT (Discord, bot) → `DELETE documents` → powiadomienie autora |
 
 **RAG forum sync** (cron, co noc): `GET documents` → `PUT` z `forumUrl` dla dokumentów z forum →
 podsumowanie na Discordzie, gdy coś się zmieniło. Błąd zdarzenia nie cofa zmiany w adminie — UI
