@@ -16,14 +16,16 @@ poradników (hybrid search: full-text + trigram + embeddingi).
 - **Panel `/admin` (tylko ROOT):**
   - nadawanie i odbieranie ról w każdej mini-apce;
   - usuwanie kont;
-  - powiadomienia przez webhooki n8n.
+  - powiadomienia przez zdarzenia n8n.
 - **Poradniki (`/tutorials`):**
   - czat RAG ze streamingiem SSE;
   - guardrail przed modelem: blokuje próby prompt injection i odpowiada stałym komunikatem na wiadomości w języku innym niż polski;
   - asystent trzyma się tematu forum: pytania spoza zakresu dostają stały komunikat, a na pytania o niego samego (np. „kim jesteś?”) odpowiada krótkim przedstawieniem się;
   - historia rozmów (prywatna dla użytkownika);
   - dzienny limit zapytań (`DAILY_REQUEST_LIMIT`, domyślnie 20);
-  - panel „Dodaj źródło” (rola `EDITOR`, obecnie wyłączony flagą `ENABLED` w `AddSourceModal`).
+  - panel „Dodaj źródło” (rola `EDITOR`): link do wątku forum albo plik `.md`, kategoria i opcjonalny
+    tytuł; treść jest konwertowana od razu, a do bazy trafia po akceptacji ROOT na Discordzie.
+    Błędy (zły link, nierozpoznany wątek, limit znaków) EDITOR widzi od razu.
 - **Ogłoszenia** (`docs/notices.json`) wspólne dla całego huba, pod ikoną dzwonka w nagłówku. Nagłówek popovera pokazuje też wersję aplikacji z `package.json`.
 
 ## Stack technologiczny
@@ -37,7 +39,7 @@ poradników (hybrid search: full-text + trigram + embeddingi).
 | Auth          | NextAuth (Auth.js) v5 — Discord OAuth, sesje w bazie, ochrona tras przez `src/proxy.ts`                             |
 | LLM           | primary: dowolny endpoint kompatybilny z OpenAI (`LLM_MAIN_AI_*`), fallback: OVH AI Endpoints (`LLM_FALLBACK_AI_*`) |
 | Embeddingi    | OVH AI Endpoints                                                                                                    |
-| Automatyzacja | n8n (webhooki: zmiana roli, usunięcie konta, dodawanie źródeł)                                                      |
+| Automatyzacja | n8n (zdarzenia huba, akceptacja źródeł, nocny sync forum)                                                           |
 | Hosting       | OVH VPS → Coolify + Nixpacks                                                                                        |
 | Testy         | Vitest + Testing Library                                                                                            |
 
@@ -57,7 +59,8 @@ Dodanie mini-apki:
 
 1. Folder `src/apps/<id>` z `manifest.ts` i wpis manifestu w rejestrze `APPS` (`src/apps/index.ts`).
 2. Cienkie pliki tras w `src/app/<id>` i `src/app/api/<id>`, re-eksportujące `routes/` i `page/` apki.
-3. Opcjonalnie hook zmiany roli w `src/server/apps/hooks.ts` (np. webhook n8n).
+3. Zmiana roli w adminie wysyła zdarzenie `user.role_changed` z `app` — reakcję (np. wiadomość na
+   Discordzie) dopisuje się w workflowie n8n „Hub events”, nie w kodzie.
 4. Dla czatu RAG: `RagChatConfig` (prompt, synonimy, dodatkowe wyszukiwania, limit) →
    `createRagChatRoutes` (`server/chat`) i komponenty `chat` (`ChatShell`, `ChatView`, `ChatSidebar`)
    na stronie. Kategorie bazy wiedzy w manifeście (`rag.categories`), treść przez wewnętrzne API
@@ -97,6 +100,10 @@ Zapytanie:
   `Authorization: Bearer <INTERNAL_API_SECRET>`): `GET ?app=` lista, `PUT` `{ app, slug, title, category,
 markdown, sourceUrl? }` albo `{ app, slug, category, forumUrl, title? }` → `{ changed, chunks }`,
   `DELETE ?app=&slug=`.
+- **Zgłaszanie źródeł** (`server/rag/submission.ts`, `POST /api/tutorials/sources`): walidacja,
+  konwersja wątku albo normalizacja pliku, tytuł (pole > tytuł wątku / pierwszy `#` / nazwa pliku),
+  slug i tryb `create` / `update` (wątek: po `sourceUrl`, plik: po slugu z nazwy pliku; plik nie
+  nadpisze dokumentu z forum — 409) → zdarzenie `rag.source_submitted` z gotowym markdownem.
 - **Chunking:** ~650 tokenów z overlapem ~100; każdy chunk zna ścieżki sekcji, przez które przechodzi.
   Akapit dłuższy niż cel dzielony jest po liniach, potem po zdaniach; kawałki tabeli powtarzają nagłówek.
 - **Hybrid search:**
@@ -114,6 +121,21 @@ markdown, sourceUrl? }` albo `{ app, slug, category, forumUrl, title? }` → `{ 
 - **LLM z fallbackiem** (`server/ai`): najpierw primary (`LLM_MAIN_AI_*`), a gdy zawiedzie przed wysłaniem pierwszego tokenu, automatycznie fallback (`LLM_FALLBACK_AI_*`).
 - **Limit przed kosztami:** limit dzienny jest rezerwowany przed wywołaniami płatnych usług (guardrail, embeddingi) i zwalniany przy odrzuceniu lub błędzie.
 - **Strażnik jakości** (`pnpm rag:eval`): zestaw pytań z oczekiwanymi dokumentami; `--save` zapisuje wynik bazowy z lokalnej bazy, zwykłe uruchomienie pokazuje różnice w chunkach trafiających do kontekstu.
+
+### Zaplecze n8n
+
+Aplikacja wysyła zdarzenia jednym webhookiem (`server/events.ts`, `POST N8N_EVENTS_WEBHOOK_URL`,
+body `{ type, data, occurredAt }`); n8n woła z powrotem wewnętrzne API z `INTERNAL_API_SECRET`.
+
+| Zdarzenie              | `data`                                                                       | Workflow n8n                                                                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `user.role_changed`    | `id, discordId, name, email, app, role` (brak dostępu = `GUEST`)             | **Hub events** → wiadomość na Discordzie                                                                                       |
+| `user.deleted`         | `id, discordId, name, email, notify`                                         | **Hub events** → przy `notify` wiadomość na Discordzie                                                                         |
+| `rag.source_submitted` | `app, slug, title, category, markdown, sourceUrl?, mode, chars, submittedBy` | **Hub events** odpowiada od razu → **RAG add source**: akceptacja ROOT (Discord, bot) → `PUT documents` → powiadomienie autora |
+
+**RAG forum sync** (cron, co noc): `GET documents` → `PUT` z `forumUrl` dla dokumentów z forum →
+podsumowanie na Discordzie, gdy coś się zmieniło. Błąd zdarzenia nie cofa zmiany w adminie — UI
+pokazuje ostrzeżenie (`webhookOk: false`).
 
 ### Historia czatu
 
@@ -146,9 +168,9 @@ wyświetlania historii, a przy starcie jest synchronizowany z listą sesji z ser
     ├── generated/prisma/           # Prisma Client (generowany przez postinstall)
     ├── modules/                    # common, hub, auth, admin, notices, chat (UI czatu RAG)
     ├── server/
-    │   ├── ai/  db/  rag/  chat/  apps/
+    │   ├── ai/  db/  rag/  chat/
     │   ├── auth.ts  authorize.ts  internal.ts  rateLimit.ts  conversations.ts  users.ts
-    │   └── webhooks.ts  guardrails.ts  notices.ts
+    │   └── events.ts  guardrails.ts  notices.ts
     └── proxy.ts
 ```
 
@@ -183,9 +205,8 @@ Placeholdery są w `.env.example` (dev: `.env.local`, prod: panel Coolify).
 | LLM primary          | `LLM_MAIN_AI_ENDPOINT`, `LLM_MAIN_AI_API_KEY`, `LLM_MAIN_AI_MODEL` (bez `LLM_MAIN_AI_ENDPOINT` czat idzie od razu do fallbacku) |
 | LLM fallback, guard. | `LLM_FALLBACK_AI_ENDPOINT`, `LLM_FALLBACK_AI_API_KEY`, `LLM_FALLBACK_AI_MODEL`                                                  |
 | Embeddingi           | `LLM_AI_EMBEDDING_ENDPOINT`, `LLM_AI_EMBEDDING_API_KEY`, `LLM_AI_EMBEDDING_MODEL`                                               |
-| Webhooki n8n         | `N8N_WEBHOOK_BASE_URL`, `N8N_WEBHOOK_SECRET`, `N8N_ROLE_ACTIVATION_WEBHOOK_PATH`, `N8N_USER_DELETION_WEBHOOK_PATH`              |
+| Zdarzenia n8n        | `N8N_EVENTS_WEBHOOK_URL`, `N8N_WEBHOOK_SECRET` (w dev pusty URL — n8n jest produkcyjny)                                         |
 | API wewnętrzne       | `INTERNAL_API_SECRET` (bez niej `/api/internal/*` zwraca 503)                                                                   |
-| Źródła               | `SOURCES_WEBHOOK_URL`                                                                                                           |
 | Pozostałe            | `DAILY_REQUEST_LIMIT`, `NEXT_PUBLIC_FORUM_URL`                                                                                  |
 
 Ważne dla izolacji sesji: na produkcji `AUTH_URL` musi być pełnym adresem
