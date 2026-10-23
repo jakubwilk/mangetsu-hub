@@ -1,8 +1,8 @@
 import { isAppEnabled, isAppId, isValidAppRole } from 'apps'
 import { NextRequest, NextResponse } from 'next/server'
-import { APP_HOOKS } from 'server/apps/hooks'
 import { readJsonBody, requireRoot, verifyOrigin } from 'server/authorize'
 import { db } from 'server/db'
+import { emitEvent } from 'server/events'
 import { findUserWithDiscordId } from 'server/users'
 
 // Body: { role: string | null } — null revokes access to the app.
@@ -47,16 +47,19 @@ export const PUT = async (
   }
 
   let webhookOk = true
-  const onRoleChange = APP_HOOKS[app]?.onRoleChange
-  if (onRoleChange && (current?.role ?? null) !== role) {
+  if ((current?.role ?? null) !== role) {
     try {
-      await onRoleChange({
-        userId: id,
-        discordId: target.discordId,
-        name: target.name,
-        email: target.email,
-        app,
-        role,
+      await emitEvent({
+        type: 'user.role_changed',
+        // n8n switches on USER/EDITOR/GUEST — "no access" maps to GUEST.
+        data: {
+          id,
+          discordId: target.discordId,
+          name: target.name,
+          email: target.email,
+          app,
+          role: role ?? 'GUEST',
+        },
       })
     } catch {
       webhookOk = false

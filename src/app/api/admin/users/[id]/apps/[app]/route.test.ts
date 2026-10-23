@@ -3,19 +3,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { PUT } from './route'
 
-const { authMock, findUserMock, appRoleMock, onRoleChangeMock } = vi.hoisted(() => ({
+const { authMock, findUserMock, appRoleMock, emitEventMock } = vi.hoisted(() => ({
   authMock: vi.fn(),
   findUserMock: vi.fn(),
   appRoleMock: { findUnique: vi.fn(), upsert: vi.fn(), deleteMany: vi.fn() },
-  onRoleChangeMock: vi.fn(),
+  emitEventMock: vi.fn(),
 }))
 
 vi.mock('server/auth', () => ({ auth: authMock }))
 vi.mock('server/users', () => ({ findUserWithDiscordId: findUserMock }))
 vi.mock('server/db', () => ({ db: { appRole: appRoleMock } }))
-vi.mock('server/apps/hooks', () => ({
-  APP_HOOKS: { tutorials: { onRoleChange: onRoleChangeMock } },
-}))
+vi.mock('server/events', () => ({ emitEvent: emitEventMock }))
 
 const HOST = 'mangetsu.thalverntable.app'
 
@@ -38,7 +36,7 @@ beforeEach(() => {
   authMock.mockResolvedValue({ user: { id: 'root', isRoot: true, apps: {} } })
   findUserMock.mockResolvedValue(target)
   appRoleMock.findUnique.mockResolvedValue(null)
-  onRoleChangeMock.mockResolvedValue(undefined)
+  emitEventMock.mockResolvedValue(undefined)
 })
 
 describe('PUT /api/admin/users/[id]/apps/[app]', () => {
@@ -65,7 +63,7 @@ describe('PUT /api/admin/users/[id]/apps/[app]', () => {
     expect((await put('tutorials', { role: 'USER' })).status).toBe(403)
   })
 
-  it('grants a role and fires the app hook with the change', async () => {
+  it('grants a role and emits the change', async () => {
     const res = await put('tutorials', { role: 'EDITOR' })
 
     expect(res.status).toBe(200)
@@ -74,12 +72,20 @@ describe('PUT /api/admin/users/[id]/apps/[app]', () => {
       create: { userId: 'u2', app: 'tutorials', role: 'EDITOR' },
       update: { role: 'EDITOR' },
     })
-    expect(onRoleChangeMock).toHaveBeenCalledWith(
-      expect.objectContaining({ userId: 'u2', app: 'tutorials', role: 'EDITOR' }),
-    )
+    expect(emitEventMock).toHaveBeenCalledWith({
+      type: 'user.role_changed',
+      data: {
+        id: 'u2',
+        discordId: 'd2',
+        name: 'Gracz',
+        email: 'g@x.pl',
+        app: 'tutorials',
+        role: 'EDITOR',
+      },
+    })
   })
 
-  it('revokes access with role null', async () => {
+  it('revokes access with role null and reports it as GUEST', async () => {
     appRoleMock.findUnique.mockResolvedValue({ role: 'USER' })
 
     const res = await put('tutorials', { role: null })
@@ -88,19 +94,19 @@ describe('PUT /api/admin/users/[id]/apps/[app]', () => {
     expect(appRoleMock.deleteMany).toHaveBeenCalledWith({
       where: { userId: 'u2', app: 'tutorials' },
     })
-    expect(onRoleChangeMock).toHaveBeenCalledWith(expect.objectContaining({ role: null }))
+    expect(emitEventMock.mock.calls[0]![0].data.role).toBe('GUEST')
   })
 
-  it('does not fire the hook when the role is unchanged', async () => {
+  it('emits nothing when the role is unchanged', async () => {
     appRoleMock.findUnique.mockResolvedValue({ role: 'USER' })
 
     await put('tutorials', { role: 'USER' })
 
-    expect(onRoleChangeMock).not.toHaveBeenCalled()
+    expect(emitEventMock).not.toHaveBeenCalled()
   })
 
-  it('reports a failed hook without failing the role change', async () => {
-    onRoleChangeMock.mockRejectedValue(new Error('n8n down'))
+  it('reports a failed event without failing the role change', async () => {
+    emitEventMock.mockRejectedValue(new Error('n8n down'))
 
     const res = await put('tutorials', { role: 'USER' })
 

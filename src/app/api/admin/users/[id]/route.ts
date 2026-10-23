@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readJsonBody, requireRoot, verifyOrigin } from 'server/authorize'
 import { db } from 'server/db'
+import { emitEvent } from 'server/events'
 import { findUserWithDiscordId } from 'server/users'
-import { notifyUserDeletion } from 'server/webhooks'
 
 export const DELETE = async (request: NextRequest, ctx: RouteContext<'/api/admin/users/[id]'>) => {
   const originError = verifyOrigin(request)
@@ -29,12 +29,15 @@ export const DELETE = async (request: NextRequest, ctx: RouteContext<'/api/admin
 
   let webhookOk = true
   try {
-    await notifyUserDeletion({
-      id,
-      discordId: target.discordId,
-      notify: body.notify === true,
-      name: target.name,
-      email: target.email,
+    await emitEvent({
+      type: 'user.deleted',
+      data: {
+        id,
+        discordId: target.discordId,
+        name: target.name,
+        email: target.email,
+        notify: body.notify === true,
+      },
     })
   } catch {
     webhookOk = false
