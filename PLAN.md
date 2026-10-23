@@ -189,8 +189,8 @@ tytuł, kategoria i „Pobierz aktualną treść z forum”. **Osobna strona `/t
 
 ### 5c — wdrożenie
 
-- [ ] Publikacja zmian n8n **przed** deployem kodu (stary Hub events odpowie 400 → EDITOR dostanie 502)
-- [ ] Deploy → smoke: EDITOR edycja → akceptacja, usunięcie → odrzucenie; ROOT edycja od razu; odświeżenie z forum
+- [x] Publikacja zmian n8n **przed** deployem kodu (stary Hub events odpowie 400 → EDITOR dostanie 502)
+- [~] Deploy → smoke: EDITOR edycja → akceptacja, usunięcie → odrzucenie; ROOT edycja od razu; odświeżenie z forum
 
 ---
 
