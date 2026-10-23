@@ -151,9 +151,10 @@ Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjow
 
 ## n8n — praca z automatyzacją
 
-n8n u nas to zewnętrzna automatyzacja wywoływana przez webhooki (aktywacja/zmiana roli,
-usuwanie konta, zgłaszanie nowych źródeł — patrz `src/server/webhooks.ts`,
-`src/apps/tutorials/server/sources.ts`), nie główny przedmiot pracy. W drugą stronę n8n woła
+n8n u nas to zewnętrzna automatyzacja, do której aplikacja wysyła zdarzenia jednym webhookiem
+(`emitEvent` w `src/server/events.ts`: `user.role_changed`, `user.deleted`, `rag.source_submitted`;
+workflowy **Hub events**, **RAG add source**, **RAG forum sync**), nie główny przedmiot pracy.
+Nowa reakcja na zdarzenie = gałąź w workflowie, nie kod. W drugą stronę n8n woła
 wewnętrzne API aplikacji `/api/internal/*` (sekret `INTERNAL_API_SECRET`, `src/server/internal.ts`)
 — np. `PUT /api/internal/rag/documents` przelicza dokument bazy wiedzy. Mimo to bywa, że trzeba coś
 zbudować/zmienić bezpośrednio na instancji — wtedy obowiązują poniższe zasady.
@@ -306,8 +307,9 @@ widać całość na raz. Commit zrobiony automatycznie ten moment przeskakuje.
 - **Izolacja subdomen**: inne subdomeny i domena główna `thalverntable.app` to obce aplikacje.
   Cookies Auth.js są host-only, a przy HTTPS mają prefiks `__Host-` (`src/server/auth.ts`) — nie
   ustawiaj `Domain` w cookies i nie luzuj `verifyOrigin` (porównuje host co do znaku)
-- Hooki mini-apek (np. webhook n8n przy zmianie roli): `src/server/apps/hooks.ts`; webhook usunięcia
-  konta jest globalny dla huba
+- Zdarzenia dla n8n (zmiana roli w dowolnej apce, usunięcie konta, zgłoszenie źródła RAG):
+  `src/server/events.ts`. Zgłoszenie źródła jest walidowane i konwertowane w kodzie
+  (`src/server/rag/submission.ts`), n8n tylko prosi ROOT o akceptację i woła `PUT documents`
 - Skala: max ~15 użytkowników, ruch minimalny
 - Język interfejsu: polski
 - Język kodu / komentarzy: angielski
@@ -329,31 +331,32 @@ Kod aplikacji podzielony na moduły według domeny w `src/modules/`:
 
 Warstwa serwerowa (`src/server/`) — bez importów po stronie klienta:
 
-| Plik / katalog            | Zawartość                                                                           |
-| ------------------------- | ----------------------------------------------------------------------------------- |
-| `server/db`               | Singleton Prisma Client                                                             |
-| `server/ai`               | Klient LLM (primary + automatyczny fallback OVH), funkcja embedText()               |
-| `server/rag`              | Chunker, hybrid search (FTS + trigram + embeddingi, RRF), ingest, normalizacja      |
-| `server/rag/sources`      | Źródła treści: wątek forum jcink (link → wersja do druku → markdown)                |
-| `server/rag/routes.ts`    | Wewnętrzne API dokumentów dla n8n (`GET`/`PUT`/`DELETE`)                            |
-| `server/internal.ts`      | `requireInternal()` — sekret wywołań z n8n (porównanie stałoczasowe)                |
-| `server/chat`             | Silnik czatu RAG: `createRagChatRoutes(config)` → handlery czatu, sesji i limitu    |
-| `server/apps/hooks.ts`    | Serwerowe hooki mini-apek (zmiana roli)                                             |
-| `server/auth.ts`          | NextAuth (Discord, Prisma adapter, cookies `__Host-`, reguły proxy), `getSession()` |
-| `server/authorize.ts`     | `requireRoot()`, `requireAppRole()`, `readJsonBody()`, `verifyOrigin()`             |
-| `server/rateLimit.ts`     | Dzienny limit per użytkownik + mini-apka                                            |
-| `server/conversations.ts` | Historia rozmów z kontrolą właściciela                                              |
+| Plik / katalog             | Zawartość                                                                           |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| `server/db`                | Singleton Prisma Client                                                             |
+| `server/ai`                | Klient LLM (primary + automatyczny fallback OVH), funkcja embedText()               |
+| `server/rag`               | Chunker, hybrid search (FTS + trigram + embeddingi, RRF), ingest, normalizacja      |
+| `server/rag/sources`       | Źródła treści: wątek forum jcink (link → wersja do druku → markdown)                |
+| `server/rag/routes.ts`     | Wewnętrzne API dokumentów dla n8n (`GET`/`PUT`/`DELETE`)                            |
+| `server/rag/submission.ts` | Zgłoszenie źródła (link forum / plik `.md`) → tytuł, slug, `create`/`update`        |
+| `server/internal.ts`       | `requireInternal()` — sekret wywołań z n8n (porównanie stałoczasowe)                |
+| `server/chat`              | Silnik czatu RAG: `createRagChatRoutes(config)` → handlery czatu, sesji i limitu    |
+| `server/events.ts`         | `emitEvent()` — zdarzenia huba do jednego webhooka n8n                              |
+| `server/auth.ts`           | NextAuth (Discord, Prisma adapter, cookies `__Host-`, reguły proxy), `getSession()` |
+| `server/authorize.ts`      | `requireRoot()`, `requireAppRole()`, `readJsonBody()`, `verifyOrigin()`             |
+| `server/rateLimit.ts`      | Dzienny limit per użytkownik + mini-apka                                            |
+| `server/conversations.ts`  | Historia rozmów z kontrolą właściciela                                              |
 
 Mini-apki żyją w `src/apps/<id>/` (rejestr: `src/apps/index.ts`, alias `apps`). Poradniki
 (`src/apps/tutorials/`):
 
-| Folder                 | Zawartość                                                                               |
-| ---------------------- | --------------------------------------------------------------------------------------- |
-| `manifest.ts`          | Metadane bezpieczne dla klienta i proxy (bez kodu serwerowego), kategorie bazy wiedzy   |
-| `components/` `api/` … | UI apki: DocsPanel (lista dokumentów z bazy), AddSourceModal (+ edytor), `submitSource` |
-| `server/`              | Config czatu `tutorialsChat` (prompt, synonimy, koszty PD), webhook źródeł, dostęp      |
-| `routes/`              | Handlery z `createRagChatRoutes(tutorialsChat)` + `sourcesPost` — re-eksportowane       |
-| `page/`                | `TutorialsPage` (ChatShell z `chat`) — `src/app/tutorials/page.tsx` podaje `HubHeader`  |
+| Folder                 | Zawartość                                                                                |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| `manifest.ts`          | Metadane bezpieczne dla klienta i proxy (bez kodu serwerowego), kategorie bazy wiedzy    |
+| `components/` `api/` … | UI apki: DocsPanel (lista dokumentów z bazy), AddSourceModal (+ edytor), `submitSource`  |
+| `server/`              | Config czatu `tutorialsChat` (prompt, synonimy, koszty PD), dostęp (`EDITOR`)            |
+| `routes/`              | Handlery z `createRagChatRoutes(tutorialsChat)` + `sourcesPost` (zgłoszenie → zdarzenie) |
+| `page/`                | `TutorialsPage` (ChatShell z `chat`) — `src/app/tutorials/page.tsx` podaje `HubHeader`   |
 
 Nowy czat RAG = manifest (z `rag.categories`) + `RagChatConfig` w `server/` + `createRagChatRoutes` w `routes/` + strona
 z komponentami `chat`. Jakość wyszukiwania przed i po zmianach: `pnpm rag:eval` (`--save` zapisuje

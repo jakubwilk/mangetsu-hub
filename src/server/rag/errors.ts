@@ -2,7 +2,7 @@
 export class IngestError extends Error {
   constructor(
     message: string,
-    readonly status: 400 | 404 | 422 | 502 | 503,
+    readonly status: 400 | 404 | 409 | 422 | 502 | 503,
   ) {
     super(message)
   }

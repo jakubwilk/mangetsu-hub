@@ -136,17 +136,33 @@ Podział przy dodawaniu źródeł: **kod** waliduje link / plik, konwertuje i no
 zgłoszeniu (EDITOR od razu widzi błąd, ROOT zatwierdza dokładnie to, co trafi do bazy), liczy chunki
 i embeddingi; **n8n** tylko prosi ROOT o akceptację, woła `PUT documents` i powiadamia.
 
-- [ ] `server/events.ts` — `emitEvent(type, payload)` → `N8N_EVENTS_WEBHOOK_URL` (POST, `X-Webhook-Authorization`), wynik `ok` raportowany w adminie; zdarzenia `user.role_changed` (rola `null` → `GUEST` jak dziś), `user.deleted`, `rag.source_submitted` (`{ app, slug, title, category, markdown, sourceUrl?, mode: 'create' | 'update', chars, submittedBy: { name, discordId } }`)
-- [ ] `POST /api/tutorials/sources` (EDITOR + `verifyOrigin`) — body `{ type: 'FORUM', url, category, title? }` | `{ type: 'MARKDOWN', markdown, fileName?, category, title? }`; walidacja → konwersja forum / `normalizeMarkdown` → tytuł (pole z modalu > tytuł wątku / pierwszy `#` / nazwa pliku) → slug + `mode` (forum: dedup po `sourceUrl` z zachowaniem sluga; `.md`: istniejący `(app, slug)` = aktualizacja) → `emitEvent` → „Zgłoszono do akceptacji”; `422` gdy wątek nierozpoznany, `400` dla walidacji + testy integracyjne (rola, origin, kategoria, limit, błędny link, payload zdarzenia)
-- [ ] Przygotowanie n8n (użytkownik): credential `httpHeaderAuth` z `INTERNAL_API_SECRET`, prywatny kanał Discord tylko dla ROOT
-- [ ] Workflow **Hub events** — webhook → Switch po `type` → istniejąca logika aktywacji (Discord); `user.deleted` do zbudowania od zera (na instancji nie ma workflowu usunięcia konta); stare ścieżki działają do przełączenia
-- [ ] Przełączenie aplikacji na `emitEvent`; usunięcie `server/webhooks.ts`, `server/apps/hooks.ts` (po potwierdzeniu działania)
-- [ ] Workflow **RAG forum sync** — cron → `GET documents` → `PUT` z `forumUrl` dla dokumentów z forum → zebrane `changed` → wiadomość na Discord
-- [ ] Workflow **RAG add source** (sub-workflow wołany z Hub events, który odpowiada **przed** oczekiwaniem — inaczej request z aplikacji wisi) — Discord _Send and wait_ (approval, Zatwierdź / Odrzuć, limit ~7 dni): tytuł, kategoria, nowy / aktualizacja, link do źródła, liczba znaków, autor, początek treści (limit wiadomości Discorda 2000 znaków) → zatwierdzono: `PUT documents` z gotowym markdownem → „Dodano X (n fragmentów)” z `<@discordId>` autora; odrzucono / wygasło → komunikat do autora; błąd HTTP → istniejący Error workflow. Do sprawdzenia w teście: czy _Send and wait_ działa z obecnym credentialem Discord typu webhook — jeśli nie, potrzebny credential Discord Bot
-- [ ] `AddSourceModal`: zakładki „Link do forum” (placeholder `…/index.php?showtopic=…` z `NEXT_PUBLIC_FORUM_URL` zamiast dzisiejszego `viewtopic.php`) / „Plik Markdown” (shadcn `Button` „Wybierz plik” + ukryty input `accept=".md,.markdown"` → `file.text()` → podgląd i poprawki w `MarkdownEditorField`, remount przez `key`, bo Crepe czyta tylko `defaultValue`); opcjonalne pole Tytuł z podpowiedzią; wymagany `Select` kategorii; limit znaków; `method` / `URL` / `CONTENT` → `type` / `FORUM` / `MARKDOWN`; `ENABLED = true`
-- [ ] Każdy workflow: `validate_workflow` + `test_workflow` z pełnym pin data + przegląd ścieżek błędów (dla add source: zatwierdzono, odrzucono, wygasło, błąd `PUT`); aktywacja po zgodzie
-- [ ] Sprzątanie po przełączeniu: archiwizacja starego workflow `Add source` (`job/source`), usunięcie `SOURCES_WEBHOOK_URL` z `.env.example` — **po potwierdzeniu**
-- [ ] Aktualizacja CLAUDE.md i README (struktura `apps`, endpointy wewnętrzne z sekretem, treść w bazie, zdarzenia n8n)
+Decyzje (2026-10-22): akceptacja przez **Discord Bot** (credential `discordBotApi`, kanał tylko dla
+ROOT); `user.deleted` z `notify` → wiadomość na kanale aktywacji (credential webhook); zdarzenie
+`user.role_changed` wysyłane dla każdej apki (n8n filtruje po `app`).
+
+### 4a — kod
+
+- [x] `server/events.ts` — `emitEvent({ type, data })` → `POST N8N_EVENTS_WEBHOOK_URL` (`{ type, data, occurredAt }`, `X-Webhook-Authorization`); `user.role_changed` (rola `null` → `GUEST`), `user.deleted`, `rag.source_submitted` + testy
+- [x] `server/rag/submission.ts` — `prepareSourceSubmission(app, body, submittedBy)`: kategoria z manifestu, konwersja forum / plik `.md`, tytuł (pole > tytuł wątku albo zapisany tytuł przy aktualizacji / pierwszy `#` / nazwa pliku), slug + `mode` (wątek: dedup po `sourceUrl`, kolizja sluga → `-<topicId>`; plik: slug z nazwy pliku, istniejący = aktualizacja, dokument z forum → 409), `normalizeMarkdown`, limity; `MAX_TITLE_LENGTH` w rejestrze `apps` + testy
+- [x] `POST /api/tutorials/sources` (EDITOR + `verifyOrigin`) → `prepareSourceSubmission` → `emitEvent` → „… czeka na akceptację”; `IngestError` ze statusem, n8n niedostępne → 502 + testy integracyjne
+- [x] `AddSourceModal`: zakładki „Link do forum” / „Plik Markdown” (przycisk + ukryty input, podgląd w edytorze z remountem przez `key`), `Select` kategorii, opcjonalny tytuł, licznik znaków; flaga `ENABLED` usunięta
+- [x] Admin (zmiana roli, usunięcie konta) na `emitEvent`; `server/webhooks.ts`, `server/apps/hooks.ts`, `apps/tutorials/server/sources.ts` usunięte; stare workflowy n8n aktywne do potwierdzenia
+- [x] `.env.example` (`N8N_EVENTS_WEBHOOK_URL`; bez `N8N_WEBHOOK_BASE_URL`, `*_WEBHOOK_PATH`, `SOURCES_WEBHOOK_URL`), CLAUDE.md, README
+- [~] Weryfikacja 4a: test / lint / tsc / build zielone — smoke modalu czeka na użytkownika; propozycja commitów
+
+### 4b — n8n
+
+- [ ] Przygotowanie (użytkownik): aplikacja-bot Discord na serwerze + credential `discordBotApi` „Mangetsu-HUB: Discord Bot”, prywatny kanał ROOT; credential `httpBearerAuth` „Mangetsu-HUB: Internal API” (token = `INTERNAL_API_SECRET` prod) → przypięcie credentiali i ID serwera/kanału w węzłach (RAG add source, RAG forum sync)
+- [x] Workflow **Hub events** (`l3v9e6RStjWOd7u6`, webhook `mangetsu-hub/events`) — webhook (header auth) → Switch po `type`: `user.role_changed` (logika z `User activation`), `user.deleted` (`notify` → Discord), `rag.source_submitted` (odpowiedź 202 **przed** wywołaniem sub-workflowu), nieznany → 400
+- [x] Workflow **RAG add source** (`6tuC3poWgKUyXWDQ`, sub-workflow) — Discord _Send and wait_ (bot, approval Zatwierdź / Odrzuć, limit 7 dni): tytuł, kategoria, nowy / aktualizacja, link, liczba znaków, autor, początek treści (< 2000 znaków) → zatwierdzono: `PUT documents` → „Dodano X (n fragmentów)” z `<@discordId>`; odrzucono / wygasło → komunikat do autora; błąd HTTP → Error workflow
+- [x] Workflow **RAG forum sync** (`9vJLov1uMeXFfwN5`) — cron 04:00 → `GET documents` → `PUT` z `forumUrl` + zapisany `title` dla dokumentów z forum (błąd jednego nie przerywa pętli) → wiadomość na Discord tylko przy zmianach albo błędach
+- [~] Każdy workflow: `validate_workflow` + `test_workflow` z pełnym pin data — Hub events: 4 gałęzie (rola, usunięcie z / bez `notify`, zgłoszenie → 202, nieznany → 400); add source: zatwierdzono / odrzucono / wygasło; forum sync: bez zmian (bez raportu) / zmiana + błąd. Pin data nie sprawdza wyrażeń w przypiętych węzłach (treść wiadomości Discord, body `PUT`) ani błędu Discorda / `PUT` — to zostaje na smoke po aktywacji
+
+### 4c — wdrożenie (po zgodzie, kolejno)
+
+- [ ] Aktywacja Hub events + RAG add source (+ forum sync)
+- [ ] `N8N_EVENTS_WEBHOOK_URL` w Coolify → deploy (po wdrożeniu 3b) → smoke: zmiana roli, usunięcie konta z `notify`, zgłoszenie linku i pliku → zatwierdzenie / odrzucenie → dokument w DocsPanel
+- [ ] Sprzątanie po potwierdzeniu: archiwizacja `User activation` i `Add source`, usunięcie starych zmiennych z Coolify
 
 ## Poza zakresem (kolejny krok)
 
