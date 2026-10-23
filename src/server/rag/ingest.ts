@@ -115,6 +115,25 @@ export const deleteDocument = async (app: AppId, slug: string): Promise<boolean>
   return count > 0
 }
 
+export const getDocument = async (app: AppId, slug: string) => {
+  const document = await db.document.findUnique({
+    where: { app_slug: { app, slug } },
+    select: {
+      slug: true,
+      title: true,
+      category: true,
+      sourceUrl: true,
+      markdown: true,
+      updatedAt: true,
+      _count: { select: { chunks: true } },
+    },
+  })
+  if (!document) return null
+
+  const { _count, ...rest } = document
+  return { ...rest, chunks: _count.chunks }
+}
+
 export const listDocuments = async (app: AppId) => {
   const documents = await db.document.findMany({
     where: { app },
