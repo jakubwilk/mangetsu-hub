@@ -1,1 +1,1 @@
-export { type SourceMethod, submitSource } from './submitSource'
+export { type SourceSubmissionBody, type SourceType, submitSource } from './submitSource'

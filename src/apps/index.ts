@@ -11,6 +11,8 @@ export const ROOT_LABEL = 'Administrator'
 // Largest markdown accepted as a RAG source — the biggest forum topic today is ~40k characters.
 export const MAX_SOURCE_CHARS = 100_000
 
+export const MAX_TITLE_LENGTH = 200
+
 export type App = (typeof APPS)[number]
 export type AppId = App['id']
 export type AppRole<A extends AppId> = Extract<App, { id: A }>['roles'][number]['id']
