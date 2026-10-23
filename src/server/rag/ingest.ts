@@ -1,4 +1,4 @@
-import { type AppId, isRagCategory, MAX_SOURCE_CHARS } from 'apps'
+import { type AppId, isRagCategory, MAX_SOURCE_CHARS, MAX_TITLE_LENGTH } from 'apps'
 import { createHash } from 'crypto'
 import { embedText } from 'server/ai/embeddings'
 import { db } from 'server/db'
@@ -7,8 +7,6 @@ import { chunkText } from './chunker'
 import { IngestError } from './errors'
 import { normalizeMarkdown } from './normalize'
 import { isValidSlug } from './slug'
-
-const MAX_TITLE_LENGTH = 200
 
 export interface DocumentInput {
   app: AppId

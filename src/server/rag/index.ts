@@ -10,4 +10,5 @@ export {
 } from './ingest'
 export { documentsDelete, documentsGet, documentsPut } from './routes'
 export { searchChunks } from './search'
+export { prepareSourceSubmission, type SourceSubmission } from './submission'
 export type { SearchResult } from './types'
