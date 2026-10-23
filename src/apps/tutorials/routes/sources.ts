@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readJsonBody, verifyOrigin } from 'server/authorize'
-import { emitEvent } from 'server/events'
-import { IngestError, prepareSourceSubmission, type SourceSubmission } from 'server/rag'
-import { findUserWithDiscordId } from 'server/users'
+import { prepareSourceSubmission, type SourceSubmission } from 'server/rag'
 
 import { requireTutorialsEditor, TUTORIALS_APP } from '../server'
+import { ingestErrorResponse, ingestNow, requestApproval, submitterOf } from './submit'
 
 export const sourcesPost = async (request: NextRequest) => {
   const originError = verifyOrigin(request)
@@ -12,36 +11,27 @@ export const sourcesPost = async (request: NextRequest) => {
 
   const authResult = await requireTutorialsEditor()
   if (authResult instanceof NextResponse) return authResult
+  const { user } = authResult.session
 
   const body = await readJsonBody(request)
   if (body instanceof NextResponse) return body
 
   let submission: SourceSubmission
   try {
-    const author = await findUserWithDiscordId(authResult.session.user.id)
-    submission = await prepareSourceSubmission(TUTORIALS_APP, body, {
-      name: author?.name ?? null,
-      discordId: author?.discordId ?? null,
-    })
+    submission = await prepareSourceSubmission(TUTORIALS_APP, body, await submitterOf(user.id))
   } catch (err) {
-    if (err instanceof IngestError) {
-      return NextResponse.json({ error: err.message }, { status: err.status })
-    }
-    throw err
+    return ingestErrorResponse(err)
   }
 
-  try {
-    await emitEvent({ type: 'rag.source_submitted', data: submission })
-  } catch (err) {
-    console.error('[sources] submission event failed:', err instanceof Error ? err.message : err)
-    return NextResponse.json(
-      { error: 'Nie udało się wysłać zgłoszenia. Spróbuj ponownie później.' },
-      { status: 502 },
-    )
+  const isUpdate = submission.mode === 'update'
+  if (user.isRoot) {
+    const action = isUpdate ? 'Zaktualizowano' : 'Dodano'
+    return ingestNow(submission, `${action} „${submission.title}” w bazie wiedzy.`)
   }
 
-  const action = submission.mode === 'update' ? 'Aktualizacja' : 'Nowy dokument'
-  return NextResponse.json({
-    message: `${action} „${submission.title}” czeka na akceptację administratora.`,
-  })
+  const action = isUpdate ? 'Aktualizacja' : 'Nowy dokument'
+  return requestApproval(
+    { type: 'rag.source_submitted', data: submission },
+    `${action} „${submission.title}” czeka na akceptację administratora.`,
+  )
 }

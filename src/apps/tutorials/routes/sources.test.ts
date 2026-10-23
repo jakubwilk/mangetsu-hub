@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
   findUser: vi.fn(),
   prepareSourceSubmission: vi.fn(),
+  ingestDocument: vi.fn(),
   emitEvent: vi.fn(),
 }))
 
@@ -17,6 +18,7 @@ vi.mock('server/events', () => ({ emitEvent: mocks.emitEvent }))
 vi.mock('server/rag', async () => ({
   IngestError: (await import('server/rag/errors')).IngestError,
   prepareSourceSubmission: mocks.prepareSourceSubmission,
+  ingestDocument: mocks.ingestDocument,
 }))
 // The chat config in the app's server barrel is not under test here.
 vi.mock('../server', () => ({
@@ -71,6 +73,26 @@ describe('POST /api/tutorials/sources', () => {
       type: 'rag.source_submitted',
       data: submission,
     })
+  })
+
+  it('adds a source from ROOT at once, without asking for approval', async () => {
+    mocks.auth.mockResolvedValue({ user: { id: 'u1', isRoot: true, apps: {} } })
+    mocks.ingestDocument.mockResolvedValue({ changed: true, chunks: 2 })
+
+    const res = await post()
+
+    expect(res.status).toBe(200)
+    expect((await res.json()).message).toBe('Dodano „Waluty” w bazie wiedzy.')
+    expect(mocks.ingestDocument).toHaveBeenCalledWith(submission)
+    expect(mocks.emitEvent).not.toHaveBeenCalled()
+  })
+
+  it('answers 503 when a source from ROOT cannot be ingested', async () => {
+    mocks.auth.mockResolvedValue({ user: { id: 'u1', isRoot: true, apps: {} } })
+    mocks.ingestDocument.mockRejectedValue(new Error('embeddings down'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    expect((await post()).status).toBe(503)
   })
 
   it('requires a signed-in user', async () => {
