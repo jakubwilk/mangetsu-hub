@@ -1,10 +1,12 @@
 export type { Chunk } from './chunker'
 export { chunkText } from './chunker'
+export { prepareDocumentEdit } from './edit'
 export { IngestError } from './errors'
 export {
   deleteDocument,
   type DocumentInput,
   type DocumentSummary,
+  getDocument,
   ingestDocument,
   listDocuments,
 } from './ingest'

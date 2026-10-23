@@ -125,7 +125,7 @@ lokalnie z `DATABASE_URL=<prod>` w wierszu poleceń (wygrywa z `.env.local`).
 - [ ] Backup bazy prod w Coolify przed migracją (b) — użytkownik, przed wdrożeniem 3b
 - [x] Migracja (b) `20261023120000_rag_documents_required`: NOT NULL na `slug`, `markdown`, `contentHash` + drop `filePath` w jednym `ALTER` (przy dokumencie bez backfillu migracja pada, zanim cokolwiek usunie); `rag:dump` bez filtrów na `null`
 - [x] Usunięcie `content/`, `scripts/seed.ts`, `importForum.ts`, `forumTopics.ts`, `contentPath.ts`, `backfillDocuments.ts` (+ skrypty `db:seed`, `content:import`, `rag:backfill`, test idempotencji na `content/` zastąpiony testem na przekonwertowanym wątku) — potwierdzone przez użytkownika
-- [~] Weryfikacja 3b: lokalnie brak driftu, test / lint / tsc / build zielone, `ragEval` 14/14 — wdrożenie (backup → deploy → `DATABASE_URL=<prod> pnpm db:migrate:deploy`) czeka na użytkownika; propozycja commitów
+- [x] Weryfikacja 3b: lokalnie brak driftu, test / lint / tsc / build zielone, `ragEval` 14/14; na prod (#31) `db:migrate:deploy` → „No pending migrations” (12/12, migracja (b) już zastosowana)
 
 ## Etap 4 — n8n jako zaplecze
 
@@ -152,7 +152,7 @@ ROOT); `user.deleted` z `notify` → wiadomość na kanale aktywacji (credential
 
 ### 4b — n8n
 
-- [ ] Przygotowanie (użytkownik): aplikacja-bot Discord na serwerze + credential `discordBotApi` „Mangetsu-HUB: Discord Bot”, prywatny kanał ROOT; credential `httpBearerAuth` „Mangetsu-HUB: Internal API” (token = `INTERNAL_API_SECRET` prod) → przypięcie credentiali i ID serwera/kanału w węzłach (RAG add source, RAG forum sync)
+- [x] Przygotowanie (użytkownik): aplikacja-bot Discord na serwerze + credential `discordBotApi` „Mangetsu-HUB: Discord Bot account”, prywatny kanał ROOT; credential `httpBearerAuth` „Mangetsu-HUB: Internal API” (token = `INTERNAL_API_SECRET` prod); credentiale i kanał przypięte w węzłach (RAG add source, RAG forum sync)
 - [x] Workflow **Hub events** (`l3v9e6RStjWOd7u6`, webhook `mangetsu-hub/events`) — webhook (header auth) → Switch po `type`: `user.role_changed` (logika z `User activation`), `user.deleted` (`notify` → Discord), `rag.source_submitted` (odpowiedź 202 **przed** wywołaniem sub-workflowu), nieznany → 400
 - [x] Workflow **RAG add source** (`6tuC3poWgKUyXWDQ`, sub-workflow) — Discord _Send and wait_ (bot, approval Zatwierdź / Odrzuć, limit 7 dni): tytuł, kategoria, nowy / aktualizacja, link, liczba znaków, autor, początek treści (< 2000 znaków) → zatwierdzono: `PUT documents` → „Dodano X (n fragmentów)” z `<@discordId>`; odrzucono / wygasło → komunikat do autora; błąd HTTP → Error workflow
 - [x] Workflow **RAG forum sync** (`9vJLov1uMeXFfwN5`) — cron 04:00 → `GET documents` → `PUT` z `forumUrl` + zapisany `title` dla dokumentów z forum (błąd jednego nie przerywa pętli) → wiadomość na Discord tylko przy zmianach albo błędach
@@ -160,13 +160,37 @@ ROOT); `user.deleted` z `notify` → wiadomość na kanale aktywacji (credential
 
 ### 4c — wdrożenie (po zgodzie, kolejno)
 
-- [ ] Aktywacja Hub events + RAG add source (+ forum sync)
-- [ ] `N8N_EVENTS_WEBHOOK_URL` w Coolify → deploy (po wdrożeniu 3b) → smoke: zmiana roli, usunięcie konta z `notify`, zgłoszenie linku i pliku → zatwierdzenie / odrzucenie → dokument w DocsPanel
+- [x] Aktywacja Hub events + RAG add source + forum sync (użytkownik); `User activation` i `Add source` wyłączone
+- [x] Poprawka „Report to ROOT” w forum sync (bot + treść), opublikowana
+- [~] `N8N_EVENTS_WEBHOOK_URL` w Coolify → deploy #31 (zrobione) → smoke: zmiana roli, usunięcie konta z `notify`, zgłoszenie linku i pliku → zatwierdzenie / odrzucenie → dokument w DocsPanel
 - [ ] Sprzątanie po potwierdzeniu: archiwizacja `User activation` i `Add source`, usunięcie starych zmiennych z Coolify
 
-## Poza zakresem (kolejny krok)
+## Etap 5 — Zarządzanie dokumentami bazy wiedzy
 
-- [ ] UI zarządzania dokumentami dla EDITOR (lista + edycja w Milkdown → ingest)
+Decyzje (2026-10-23): **EDITOR przez akceptację, ROOT od razu** — edycja EDITORA idzie zdarzeniem
+`rag.source_submitted` (`mode: 'update'` + `changes`), usunięcie nowym `rag.document_delete_requested`;
+ROOT zapisuje, dodaje i usuwa bez akceptacji. **Dokument z forum: treść tylko na forum** — w aplikacji
+tytuł, kategoria i „Pobierz aktualną treść z forum”. **Osobna strona `/tutorials/docs`**.
+
+### 5a — kod
+
+- [x] `server/rag/edit.ts` — `prepareDocumentEdit(app, slug, body, submittedBy)`: 404, kategoria, tytuł, treść pliku albo (forum) zapisana / `refresh` z wątku, `changes` (tytuł / kategoria / treść — sam tytuł nie liczy się jako treść), bez zmian → 400; wspólne `requireCategory` / `requiredText` / `normalizeSource` w `submission.ts`; `getDocument` w `ingest.ts`; zdarzenie `rag.document_delete_requested` + testy
+- [x] `GET` / `PATCH` / `DELETE /api/tutorials/documents/[slug]` (EDITOR + `verifyOrigin`; ROOT → `ingestDocument` / `deleteDocument`, EDITOR → zdarzenie, n8n niedostępne → 502); `sourcesPost`: ROOT dodaje od razu; wspólne `routes/submit.ts` + testy integracyjne
+- [x] `/tutorials/docs` (`DocumentsPage`, przekierowanie bez EDITOR/ROOT): `DocumentsTable` (grupy kategorii), `EditDocumentModal` (Milkdown dla pliku, przełącznik odświeżenia dla forum), `DeleteDocumentModal`, `CategorySelect` wydzielony z `AddSourceModal`; wejście „Zarządzaj bazą wiedzy” w nagłówku czatu
+- [x] CLAUDE.md, README
+- [~] Weryfikacja 5a: test / lint / tsc / build zielone — ręczny przegląd UI w dev czeka; propozycja commitów
+
+### 5b — n8n
+
+- [x] **RAG add source**: nagłówek „Zmiana dokumentu” i linia „Zmiany: …” w wiadomości do ROOT, gdy jest `changes`; ogłoszenie „Zaktualizowano w bazie wiedzy” przy `mode: 'update'`
+- [x] Nowy sub-workflow **RAG remove document** (`LhFmgeOW58yxspEq`): Send and wait (bot, kanał ROOT, Usuń / Odrzuć, 7 dni) → `DELETE documents` → ogłoszenie / komunikat do autora; error workflow jak w pozostałych
+- [x] **Hub events**: wyjście `rag.document_delete_requested` → 202 → RAG remove document (fallback „Unknown” przesunięty na wyjście 4)
+- [~] Testy z pełnym pin data: Hub events — usunięcie / nieznany typ / zgłoszenie z `changes`; add source — wiadomość z „Zmiany”; remove document — zatwierdzono / odrzucono / wygasło (bez autora). Publikacja zmian Hub events i RAG add source oraz nowego workflowu — użytkownik
+
+### 5c — wdrożenie
+
+- [x] Publikacja zmian n8n **przed** deployem kodu (stary Hub events odpowie 400 → EDITOR dostanie 502)
+- [~] Deploy → smoke: EDITOR edycja → akceptacja, usunięcie → odrzucenie; ROOT edycja od razu; odświeżenie z forum
 
 ---
 

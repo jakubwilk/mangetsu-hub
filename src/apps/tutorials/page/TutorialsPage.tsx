@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { getSession } from 'server/auth'
 import { listDocuments } from 'server/rag'
 
-import { AddSourceModal, DocsPanel } from '../components'
+import { AddSourceModal, DocsPanel, ManageDocsLink } from '../components'
 import loadingMessages from '../data/loading-messages.json'
 import { tutorialsManifest } from '../manifest'
 
@@ -26,8 +26,18 @@ const TutorialsPage = async ({ header }: TutorialsPageProps) => {
   return (
     <div className="flex h-full flex-col">
       {header({
-        actions: canEdit && <AddSourceModal />,
-        menuItems: canEdit && <AddSourceModal asMenuItem />,
+        actions: canEdit && (
+          <>
+            <ManageDocsLink />
+            <AddSourceModal />
+          </>
+        ),
+        menuItems: canEdit && (
+          <>
+            <ManageDocsLink asMenuItem />
+            <AddSourceModal asMenuItem />
+          </>
+        ),
       })}
       <ChatShell
         sidebar={<ChatSidebar appId={APP_ID} />}

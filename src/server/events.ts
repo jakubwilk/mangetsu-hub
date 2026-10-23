@@ -8,11 +8,22 @@ interface UserIdentity {
   email: string | null
 }
 
+interface DocumentDeletion {
+  app: AppId
+  slug: string
+  title: string
+  category: string
+  sourceUrl: string | null
+  chunks: number
+  submittedBy: SourceSubmission['submittedBy']
+}
+
 // Everything the hub tells n8n, through one webhook — n8n switches on `type`.
 export type HubEvent =
   | { type: 'user.role_changed'; data: UserIdentity & { app: AppId; role: string } }
   | { type: 'user.deleted'; data: UserIdentity & { notify: boolean } }
   | { type: 'rag.source_submitted'; data: SourceSubmission }
+  | { type: 'rag.document_delete_requested'; data: DocumentDeletion }
 
 export const emitEvent = async ({ type, data }: HubEvent): Promise<void> => {
   const url = process.env.N8N_EVENTS_WEBHOOK_URL

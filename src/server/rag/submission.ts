@@ -15,6 +15,8 @@ export interface SourceSubmission {
   sourceUrl?: string
   mode: 'create' | 'update'
   chars: number
+  // Set for an edit of a stored document, so ROOT sees what the approval changes.
+  changes?: string[]
   submittedBy: { name: string | null; discordId: string | null }
 }
 
@@ -29,10 +31,29 @@ const optionalText = (value: unknown, field: string): string | undefined => {
   return value.trim() || undefined
 }
 
-const requiredText = (value: unknown, field: string): string => {
+export const requiredText = (value: unknown, field: string): string => {
   const text = optionalText(value, field)
   if (!text) throw new IngestError(`Pole '${field}' jest wymagane.`, 400)
   return text
+}
+
+export const requireCategory = (app: AppId, value: unknown): string => {
+  if (typeof value !== 'string' || !isRagCategory(app, value)) {
+    throw new IngestError('Wybierz kategorię z listy.', 400)
+  }
+  return value
+}
+
+// The text exactly as it will be stored, so ROOT approves what gets ingested.
+export const normalizeSource = (markdown: string, title: string): string => {
+  if (title.length > MAX_TITLE_LENGTH) {
+    throw new IngestError(`Tytuł może mieć maks. ${MAX_TITLE_LENGTH} znaków.`, 400)
+  }
+  const normalized = normalizeMarkdown(markdown, title)
+  if (normalized.length > MAX_SOURCE_CHARS) {
+    throw new IngestError(`Treść przekracza limit ${MAX_SOURCE_CHARS} znaków.`, 400)
+  }
+  return normalized
 }
 
 const isSlugTaken = async (app: AppId, slug: string) =>
@@ -100,16 +121,13 @@ const fromMarkdown = async (
   return { title, markdown, slug, mode: existing ? 'update' : 'create' }
 }
 
-// Validates and converts a source at submission time, so ROOT approves exactly what gets ingested.
+// Validates and converts a source at submission time.
 export const prepareSourceSubmission = async (
   app: AppId,
   body: Record<string, unknown>,
   submittedBy: SourceSubmission['submittedBy'],
 ): Promise<SourceSubmission> => {
-  const { category } = body
-  if (typeof category !== 'string' || !isRagCategory(app, category)) {
-    throw new IngestError('Wybierz kategorię z listy.', 400)
-  }
+  const category = requireCategory(app, body.category)
   const titleOverride = optionalText(body.title, 'title')
 
   let source: PreparedSource
@@ -126,16 +144,9 @@ export const prepareSourceSubmission = async (
     throw new IngestError('Nieznany rodzaj źródła.', 400)
   }
 
-  if (source.title.length > MAX_TITLE_LENGTH) {
-    throw new IngestError(`Tytuł może mieć maks. ${MAX_TITLE_LENGTH} znaków.`, 400)
-  }
+  const markdown = normalizeSource(source.markdown, source.title)
   if (!isValidSlug(source.slug)) {
     throw new IngestError('Z tytułu nie da się utworzyć identyfikatora — zmień tytuł.', 400)
-  }
-
-  const markdown = normalizeMarkdown(source.markdown, source.title)
-  if (markdown.length > MAX_SOURCE_CHARS) {
-    throw new IngestError(`Treść przekracza limit ${MAX_SOURCE_CHARS} znaków.`, 400)
   }
 
   return { app, ...source, category, markdown, chars: markdown.length, submittedBy }
